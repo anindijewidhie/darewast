@@ -1,0 +1,8 @@
+{
+  "name": "darewast",
+  "description": "A comprehensive multi-disciplinary learning platform implementing the Kumon method across subjects from literacy to programming and music theory, available in 14 languages.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
