@@ -1,8 +1,11 @@
 
-import { GoogleGenAI, Type, Modality } from "@google/genai";
-import { Language, Subject, LessonContent, User, MasteryLevel, UserProgress, AccommodationType, EducationTrack } from "../types";
-import { LEVEL_METADATA, SUBJECTS } from "../constants";
+// @google/genai library implementation following coding guidelines
+import { GoogleGenAI, Type } from "@google/genai";
+import { Language, Subject, LessonContent, User, MasteryLevel, UserProgress, AccommodationType, EducationTrack, EducationalStage } from "../types";
 
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+// Standard lesson generation for regular subject progress
 export const generateLesson = async (
   subject: Subject,
   language: Language,
@@ -10,65 +13,26 @@ export const generateLesson = async (
   lessonNumber: number,
   user?: User | null,
   progress?: UserProgress | null,
-  secondaryLanguage?: Language,
-  isExam: boolean = false
 ): Promise<LessonContent> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const age = user?.age || 10;
   const culturalBackground = user?.culturalBackground || 'Global';
-  const iddActive = user?.accessibility?.iddSupport || false;
+  const track = progress?.[subject.id]?.track || 'Standard';
   
-  const subProg = progress?.[subject.id];
-  const currentTheme = subProg?.currentTheme;
-  const educationTrack = subProg?.track || 'Standard';
-  const specializations = subProg?.specializations || [];
-  const lastScore = subProg?.lastScore;
-  const isFastTrack = subProg?.isFastTrack || false;
-  const fastTrackDuration = subProg?.fastTrackDuration || 60;
-  
-  const era = user?.academicDNA?.era || 'Modern';
-  const method = user?.academicDNA?.method || 'Kumon-style';
-  const hybridMethods = user?.academicDNA?.hybridMethods;
-
-  const methodologyDescription = hybridMethods 
-    ? `A HYBRID SYNERGY of ${hybridMethods[0]} and ${hybridMethods[1]}.` 
-    : method;
-
-  const specializationContext = specializations.length > 0 
-    ? `Focus: ${specializations.join(', ')}.`
-    : '';
-
-  // --- REFINED DYNAMIC RIGOR LOGIC ---
-  const momentum = lastScore ? (lastScore.correct / (lastScore.total || 1)) : 0.75;
-  let difficultyDirective = "";
-  
-  if (momentum >= 0.9) {
-    difficultyDirective = "ZONE OF PROXIMAL DEVELOPMENT (HIGH): Increase abstraction and logic complexity. Reduce scaffolding. Target Bloom's 'Synthesis' and 'Evaluation' tiers. Ensure problems require multi-disciplinary connections.";
-  } else if (momentum >= 0.7) {
-    difficultyDirective = "CHALLENGING STEADY-STATE: Standard mastery level. Introduce 1-2 'stretch' problems that bridge to the next mastery level.";
-  } else if (momentum >= 0.5) {
-    difficultyDirective = "REINFORCEMENT MODE: Focus on 'Application'. Use highly relatable examples and maintain clear, step-by-step logic. Don't increase difficulty until concepts are anchored.";
-  } else {
-    difficultyDirective = "SCAFFOLDED REMEDIATION: Focus on 'Recall' and 'Understanding'. Use simpler vocabulary, high visual/textual scaffolding, and 50% more concrete examples. Ensure the lesson builds confidence.";
-  }
-
-  const culturalDirective = `CULTURAL ANCHORING: Root all examples, scenarios, and story elements in the user's ${culturalBackground} background. Use relevant idioms, cultural norms, and localized logic.`;
-  const ageDirective = `COGNITIVE CALIBRATION: Adjust syntax complexity, abstract reasoning, and vocabulary specifically for a ${age}-year-old learner.`;
-
-  const fastTrackDirective = isFastTrack ? `FAST TRACK: Accelerated, high-density session for ${fastTrackDuration} minutes.` : "";
-
-  const prompt = isExam 
-    ? `Generate a 15-question FORMAL MASTERY EXAM for ${subject.name} Level ${level}. Language: ${language}. Era: ${era}. Method: ${methodologyDescription}. Cultural Context: ${culturalBackground}. ${specializationContext} Ensure university-entrance rigor for Level Q-T.`
-    : `Generate Lesson ${lessonNumber}/12 for ${subject.name} Level ${level}. 
-       Language: ${language}. 
-       Era: ${era}. 
-       Method: ${methodologyDescription}. 
-       Theme: ${currentTheme || 'Standard'}. 
-       ${difficultyDirective} 
-       ${culturalDirective} 
-       ${ageDirective} 
-       ${fastTrackDirective}
-       Ensure the lesson follows the Goldilocks principle: challenging enough to engage but achievable enough to build mastery.`;
+  const prompt = `
+    ROLE: World-Class Academic Architect.
+    TASK: Design Lesson ${lessonNumber}/12 for ${subject.name} Level ${level}.
+    METHOD: Kumon-style incrementalism. Atomic steps, no cognitive overload.
+    AUDIENCE: ${age} years old, Cultural Context: ${culturalBackground}, Education Track: ${track}.
+    LANGUAGE: ${language}.
+    
+    CONTENT REQUIREMENTS:
+    1. A short, inspiring title.
+    2. A conceptual introduction (narrative hook).
+    3. Deep pedagogical explanation.
+    4. PRONUNCIATION GUIDE: Identify 3-5 key academic or difficult words from the explanation. Provide their phonetic spelling and a simple guide on how to say them.
+    5. 5 Timeline points showing the logic chain.
+    6. Real-world examples adapted to the user's age.
+  `;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -81,6 +45,18 @@ export const generateLesson = async (
         properties: {
           title: { type: Type.STRING },
           explanation: { type: Type.STRING },
+          pronunciationGuide: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                word: { type: Type.STRING },
+                phonetic: { type: Type.STRING },
+                guide: { type: Type.STRING }
+              },
+              required: ["word", "phonetic", "guide"]
+            }
+          },
           timelinePoints: {
             type: Type.ARRAY,
             items: {
@@ -107,39 +83,162 @@ export const generateLesson = async (
               },
               required: ["question", "correctAnswer", "explanation", "hint"]
             }
+          },
+          mediaResources: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                type: { type: Type.STRING, enum: ["ebook", "blog", "podcast", "video", "song"] },
+                title: { type: Type.STRING }
+              },
+              required: ["id", "type", "title"]
+            }
           }
         },
-        required: ["title", "explanation", "examples", "exercises"]
+        required: ["title", "explanation", "examples", "exercises", "mediaResources"]
       },
     },
   });
 
   const groundingSources = response.candidates?.[0]?.groundingMetadata?.groundingChunks?.map((chunk: any) => ({
-    title: chunk.web?.title || "Reference",
+    title: chunk.web?.title || "Reference Source",
     uri: chunk.web?.uri || ""
   })).filter((s: any) => s.uri) || [];
 
   try {
     const data = JSON.parse(response.text || '{}');
-    return { ...data, level, lessonNumber, isExam, groundingSources };
+    return { ...data, level, lessonNumber, groundingSources };
   } catch (error) {
+    console.error("Gemini Parse Error:", error);
     throw new Error("Failed to design personalized content.");
   }
 };
 
-export const generateExamPrep = async (
-  subject: Subject, 
+export const generateMasteryExam = async (
+  subject: Subject,
+  language: Language,
+  level: MasteryLevel,
+  user: User
+): Promise<LessonContent> => {
+  const prompt = `Generate a 15-question FORMAL MASTERY EXAM for ${subject.name} Level ${level}. 
+  Standard: International Academic Integrity. Language: ${language}. User Age: ${user.age}. 
+  Include logic traps and application-based questions.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-pro-preview",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          exercises: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                correctAnswer: { type: Type.STRING },
+                explanation: { type: Type.STRING }
+              },
+              required: ["question", "correctAnswer", "explanation"]
+            }
+          }
+        },
+        required: ["title", "explanation", "exercises"]
+      }
+    }
+  });
+
+  return JSON.parse(response.text || '{}');
+};
+
+export const generatePlacementTest = async (
   language: Language, 
-  targetExam: string, 
-  lessonNumber: number, 
+  user: User | null, 
+  accommodation: AccommodationType,
+  subject: Subject | undefined,
+  testType: 'placement' | 'assessment' | 'relearn'
+) => {
+  const prompt = `Generate a 10-question ${testType} diagnostic for ${subject?.name || 'General Knowledge'}. 
+  Targeting age ${user?.age || 18}. Accommodation: ${accommodation}. Language: ${language}. Output JSON questions.`;
+  
+  const response = await ai.models.generateContent({ 
+    model: "gemini-3-flash-preview", 
+    contents: prompt, 
+    config: { 
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          questions: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                correctAnswer: { type: Type.STRING },
+                difficulty: { type: Type.STRING }
+              },
+              required: ["question", "options", "correctAnswer", "difficulty"]
+            }
+          }
+        },
+        required: ["questions"]
+      }
+    } 
+  });
+  return JSON.parse(response.text || '{}');
+};
+
+export const analyzeTestResults = async (
+  subject: Subject,
+  score: number,
+  total: number,
+  level: MasteryLevel,
+  language: Language,
+  user: User | null
+): Promise<string> => {
+  const prompt = `Analyze test results for ${subject.name}. Score: ${score}/${total}. Recommended Level: ${level}. 
+  User Age: ${user?.age || 18}. Language: ${language}. 
+  Provide a brief, encouraging academic insight about their performance.`;
+  
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+  });
+  return response.text || "Your performance shows steady potential.";
+};
+
+export const generateCustomSubject = async (q: string, t: EducationTrack, l: Language) => {
+  const prompt = `Define a learning subject based on query: "${q}". 
+  Provide icon, name, category, description, and 5 subtopics. Track: ${t}. Language: ${l}.`;
+  
+  const response = await ai.models.generateContent({ 
+    model: "gemini-3-flash-preview", 
+    contents: prompt, 
+    config: { 
+      responseMimeType: "application/json" 
+    } 
+  });
+  return JSON.parse(response.text || '{}');
+};
+
+export const generateExamPrep = async (
+  subject: Subject,
+  language: Language,
+  boardName: string,
+  week: number,
   user: User
 ): Promise<LessonContent & { tacticalTips: string[] }> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `
-    INTENSIVE EXAM PREP: Generate Lesson ${lessonNumber}/12 for ${targetExam} preparation in ${subject.name}.
-    Language: ${language}. Focus on tactical strategies, typical board questions, and high-yield topics.
-    Return JSON with 'tacticalTips' (array of strings) and standard lesson fields.
-  `;
+  const prompt = `Generate Exam Prep Level ${week} for ${subject.name} targeting ${boardName}. 
+  User Age: ${user.age}. Language: ${language}. Include tactical tips for this specific exam board.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -161,103 +260,138 @@ export const generateExamPrep = async (
                 question: { type: Type.STRING },
                 options: { type: Type.ARRAY, items: { type: Type.STRING } },
                 correctAnswer: { type: Type.STRING },
-                explanation: { type: Type.STRING },
-                hint: { type: Type.STRING }
-              }
+                explanation: { type: Type.STRING }
+              },
+              required: ["question", "options", "correctAnswer", "explanation"]
             }
           }
-        }
+        },
+        required: ["title", "explanation", "tacticalTips", "exercises"]
       }
     }
   });
 
-  return JSON.parse(response.text || '{}');
+  const data = JSON.parse(response.text || '{}');
+  return { 
+    ...data, 
+    level: 'A' as MasteryLevel, 
+    lessonNumber: week 
+  } as LessonContent & { tacticalTips: string[] };
 };
 
-export const generateCustomSubject = async (query: string, track: EducationTrack, language: Language): Promise<Partial<Subject>> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Metadata for module: "${query}". Campus: ${track}. Language: ${language}. JSON output.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: { responseMimeType: "application/json" }
-  });
-  return JSON.parse(response.text || '{}');
-};
-
-export const generateThemeSuggestions = async (user: User, language: Language): Promise<{ icon: string; name: string }[]> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `6 narrative themes for age ${user.age}. Language: ${language}. JSON icon/name.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: { responseMimeType: "application/json" }
-  });
-  return JSON.parse(response.text || '[]');
-};
-
-export const generateMotivationalQuote = async (subject: string, score: number, total: number, language: Language) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: `Motivational quote in ${language} for score ${score}/${total} in ${subject}.`,
-  });
-  return response.text?.trim() || "Mastery is a journey.";
-};
-
-export const generatePlacementTest = async (
-  language: Language, 
-  user?: User | null, 
-  accommodation: AccommodationType = 'none',
-  subject?: Subject,
-  testType: 'placement' | 'assessment' = 'placement'
-) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Generate 10-question ${testType} for ${subject?.name || 'General'}. Language: ${language}. JSON output.`;
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: { responseMimeType: "application/json" }
-  });
-  return JSON.parse(response.text || '{}');
-};
-
-export const analyzeTestResults = async (
-  subject: Subject,
-  score: number,
-  total: number,
-  recommendedLevel: MasteryLevel,
-  language: Language,
-  user?: User | null
+export const generateGuardianReport = async (
+  user: User,
+  progress: UserProgress,
+  language: Language
 ): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Analyze diagnostic results for ${user?.name || 'Scholar'}. Score: ${score}/${total}. Recommended Level: ${recommendedLevel}. Language: ${language}. Brief insight.`;
+  const prompt = `Generate a progress report for the guardian of ${user.name}. 
+  Language: ${language}. Summary of subjects and levels: ${JSON.stringify(progress)}.
+  Write a professional yet supportive letter summarizing achievements and focus areas.`;
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: prompt,
   });
-  return response.text?.trim() || "Excellent potential.";
+  return response.text || "Report generation failed.";
 };
 
 export const generateHybridLesson = async (
-  subject1: Subject,
-  subject2: Subject,
+  sub1: Subject,
+  sub2: Subject,
   language: Language,
   user: User
 ): Promise<LessonContent> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Synthesize lesson combining ${subject1.name} and ${subject2.name}. Language: ${language}.`;
+  const prompt = `Generate a HYBRID lesson combining ${sub1.name} and ${sub2.name}. 
+  Target Age: ${user.age}. Language: ${language}. 
+  Find interdisciplinary bridges between these subjects.`;
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
     contents: prompt,
-    config: { responseMimeType: "application/json" }
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+          exercises: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                correctAnswer: { type: Type.STRING },
+                explanation: { type: Type.STRING }
+              },
+              required: ["question", "correctAnswer", "explanation"]
+            }
+          }
+        },
+        required: ["title", "explanation", "exercises"]
+      }
+    }
   });
-  return JSON.parse(response.text || '{}');
+
+  const data = JSON.parse(response.text || '{}');
+  return { 
+    ...data, 
+    level: 'A', 
+    lessonNumber: 1, 
+    isHybrid: true, 
+    hybridSubjects: [sub1.name, sub2.name] 
+  } as LessonContent;
 };
 
-export const generateGuardianReport = async (user: User, progress: UserProgress, language: Language): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const prompt = `Professional report for ${user.name} in ${language}. Markdown. Progress data: ${JSON.stringify(progress)}`;
-  const response = await ai.models.generateContent({ model: "gemini-3-flash-preview", contents: prompt });
-  return response.text || "Report failed.";
+export const generateRelearnLesson = async (
+  subject: Subject,
+  language: Language,
+  stage: EducationalStage,
+  user: User,
+  isFastTrack: boolean
+): Promise<LessonContent> => {
+  const prompt = `Generate a RELEARN restoration lesson for ${subject.name} at the ${stage} stage. 
+  User Age: ${user.age}. Language: ${language}. Fast Track: ${isFastTrack}.
+  Focus on identifying and fixing fundamental gaps.`;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          explanation: { type: Type.STRING },
+          examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+          exercises: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                correctAnswer: { type: Type.STRING },
+                explanation: { type: Type.STRING }
+              },
+              required: ["question", "correctAnswer", "explanation"]
+            }
+          }
+        },
+        required: ["title", "explanation", "exercises"]
+      }
+    }
+  });
+
+  const data = JSON.parse(response.text || '{}');
+  return { 
+    ...data, 
+    level: 'A', 
+    lessonNumber: 1, 
+    isRelearn: true, 
+    relearnStage: stage 
+  } as LessonContent;
 };

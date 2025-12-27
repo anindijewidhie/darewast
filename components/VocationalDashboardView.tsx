@@ -11,11 +11,11 @@ interface Props {
   progress: UserProgress;
   language: Language;
   onStartLesson: (sub: Subject) => void;
+  onStartPrep: (sub: Subject) => void;
   onUpdateUser: (data: Partial<User>) => void;
   onUpdateProgress: (subjectId: string, data: Partial<UserProgress[string]>) => void;
   onTrackChange: (track: EducationTrack) => void;
   onBackToStandard: () => void;
-  // Add missing placement and assessment callback definitions
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
   dynamicSubjects: Subject[];
@@ -23,8 +23,7 @@ interface Props {
 }
 
 const VocationalDashboardView: React.FC<Props> = ({ 
-  track, user, progress, language, onStartLesson, onTrackChange,
-  // Destructure the missing callbacks from props
+  track, user, progress, language, onStartLesson, onStartPrep, onTrackChange,
   onOpenPlacement, onOpenAssessment,
   dynamicSubjects, onCreateSubject
 }) => {
@@ -107,9 +106,9 @@ const VocationalDashboardView: React.FC<Props> = ({
                   progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
                   onClick={() => onStartLesson(sub)} 
                   onOpenSpecialization={() => {}} 
-                  // Pass required callbacks to SubjectCard
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
+                  onExamPrep={() => onStartPrep(sub)}
                 />
               ))}
            </div>

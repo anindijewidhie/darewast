@@ -19,10 +19,12 @@ import LessonCombinationView from './components/LessonCombinationView';
 import MethodCombinationView from './components/MethodCombinationView';
 import ContributorView from './components/ContributorView';
 import FastTrackHubView from './components/FastTrackHubView';
+import RelearnHubView from './components/RelearnHubView';
 import Certificate from './components/Certificate';
 import MasteryExamView from './components/MasteryExamView';
 import ExamPrepView from './components/ExamPrepView';
 import ExamHallView from './components/ExamHallView';
+import DonationView from './components/DonationView';
 import { generateCustomSubject } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -61,6 +63,7 @@ const App: React.FC = () => {
   });
 
   const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
+  const [activeLesson, setActiveLesson] = useState<LessonContent | null>(null);
   const [activeCertificate, setActiveCertificate] = useState<CertificateType | null>(null);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('darewast-darkmode');
@@ -142,6 +145,24 @@ const App: React.FC = () => {
     const metadata = LEVEL_METADATA[currentSubjectProgress.level];
     const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 5;
 
+    if (activeLesson?.isRelearn) {
+        const tenPointScore = parseFloat(((score / totalExercises) * 10).toFixed(1));
+        const cert: CertificateType = {
+          userName: user.name,
+          subjectName: `${activeSubject.name} (${activeLesson.relearnStage})`,
+          level: currentSubjectProgress.level,
+          date: new Date().toLocaleDateString(),
+          verificationId: `RELEARN-RESTORE-${Date.now()}`,
+          programType: 'relearn',
+          score: tenPointScore,
+          gradeDescription: getGradeTier(tenPointScore)
+        };
+        setActiveCertificate(cert);
+        setCurrentView('certificate');
+        setActiveLesson(null);
+        return;
+    }
+
     if (lessonNum < metadata.lessonsCount) {
       setProgress(prev => ({
         ...prev,
@@ -168,14 +189,12 @@ const App: React.FC = () => {
   const handleExamComplete = (score: number, total: number) => {
     if (!user || !activeSubject) return;
     
-    // Scale to 10-point system
     const tenPointScore = parseFloat(((score / total) * 10).toFixed(1));
     const gradeTier = getGradeTier(tenPointScore);
-    const passThreshold = 6.0; // Minimal benchmark for Institutional Standard
+    const passThreshold = 6.0;
 
     const currentSubjectProgress = progress[activeSubject.id];
 
-    // Generate Certificate for any completed exam
     const cert: CertificateType = {
       userName: user.name,
       subjectName: activeSubject.name,
@@ -190,7 +209,6 @@ const App: React.FC = () => {
     setActiveCertificate(cert);
 
     if (tenPointScore >= passThreshold) {
-      // Advance to next level only if Institutional Standard benchmark met
       const currentIndex = MASTERY_LEVEL_ORDER.indexOf(currentSubjectProgress.level);
       if (currentIndex < MASTERY_LEVEL_ORDER.length - 1) {
         const nextLevel = MASTERY_LEVEL_ORDER[currentIndex + 1];
@@ -206,7 +224,7 @@ const App: React.FC = () => {
       }
       setCurrentView('certificate');
     } else {
-      alert(`Final Score: ${tenPointScore}/10 (${gradeTier}). Mastery gap detected. Level progression requires an Upper Middle Tier score (≥ 6.0) to meet global institutional standards. Please review and retake.`);
+      alert(`Final Score: ${tenPointScore}/10 (${gradeTier}). Mastery gap detected. Progress requires ≥ 6.0.`);
       setCurrentView('dashboard');
     }
   };
@@ -217,6 +235,7 @@ const App: React.FC = () => {
         progress,
         language: selectedLang,
         onStartLesson: (s: Subject) => { setActiveSubject(s); setCurrentView('lesson'); },
+        onStartPrep: (s: Subject) => { setActiveSubject(s); setCurrentView('exam-prep'); },
         onUpdateUser: handleUpdateUser,
         onUpdateProgress: handleUpdateProgress,
         onTrackChange: handleTrackChange,
@@ -225,7 +244,8 @@ const App: React.FC = () => {
         onCreateSubject: handleCreateDynamicSubject,
         onOpenPlacement: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-placement'); },
         onOpenAssessment: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-assessment'); },
-        onOpenFastTrack: () => setCurrentView('fast-track-hub')
+        onOpenFastTrack: () => setCurrentView('fast-track-hub'),
+        onOpenRelearn: () => setCurrentView('relearn-hub')
     };
 
     switch (currentView) {
@@ -246,7 +266,6 @@ const App: React.FC = () => {
         return <DashboardView 
                   {...dashboardProps} 
                   onStartExam={(s) => { setActiveSubject(s); setCurrentView('mastery-exam'); }} 
-                  onStartPrep={(s) => { setActiveSubject(s); setCurrentView('exam-prep'); }} 
                   onLogout={() => { setUser(null); setCurrentView('landing'); }} 
                   onOpenConverter={() => setCurrentView('grade-converter')} 
                   onOpenPlacementGlobal={() => setCurrentView('placement-test')} 
@@ -261,50 +280,64 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-500`}>
-      <nav className="px-8 py-6 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-white/10">
-        <div className="flex items-center gap-4 cursor-pointer group" onClick={() => setCurrentView(user ? 'dashboard' : 'landing')}>
-          <div className="w-12 h-12 bg-dare-teal rounded-2xl flex items-center justify-center text-white font-black text-2xl group-hover:rotate-12 transition-transform shadow-lg shadow-dare-teal/20">d</div>
-          <span className="text-3xl font-black tracking-tighter">darewast</span>
+      <nav className="px-2 py-3 md:px-8 md:py-6 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-white/10">
+        <div className="flex items-center gap-1.5 md:gap-4 cursor-pointer group" onClick={() => setCurrentView(user ? 'dashboard' : 'landing')}>
+          <div className="w-8 h-8 md:w-12 md:h-12 bg-dare-teal rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black text-base md:text-2xl group-hover:rotate-12 transition-transform shadow-lg shadow-dare-teal/20">d</div>
+          <span className="text-lg md:text-3xl font-black tracking-tighter">darewast</span>
         </div>
 
-        <div className="flex items-center gap-4 sm:gap-6">
+        <div className="flex items-center gap-1 sm:gap-4">
+          <button 
+            onClick={() => setCurrentView('donation')}
+            className="px-2 py-2 md:px-4 md:py-2 bg-dare-gold/10 text-dare-gold rounded-xl font-black text-[7px] md:text-[10px] uppercase tracking-widest border border-dare-gold/20 hover:bg-dare-gold hover:text-white transition-all shadow-sm flex items-center gap-1 md:gap-2"
+          >
+            <span className="hidden xs:inline">💖</span> {t('donate')}
+          </button>
+
           <button 
             onClick={() => setDarkMode(!darkMode)}
-            className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-xl"
+            className="p-1.5 md:p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm md:text-xl"
             aria-label="Toggle Dark Mode"
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
 
-          <select value={selectedLang} onChange={e => setSelectedLang(e.target.value as Language)} className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-black uppercase tracking-widest outline-none hidden sm:block">
-            {LANGUAGES.map(l => <option key={l} value={l} className="dark:bg-slate-900">{l}</option>)}
-          </select>
+          <div className="relative group">
+            <select 
+              value={selectedLang} 
+              onChange={e => setSelectedLang(e.target.value as Language)} 
+              className="bg-white/5 border border-white/10 rounded-xl px-1.5 py-2 md:px-4 md:py-2 text-[8px] md:text-xs font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-white/10 transition-all focus:ring-2 focus:ring-dare-teal/50 appearance-none pr-4 md:pr-8"
+            >
+              {LANGUAGES.map(l => <option key={l} value={l} className="dark:bg-slate-900 text-slate-900 dark:text-white">{l}</option>)}
+            </select>
+            <div className="absolute right-1.5 md:right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] md:text-[10px] opacity-40">▼</div>
+          </div>
           
           {user ? (
-            <button onClick={() => setCurrentView('profile')} className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-dare-teal shadow-xl hover:scale-105 transition-all">
+            <button onClick={() => setCurrentView('profile')} className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl overflow-hidden border-2 border-dare-teal shadow-xl hover:scale-105 transition-all">
               <img src={user.avatar} alt="User" />
             </button>
           ) : (
-            <button onClick={() => setCurrentView('auth')} className="px-8 py-3 bg-dare-teal text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-dare-teal/20">{t('signIn')}</button>
+            <button onClick={() => setCurrentView('auth')} className="px-3 py-2 md:px-8 md:py-3 bg-dare-teal text-white rounded-xl md:rounded-2xl font-black text-[8px] md:text-xs uppercase tracking-widest shadow-lg shadow-dare-teal/20">{t('signIn')}</button>
           )}
         </div>
       </nav>
 
-      <main className="p-4 sm:p-8">
-        {currentView === 'landing' && <LandingView language={selectedLang} onJoin={() => setCurrentView('auth')} onPlacementTest={() => setCurrentView('placement-test')} onOpenConverter={() => setCurrentView('grade-converter')} onDashboard={() => setCurrentView('dashboard')} onDonate={() => {}} onContribute={() => setCurrentView('contributor')} />}
+      <main className="p-3 md:p-8">
+        {currentView === 'landing' && <LandingView language={selectedLang} onJoin={() => setCurrentView('auth')} onPlacementTest={() => setCurrentView('placement-test')} onOpenConverter={() => setCurrentView('grade-converter')} onDashboard={() => setCurrentView('dashboard')} onDonate={() => setCurrentView('donation')} onContribute={() => setCurrentView('contributor')} />}
         {currentView === 'auth' && <AuthView language={selectedLang} onLogin={u => { setUser(u); handleTrackChange(u.track || 'Standard'); }} onBack={() => setCurrentView(user ? 'dashboard' : 'landing')} />}
         
         {user && ['dashboard', 'school-dashboard', 'university-dashboard', 'distance-school-dashboard', 'distance-university-dashboard', 'vocational-school-dashboard', 'vocational-university-dashboard', 'distance-vocational-school-dashboard', 'distance-vocational-university-dashboard'].includes(currentView) && getActiveDashboard()}
 
-        {currentView === 'lesson' && user && <LessonView subject={activeSubject!} language={selectedLang} level={progress[activeSubject!.id].level} lessonNumber={progress[activeSubject!.id].lessonNumber} user={user} progress={progress} onComplete={handleLessonComplete} onBack={() => handleTrackChange(progress[activeSubject!.id].track || 'Standard')} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} />}
+        {currentView === 'lesson' && user && <LessonView subject={activeSubject!} language={selectedLang} level={progress[activeSubject!.id].level} lessonNumber={progress[activeSubject!.id].lessonNumber} user={user} progress={progress} initialLesson={activeLesson} onComplete={handleLessonComplete} onBack={() => { handleTrackChange(progress[activeSubject!.id].track || 'Standard'); setActiveLesson(null); }} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} />}
         {currentView === 'profile' && user && <ProfileView user={user} progress={progress} language={selectedLang} onLogout={() => { setUser(null); setCurrentView('landing'); }} onBack={() => setCurrentView('dashboard')} onUpdateGoal={g => handleUpdateUser({ dailyGoal: g })} onUpdateUser={handleUpdateUser} onOpenConverter={() => setCurrentView('grade-converter')} onOpenGuardianReport={() => {}} onOpenAccessibility={() => setCurrentView('accessibility')} onOpenMethodCombination={() => setCurrentView('method-combination')} />}
         
-        {(currentView === 'placement-test' || currentView === 'subject-placement' || currentView === 'subject-assessment') && (
+        {(currentView === 'placement-test' || currentView === 'subject-placement' || currentView === 'subject-assessment' || currentView === 'relearn-placement') && (
             <PlacementTestView 
                 language={selectedLang} 
                 user={user} 
                 subject={activeSubject || undefined}
-                testType={currentView === 'subject-assessment' ? 'assessment' : 'placement'}
+                testType={currentView === 'relearn-placement' ? 'relearn' : (currentView === 'subject-assessment' ? 'assessment' : 'placement')}
                 onCancel={() => handleTrackChange((Object.values(progress)[0] as SubjectProgress).track || 'Standard')} 
                 onComplete={p => { 
                     const merged = { ...progress, ...p };
@@ -321,6 +354,16 @@ const App: React.FC = () => {
             language={selectedLang} 
             onBack={() => handleTrackChange((Object.values(progress)[0] as SubjectProgress).track || 'Standard')} 
             onUpdateProgress={handleUpdateProgress}
+          />
+        )}
+
+        {currentView === 'relearn-hub' && user && (
+          <RelearnHubView 
+            user={user} 
+            language={selectedLang} 
+            onBack={() => handleTrackChange((Object.values(progress)[0] as SubjectProgress).track || 'Standard')} 
+            onLaunchRelearn={(lesson) => { setActiveLesson(lesson); setCurrentView('lesson'); }}
+            onOpenRelearnPlacement={() => setCurrentView('relearn-placement')}
           />
         )}
 
@@ -365,6 +408,8 @@ const App: React.FC = () => {
         )}
         
         {currentView === 'grade-converter' && <GradeConverterView language={selectedLang} onBack={() => setCurrentView('dashboard')} onApply={(lvl) => { Object.keys(progress).forEach(id => handleUpdateProgress(id, { level: lvl })); setCurrentView('dashboard'); }} />}
+
+        {currentView === 'donation' && <DonationView language={selectedLang} onBack={() => setCurrentView(user ? 'dashboard' : 'landing')} />}
       </main>
     </div>
   );

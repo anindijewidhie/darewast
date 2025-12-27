@@ -15,6 +15,8 @@ export type MasteryLevel =
   | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T'
   | 'Beyond P' | 'Beyond T';
 
+export type EducationalStage = 'Preschool' | 'Primary' | 'Middle' | 'High' | 'University';
+
 export type ContributorRole = 'General' | 'Professional';
 
 export type AccommodationType = 'none' | 'dyslexia' | 'visual' | 'adhd' | 'hearing' | 'idd';
@@ -25,7 +27,7 @@ export type EducationTrack =
   | 'University' 
   | 'DistanceSchool' 
   | 'DistanceUniversity'
-  | 'VocationalSchool'
+  | 'VocationalSchool' 
   | 'VocationalUniversity'
   | 'DistanceVocationalSchool'
   | 'DistanceVocationalUniversity';
@@ -73,10 +75,17 @@ export interface TimelinePoint {
   icon: string;
 }
 
+export interface PronunciationEntry {
+  word: string;
+  phonetic: string;
+  guide: string;
+}
+
 export interface LessonContent {
   title: string;
   subTopic?: string;
   explanation: string;
+  pronunciationGuide?: PronunciationEntry[];
   timelinePoints?: TimelinePoint[];
   examples: string[];
   exercises: {
@@ -89,6 +98,8 @@ export interface LessonContent {
   level: MasteryLevel;
   lessonNumber: number;
   isExam?: boolean;
+  isRelearn?: boolean;
+  relearnStage?: EducationalStage;
   eraNote?: string;
   methodApplied?: LearningMethod | string;
   isHybrid?: boolean;
@@ -109,7 +120,9 @@ export interface SubjectProgress {
   examPrepLesson?: number;
   completedExams?: string[];
   isFastTrack?: boolean;
-  fastTrackDuration?: number; // In minutes: 30, 60, 90, 120, 180
+  fastTrackDuration?: number; // In minutes
+  relearnActive?: boolean;
+  relearnStage?: EducationalStage;
   mediaProgress?: {
     completedEbooks: string[];
     completedBlogs: string[];
@@ -136,13 +149,15 @@ export type View =
   | 'distance-vocational-university-dashboard'
   | 'auth' | 'donation' | 'lesson' | 'profile' | 'placement-test' 
   | 'subject-placement' | 'subject-assessment'
+  | 'relearn-placement'
   | 'contributor' | 'grade-converter' | 'mastery-exam' | 'exam-prep' 
   | 'guardian-report' | 'accessibility' | 'lesson-combination' 
   | 'method-combination' | 'leaderboard' | 'track-selection'
   | 'curriculum-generator'
   | 'fast-track-hub'
   | 'certificate'
-  | 'exam-hall';
+  | 'exam-hall'
+  | 'relearn-hub';
 
 export interface ScheduledSession {
   id: string;
@@ -234,7 +249,7 @@ export interface Certificate {
   subTopic?: string;
   equivalency?: string;
   verificationId: string;
-  programType: 'regular' | 'fast-track';
+  programType: 'regular' | 'fast-track' | 'relearn';
   score: number; // 0-10
   gradeDescription: string;
 }

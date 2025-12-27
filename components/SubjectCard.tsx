@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Subject, MasteryLevel, SubjectProgress } from '../types';
+import { Subject, SubjectProgress } from '../types';
 import { LEVEL_METADATA } from '../constants';
 
 interface Props {
@@ -10,182 +10,94 @@ interface Props {
   onOpenSpecialization: () => void;
   onPlacementTest: () => void;
   onLevelAssessment: () => void;
+  onExamPrep: () => void;
 }
 
-const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecialization, onPlacementTest, onLevelAssessment }) => {
-  const [showTools, setShowTools] = useState(false);
-  const level = progress.level;
-  const lessonNumber = progress.lessonNumber;
-  const currentTheme = progress.currentTheme;
-  const track = progress.track || 'Standard';
-  const specializations = progress.specializations || [];
-  const secondaryLanguage = progress.secondaryLanguage;
-  const isFastTrack = progress.isFastTrack || false;
+const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecialization, onPlacementTest, onLevelAssessment, onExamPrep }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { level, lessonNumber, isFastTrack } = progress;
   const metadata = LEVEL_METADATA[level];
 
-  const getCategoryColor = (cat: string) => {
-    switch (cat) {
-      case 'Literacy': return 'dare-teal';
-      case 'Numeracy': return 'dare-gold';
-      case 'Science': return 'blue-400';
-      case 'Humanities': return 'orange-400';
-      case 'Tech': return 'dare-purple';
-      case 'Music': return 'pink-400';
-      case 'Ethics': return 'emerald-400';
-      default: return 'gray-200';
+  const themeColor = React.useMemo(() => {
+    switch (subject.category) {
+      case 'Literacy': return 'dare-teal'; case 'Numeracy': return 'dare-gold'; case 'Science': return 'blue-400';
+      case 'Humanities': return 'orange-400'; case 'Tech': return 'dare-purple'; default: return 'gray-400';
     }
-  };
+  }, [subject.category]);
 
-  const themeColorClass = getCategoryColor(subject.category);
-
-  // Calculate total items dynamically based on config
-  const totalItems = subject.richMediaConfig ? (
-    (subject.richMediaConfig.exercisesPerLesson * 12) +
-    (subject.richMediaConfig.ebooks || 0) +
-    (subject.richMediaConfig.blogs || 0) +
-    (subject.richMediaConfig.podcasts || 0) +
-    (subject.richMediaConfig.videos || 0) +
-    (subject.richMediaConfig.songs || 0)
-  ) : 0;
+  const hexColor = React.useMemo(() => {
+    switch (subject.category) {
+      case 'Literacy': return '#53CDBA'; case 'Numeracy': return '#CCB953'; case 'Science': return '#60A5FA';
+      case 'Humanities': return '#FB923C'; case 'Tech': return '#B953CC'; default: return '#94A3B8';
+    }
+  }, [subject.category]);
 
   return (
     <div 
-      onMouseEnter={() => setShowTools(true)}
-      onMouseLeave={() => setShowTools(false)}
-      className={`group flex flex-col p-6 bg-white dark:bg-slate-900 border-b-4 border-${themeColorClass} rounded-2xl shadow-sm hover:shadow-xl transition-all text-left transform hover:-translate-y-2 active:translate-y-0 border-x border-t border-gray-100 dark:border-slate-800 relative overflow-hidden h-full`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
+      className={`group relative flex flex-col p-6 md:p-8 bg-white dark:bg-slate-900 border-2 rounded-[2.5rem] md:rounded-[3rem] transition-all duration-500 overflow-hidden h-full cursor-pointer ${isHovered ? 'border-dare-teal shadow-2xl -translate-y-2' : 'border-gray-100 dark:border-slate-800 shadow-sm'}`}
     >
-      <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-        <span className="text-6xl font-black">{level}</span>
-      </div>
+      {/* Dynamic Background Element */}
+      <div className={`absolute -top-10 -right-10 w-32 md:w-40 h-32 md:h-40 rounded-full blur-[60px] md:blur-[80px] transition-opacity duration-1000 ${isHovered ? 'opacity-30' : 'opacity-5'}`} style={{ backgroundColor: hexColor }}></div>
 
-      <div className="flex justify-between items-start mb-4">
-        <div className="text-4xl group-hover:scale-110 transition-transform origin-left">{subject.icon}</div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-2">
-            {isFastTrack && (
-              <span className="bg-rose-500 text-white text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg shadow-lg shadow-rose-500/20 animate-pulse">
-                ⚡ Fast Track
-              </span>
-            )}
-            {subject.availableSpecializations && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onOpenSpecialization(); }}
-                className="w-8 h-8 bg-gray-50 dark:bg-slate-800 hover:bg-dare-teal hover:text-white rounded-xl flex items-center justify-center transition-all border border-gray-100 dark:border-slate-700 shadow-sm"
-                title="Configure Academic DNA"
-              >
-                🧬
-              </button>
-            )}
-            {(currentTheme || (subject.id === 'music-vocal' && secondaryLanguage)) && (
-              <div className="flex flex-col items-end gap-1">
-                {currentTheme && (
-                  <span className="bg-dare-teal/10 text-dare-teal text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-dare-teal/20 animate-fadeIn">
-                    ✨ {currentTheme}
-                  </span>
-                )}
-                {subject.id === 'music-vocal' && secondaryLanguage && (
-                  <span className="bg-pink-400/10 text-pink-400 text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-lg border border-pink-400/20 animate-fadeIn">
-                    🎙️ {secondaryLanguage}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          
-          {track !== 'Standard' && (
-             <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${track === 'School' ? 'bg-dare-gold/10 text-dare-gold border-dare-gold/20' : 'bg-dare-purple/10 text-dare-purple border-dare-purple/20'}`}>
-                {track === 'School' ? '🎒 School Sync' : '🏛️ Uni Sync'}
-             </span>
-          )}
-        </div>
-      </div>
-      
-      <h3 className="text-lg font-black text-gray-900 dark:text-slate-100 mb-1">{subject.name}</h3>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 line-clamp-2 font-medium">{subject.description}</p>
-      
-      {/* Dynamic Rich Media Metrics */}
-      {subject.richMediaConfig && (
-        <div className="flex items-center gap-3 mb-4 py-2 px-3 bg-gray-50 dark:bg-slate-800/50 rounded-xl">
-           <div className="flex -space-x-1">
-             {(subject.richMediaConfig.ebooks || 0) > 0 && (
-               <span className="w-5 h-5 rounded bg-dare-teal/20 flex items-center justify-center text-[10px]" title="E-books">📖</span>
-             )}
-             {(subject.richMediaConfig.blogs || 0) > 0 && (
-               <span className="w-5 h-5 rounded bg-dare-gold/20 flex items-center justify-center text-[10px]" title="Blogs">📰</span>
-             )}
-             {(subject.richMediaConfig.podcasts || 0) > 0 && (
-               <span className="w-5 h-5 rounded bg-dare-purple/20 flex items-center justify-center text-[10px]" title="Podcasts">🎙️</span>
-             )}
-             {(subject.richMediaConfig.videos || 0) > 0 && (
-               <span className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center text-[10px]" title="Videos">📺</span>
-             )}
-             {(subject.richMediaConfig.songs || 0) > 0 && (
-               <span className="w-5 h-5 rounded bg-pink-500/20 flex items-center justify-center text-[10px]" title="Songs">🎵</span>
-             )}
+      <header className="flex justify-between items-start mb-6 md:mb-8 relative z-10">
+        {/* Layered App Icon Style */}
+        <div className="relative group">
+           <div className={`absolute inset-0 bg-gradient-to-br from-white to-transparent opacity-20 dark:opacity-10 rounded-[1.2rem] md:rounded-[1.5rem] blur-sm`}></div>
+           <div className={`w-12 h-12 md:w-16 md:h-16 bg-gray-50 dark:bg-slate-800 rounded-[1.2rem] md:rounded-[1.5rem] flex items-center justify-center text-3xl md:text-4xl shadow-[0_8px_16px_rgba(0,0,0,0.08),inset_0_-4px_8px_rgba(0,0,0,0.05)] border border-white/20 dark:border-slate-700 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
+              <span className="drop-shadow-lg">{subject.icon}</span>
            </div>
-           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{totalItems} Total Items</p>
+           {isFastTrack && (
+              <div className="absolute -top-2 -right-2 w-5 h-5 md:w-6 md:h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-[8px] md:text-[10px] shadow-lg animate-pulse border-2 border-white dark:border-slate-900">
+                ⚡
+              </div>
+           )}
         </div>
-      )}
 
-      {/* Tools Overlay for Assessment/Placement */}
-      <div className={`flex gap-2 mb-4 transition-all duration-300 ${showTools ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onPlacementTest(); }}
-          className="flex-1 py-1.5 bg-dare-purple/10 hover:bg-dare-purple text-dare-purple hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-dare-purple/20 transition-all"
-        >
-          🎯 Placement
-        </button>
-        <button 
-          onClick={(e) => { e.stopPropagation(); onLevelAssessment(); }}
-          className="flex-1 py-1.5 bg-dare-gold/10 hover:bg-dare-gold text-dare-gold hover:text-white rounded-lg text-[8px] font-black uppercase tracking-widest border border-dare-gold/20 transition-all"
-        >
-          ⚖️ Assessment
-        </button>
+        <div className="flex flex-col items-end gap-2">
+           <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border transition-colors ${isHovered ? 'bg-dare-teal text-white border-dare-teal' : `bg-${themeColor}/10 text-${themeColor} border-${themeColor}/20`}`}>
+              Level {level}
+           </span>
+        </div>
+      </header>
+      
+      <div className="flex-1 space-y-2 md:space-y-3 relative z-10 mb-6 md:mb-8">
+        <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-slate-100 tracking-tight leading-none group-hover:text-dare-teal transition-colors">{subject.name}</h3>
+        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-2">
+          {subject.description}
+        </p>
       </div>
 
-      {/* Active Specializations Display */}
-      {specializations.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {specializations.map(spec => (
-            <span 
-              key={spec} 
-              className={`text-[7px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-${themeColorClass}/10 text-${themeColorClass} border border-${themeColorClass}/20`}
-            >
-              {spec}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Progress Bar Mini */}
+      <div className="mb-6 md:mb-8 space-y-2 relative z-10">
+         <div className="flex justify-between items-center text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">
+            <span>Node Recovery</span>
+            <span>{lessonNumber}/12</span>
+         </div>
+         <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-1000`} style={{ width: `${(lessonNumber / 12) * 100}%`, backgroundColor: hexColor }}></div>
+         </div>
+      </div>
 
-      {/* Suggested sub-topics as secondary badges */}
-      {subject.suggestedSubTopics && specializations.length === 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-6">
-          {subject.suggestedSubTopics.map(topic => (
-            <span 
-              key={topic} 
-              className={`text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-${themeColorClass}/5 text-${themeColorClass} border border-${themeColorClass}/10`}
-            >
-              {topic}
-            </span>
-          ))}
+      <footer className="mt-auto pt-4 md:pt-6 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between relative z-10">
+        <div className="text-left">
+           <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Equivalency</p>
+           <p className="text-[10px] md:text-xs font-bold dark:text-white line-clamp-1">{metadata.equivalency}</p>
         </div>
-      )}
+        <div 
+          className="w-10 h-10 md:w-12 md:h-12 bg-dare-teal text-white rounded-xl md:rounded-2xl flex items-center justify-center text-lg md:text-xl shadow-xl shadow-dare-teal/20 group-hover:scale-110 active:scale-95 transition-all"
+        >
+          →
+        </div>
+      </footer>
 
-      <button 
-        onClick={onClick}
-        className="mt-auto pt-4 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between w-full group/btn"
-      >
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest leading-none">Level {level}</p>
-            <span className="text-[8px] font-black bg-gray-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-gray-500">
-              {lessonNumber}/12
-            </span>
-          </div>
-          <p className="text-[9px] font-bold text-gray-400 uppercase leading-none">{metadata.equivalency}</p>
-        </div>
-        <span className="text-dare-teal font-black group-hover/btn:translate-x-1 transition-transform">→</span>
-      </button>
+      {/* TOOLS QUICK LINKS */}
+      <div className={`absolute inset-x-6 md:inset-x-8 bottom-20 md:bottom-24 flex gap-2 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+        <button onClick={(e) => { e.stopPropagation(); onPlacementTest(); }} className="flex-1 py-1.5 md:py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg md:rounded-xl text-[7px] md:text-[8px] font-black uppercase tracking-widest border border-gray-200 dark:border-slate-700 hover:bg-dare-gold hover:text-white transition-all shadow-xl">🎯 Placement</button>
+        <button onClick={(e) => { e.stopPropagation(); onExamPrep(); }} className="flex-1 py-1.5 md:py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg md:rounded-xl text-[7px] md:text-[8px] font-black uppercase tracking-widest border border-gray-200 dark:border-slate-700 hover:bg-dare-purple hover:text-white transition-all shadow-xl">📝 Exam Prep</button>
+      </div>
     </div>
   );
 };

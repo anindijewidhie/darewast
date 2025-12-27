@@ -10,6 +10,7 @@ interface Props {
   progress: UserProgress;
   language: Language;
   onStartLesson: (sub: Subject) => void;
+  onStartPrep: (sub: Subject) => void;
   onUpdateUser: (data: Partial<User>) => void;
   onUpdateProgress: (subjectId: string, data: Partial<UserProgress[string]>) => void;
   onTrackChange: (track: EducationTrack) => void;
@@ -21,7 +22,7 @@ interface Props {
 }
 
 const SchoolDashboardView: React.FC<Props> = ({ 
-  user, progress, language, onStartLesson, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
+  user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
   onOpenPlacement, onOpenAssessment, dynamicSubjects, onCreateSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
@@ -108,6 +109,7 @@ const SchoolDashboardView: React.FC<Props> = ({
                     onOpenSpecialization={() => {}} 
                     onPlacementTest={() => onOpenPlacement(sub)}
                     onLevelAssessment={() => onOpenAssessment(sub)}
+                    onExamPrep={() => onStartPrep(sub)}
                 />
               ))}
            </div>

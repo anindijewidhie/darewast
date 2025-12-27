@@ -9,7 +9,8 @@ interface Props {
   language: Language;
   user: User | null;
   subject?: Subject; // Subject-specific test
-  testType?: 'placement' | 'assessment';
+  // Added 'relearn' to testType to support Relearn Hub functionality
+  testType?: 'placement' | 'assessment' | 'relearn';
   onComplete: (recommendedProgress: UserProgress) => void;
   onCancel: () => void;
 }
@@ -75,8 +76,8 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     sounds.select();
     setLoading(true);
     try {
-      // Fixed: Explicitly cast testType to satisfy the union type requirement of generatePlacementTest
-      const data = await generatePlacementTest(language, user, accommodation, subject, testType as 'placement' | 'assessment');
+      // Corrected call to match updated signature in geminiService
+      const data = await generatePlacementTest(language, user, accommodation, subject, testType as 'placement' | 'assessment' | 'relearn');
       setQuestions(data.questions);
       setCurrentIndex(0);
     } catch (err) {
@@ -118,6 +119,7 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     setFinalLevel(recommended);
 
     try {
+      // Corrected call to analyzeTestResults which is now implemented in geminiService
       const insight = await analyzeTestResults(subject || SUBJECTS[0], score, questions.length, recommended, language, user);
       setMasteryInsight(insight);
     } catch (e) {
@@ -141,6 +143,7 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     onComplete(newProgress);
   };
 
+  // Render loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-8 animate-fadeIn text-center">
@@ -156,6 +159,7 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     );
   }
 
+  // Render finished state with results
   if (finished) {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4 animate-fadeIn">
@@ -211,146 +215,75 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     );
   }
 
+  // Render intro state
   if (currentIndex === -1) {
     return (
-      <div className="max-w-4xl mx-auto py-12 px-4 animate-fadeIn">
-        <div className="bg-white dark:bg-slate-900 rounded-[4rem] shadow-2xl border border-white/20 overflow-hidden relative">
-          {/* Header */}
-          <div className={`p-12 md:p-20 text-center relative overflow-hidden`}>
-            <div className={`absolute inset-0 bg-${themeColor} opacity-5`}></div>
-            <div className={`absolute -top-24 -right-24 w-64 h-64 bg-${themeColor} rounded-full blur-[100px] opacity-10`}></div>
-            
-            <div className="relative z-10 space-y-8">
-              <div className={`w-28 h-28 bg-white dark:bg-slate-800 rounded-[2.5rem] flex items-center justify-center text-6xl mx-auto shadow-2xl border border-gray-100 dark:border-slate-700`}>
-                {subject?.icon || '🎯'}
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
-                  {subject ? subject.name : 'Universal'} <br/>
-                  <span className={`text-${themeColor}`}>{testType === 'placement' ? 'Placement Lab' : 'Mastery Scan'}</span>
-                </h2>
-                <p className="text-gray-500 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
-                  {testType === 'placement' 
-                    ? 'Verify your current knowledge to skip fundamental entry levels.'
-                    : 'A comprehensive diagnostic of your mastery within the current curriculum nodes.'}
-                </p>
-              </div>
-
-              <div className="pt-8 border-t border-gray-100 dark:border-slate-800">
-                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-8">Adaptive Sensory Support</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {[
-                    { id: 'none', label: 'Standard', icon: '👤' },
-                    { id: 'dyslexia', label: 'Dyslexia', icon: '🔤' },
-                    { id: 'visual', label: 'Visual+', icon: '👁️' },
-                    { id: 'adhd', label: 'Focus Boost', icon: '⚡' },
-                    { id: 'idd', label: 'Cognitive+', icon: '🧩' },
-                    { id: 'hearing', label: 'Audio Focus', icon: '👂' },
-                  ].map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => { sounds.tick(); setAccommodation(item.id as AccommodationType); }}
-                      className={`p-6 rounded-[2rem] border-2 transition-all flex items-center gap-4 group ${
-                        accommodation === item.id 
-                        ? `border-${themeColor} bg-${themeColor}/5 text-${themeColor} shadow-lg scale-105` 
-                        : 'border-gray-100 dark:border-slate-800 text-gray-400 hover:border-gray-200 dark:hover:border-slate-700'
-                      }`}
-                    >
-                      <span className="text-3xl group-hover:scale-110 transition-transform">{item.icon}</span>
-                      <span className="text-xs font-black uppercase tracking-widest">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="pt-12 space-y-6">
-                <button 
-                  onClick={startTest}
-                  className={`w-full py-8 bg-${themeColor} text-white rounded-[2.5rem] font-black text-2xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all`}
-                >
-                  Initialize Diagnostic Session
-                </button>
-                <button 
-                  onClick={onCancel}
-                  className="text-gray-400 font-black uppercase tracking-widest text-xs hover:text-gray-600 transition-colors"
-                >
-                  ← Return to Academic Hub
-                </button>
-              </div>
-            </div>
-          </div>
+      <div className="max-w-2xl mx-auto py-20 px-4 text-center space-y-12 animate-fadeIn">
+        <div className="space-y-4">
+          <div className={`w-24 h-24 bg-${themeColor}/10 text-${themeColor} rounded-[2rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-xl`}>🎯</div>
+          <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">Diagnostic Mastery Setup</h2>
+          <p className="text-gray-500 font-medium text-lg leading-relaxed">
+            Initialize your profile calibration. This session detects your optimal entry point into the darewast Global Knowledge Base.
+          </p>
         </div>
+
+        <div className="p-8 bg-white dark:bg-slate-900 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl text-left space-y-8">
+           <div>
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-4 block">Personalize Assessment Accessibility</label>
+              <div className="grid grid-cols-2 gap-3">
+                 <button onClick={() => setAccommodation('none')} className={`py-4 rounded-xl text-xs font-black transition-all ${accommodation === 'none' ? 'bg-dare-teal text-white' : 'bg-gray-50 text-gray-400'}`}>Standard Mode</button>
+                 <button onClick={() => setAccommodation('idd')} className={`py-4 rounded-xl text-xs font-black transition-all ${accommodation === 'idd' ? 'bg-dare-teal text-white' : 'bg-gray-50 text-gray-400'}`}>IDD Support</button>
+              </div>
+           </div>
+           
+           <button 
+            onClick={startTest}
+            className={`w-full py-6 bg-${themeColor} text-white rounded-2xl font-black text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all`}
+           >
+            Begin Calibration →
+           </button>
+        </div>
+
+        <button onClick={onCancel} className="text-gray-400 font-black uppercase tracking-widest text-xs hover:text-rose-500 transition-colors">Abandon Session</button>
       </div>
     );
   }
 
-  const currentQ = questions[currentIndex];
+  // Render active testing state
+  const currentQuestion = questions[currentIndex];
+  const progressPercent = Math.round((currentIndex / questions.length) * 100);
 
   return (
-    <div className={`max-w-4xl mx-auto py-12 px-4 animate-fadeIn ${accommodation === 'dyslexia' ? 'font-accessible' : ''}`}>
-      <div className="mb-10 flex flex-col md:flex-row justify-between items-center gap-6 px-4">
-        <div className="flex-1 w-full max-w-md">
-           <div className="flex justify-between items-center mb-3">
-              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Question {currentIndex + 1} of {questions.length}</span>
-              <span className={`text-[10px] font-black text-${themeColor} uppercase tracking-widest`}>Lab Status: Optimal</span>
-           </div>
-           <div className="h-3 w-full bg-gray-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner p-0.5">
-              <div 
-                className={`h-full bg-${themeColor} rounded-full transition-all duration-700 shadow-lg`}
-                style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
-              ></div>
-           </div>
-        </div>
-        <div className="flex gap-4">
-           {accommodation !== 'none' && (
-             <div className={`px-4 py-2 bg-${themeColor}/10 border border-${themeColor}/20 rounded-2xl flex items-center gap-2`}>
-                <span className="text-xl">🛠️</span>
-                <span className={`text-[10px] font-black uppercase text-${themeColor}`}>{accommodation} Mode</span>
-             </div>
-           )}
-           <button onClick={onCancel} className="p-3 bg-gray-100 dark:bg-slate-800 rounded-2xl hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-500 transition-all text-gray-400">✕</button>
-        </div>
+    <div className="max-w-3xl mx-auto py-12 px-4 animate-fadeIn">
+      <div className="mb-10 space-y-4">
+         <div className="flex justify-between items-end">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Question {currentIndex + 1} of {questions.length}</p>
+            <p className={`text-xl font-black text-${themeColor}`}>{progressPercent}% Complete</p>
+         </div>
+         <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className={`h-full bg-${themeColor} transition-all duration-500`} style={{ width: `${progressPercent}%` }}></div>
+         </div>
       </div>
 
-      <div className={`bg-white dark:bg-slate-900 p-12 md:p-16 rounded-[4rem] shadow-2xl border border-white/20 relative overflow-hidden ${accommodation === 'visual' ? `border-8 border-${themeColor}` : ''} ${accommodation === 'idd' ? 'border-8 border-dare-purple' : ''}`}>
-        <div className="relative z-10 space-y-12">
-          <header className="space-y-4">
-            <p className={`text-[11px] font-black text-${themeColor} uppercase tracking-[0.4em]`}>Mastery Probe: {currentQ.difficulty}</p>
-            <h3 className={`font-black text-gray-900 dark:text-white leading-tight ${accommodation === 'visual' ? 'text-5xl md:text-6xl' : 'text-3xl md:text-4xl'}`}>
-              {currentQ.question}
-            </h3>
-          </header>
+      <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-10 md:p-16 shadow-2xl border border-gray-100 dark:border-slate-800 relative overflow-hidden">
+        <div className={`absolute top-0 left-0 w-2 h-full bg-${themeColor}`}></div>
+        <h3 className="text-3xl font-black text-gray-900 dark:text-white mb-10 leading-tight">
+          {currentQuestion.question}
+        </h3>
 
-          <div className={`grid gap-4 ${accommodation === 'adhd' ? 'grid-cols-1 max-w-xl mx-auto' : 'grid-cols-1 sm:grid-cols-2'}`}>
-            {currentQ.options.map((opt: string) => (
-              <button
-                key={opt}
-                onClick={() => handleAnswer(opt)}
-                className={`w-full text-left border-2 border-transparent hover:border-${themeColor} rounded-[2.5rem] transition-all font-bold shadow-sm group ${
-                  accommodation === 'visual' ? 'p-10 text-3xl' : 'p-8 text-xl'
-                } ${
-                  accommodation === 'dyslexia' || accommodation === 'idd' ? 'bg-amber-50 dark:bg-slate-800 text-slate-900 dark:text-white' : 'bg-gray-50 dark:bg-slate-800/50 text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-slate-800'
-                } ${accommodation === 'idd' ? 'border-gray-200 dark:border-slate-700' : ''}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span>{opt}</span>
-                  <span className={`opacity-0 group-hover:opacity-100 transition-opacity text-2xl text-${themeColor}`}>→</span>
-                </div>
-              </button>
-            ))}
-          </div>
-          
-          {accommodation === 'adhd' && (
-            <div className="flex items-center justify-center gap-3 py-4 animate-pulse">
-               <div className="w-2 h-2 bg-dare-teal rounded-full"></div>
-               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Focus Shield Active</p>
-               <div className="w-2 h-2 bg-dare-teal rounded-full"></div>
-            </div>
-          )}
+        <div className="grid gap-4">
+          {currentQuestion.options.map((opt: string) => (
+            <button
+              key={opt}
+              onClick={() => handleAnswer(opt)}
+              className="p-6 text-left rounded-[2rem] border-2 border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 hover:border-dare-teal hover:bg-white dark:hover:bg-slate-800 transition-all font-bold text-lg dark:text-white group flex justify-between items-center"
+            >
+              <span>{opt}</span>
+              <span className="opacity-0 group-hover:opacity-100 text-dare-teal transition-opacity">→</span>
+            </button>
+          ))}
         </div>
       </div>
-      
-      <p className="mt-12 text-center text-[10px] font-black text-gray-400 uppercase tracking-[0.5em] px-8">Diagnostic Data Stream: Institutional Grade</p>
     </div>
   );
 };
