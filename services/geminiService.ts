@@ -20,7 +20,7 @@ export const generateLesson = async (
   
   const prompt = `
     ROLE: World-Class Academic Architect.
-    TASK: Design Lesson ${lessonNumber}/12 for ${subject.name} Level ${level}.
+    TASK: Design Chapter ${lessonNumber}/12 for ${subject.name} Level ${level}.
     METHOD: Kumon-style incrementalism. Atomic steps, no cognitive overload.
     AUDIENCE: ${age} years old, Cultural Context: ${culturalBackground}, Education Track: ${track}.
     LANGUAGE: ${language}.
@@ -301,7 +301,7 @@ export const generateHybridLesson = async (
   language: Language,
   user: User
 ): Promise<LessonContent> => {
-  const prompt = `Generate a HYBRID lesson combining ${sub1.name} and ${sub2.name}. 
+  const prompt = `Generate a HYBRID chapter combining ${sub1.name} and ${sub2.name}. 
   Target Age: ${user.age}. Language: ${language}. 
   Find interdisciplinary bridges between these subjects.`;
 
@@ -352,7 +352,7 @@ export const generateRelearnLesson = async (
   user: User,
   isFastTrack: boolean
 ): Promise<LessonContent> => {
-  const prompt = `Generate a RELEARN restoration lesson for ${subject.name} at the ${stage} stage. 
+  const prompt = `Generate a RELEARN restoration chapter for ${subject.name} at the ${stage} stage. 
   User Age: ${user.age}. Language: ${language}. Fast Track: ${isFastTrack}.
   Focus on identifying and fixing fundamental gaps.`;
 

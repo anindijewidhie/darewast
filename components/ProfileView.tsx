@@ -244,7 +244,7 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
               </div>
               <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-3xl">
                 <p className="text-3xl font-black text-dare-purple mb-1">{totalLessonsCompleted}</p>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Lessons</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Chapters</p>
               </div>
             </div>
           </div>
@@ -407,7 +407,7 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
                         <h4 className="font-black text-lg text-gray-900 dark:text-white">{sub.name}</h4>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black px-3 py-1 bg-dare-teal text-white rounded-full">Level {currentLevel} • {currentLesson}/12</span>
+                        <span className="text-[10px] font-black px-3 py-1 bg-dare-teal text-white rounded-full">Level {currentLevel} • {currentLesson}/12 Chapters</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 overflow-x-auto pb-4 scrollbar-hide">

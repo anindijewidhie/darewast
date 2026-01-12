@@ -11,7 +11,7 @@ export interface LevelInfo {
   id: MasteryLevel;
   equivalency: string;
   duration: string;
-  lessonsCount: number;
+  chaptersCount: number;
   type: 'mandatory' | 'optional' | 'maintenance';
 }
 
@@ -22,28 +22,28 @@ export const MASTERY_LEVEL_ORDER: MasteryLevel[] = [
 ];
 
 export const LEVEL_METADATA: Record<MasteryLevel, LevelInfo> = {
-  'A': { id: 'A', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'B': { id: 'B', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'C': { id: 'C', equivalency: 'Kindergarten', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'D': { id: 'D', equivalency: 'Kindergarten', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'E': { id: 'E', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'F': { id: 'F', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'G': { id: 'G', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'H': { id: 'H', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'I': { id: 'I', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'J': { id: 'J', equivalency: 'Primary School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'K': { id: 'K', equivalency: 'Middle School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'L': { id: 'L', equivalency: 'Middle School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'M': { id: 'M', equivalency: 'Middle School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'N': { id: 'N', equivalency: 'High School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'O': { id: 'O', equivalency: 'High School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'P': { id: 'P', equivalency: 'High School', duration: '1-2 weeks', lessonsCount: 12, type: 'mandatory' },
-  'Q': { id: 'Q', equivalency: 'University', duration: '2-4 weeks', lessonsCount: 12, type: 'optional' },
-  'R': { id: 'R', equivalency: 'University', duration: '2-4 weeks', lessonsCount: 12, type: 'optional' },
-  'S': { id: 'S', equivalency: 'University', duration: '2-4 weeks', lessonsCount: 12, type: 'optional' },
-  'T': { id: 'T', equivalency: 'University', duration: '2-4 weeks', lessonsCount: 12, type: 'optional' },
-  'Beyond P': { id: 'Beyond P', equivalency: 'Post-High School Mastery', duration: 'Continuous', lessonsCount: 1, type: 'maintenance' },
-  'Beyond T': { id: 'Beyond T', equivalency: 'University Mastery', duration: 'Continuous', lessonsCount: 1, type: 'maintenance' },
+  'A': { id: 'A', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'B': { id: 'B', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'C': { id: 'C', equivalency: 'Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'D': { id: 'D', equivalency: 'Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'E': { id: 'E', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'F': { id: 'F', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'G': { id: 'G', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'H': { id: 'H', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'I': { id: 'I', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'J': { id: 'J', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'K': { id: 'K', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'L': { id: 'L', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'M': { id: 'M', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'N': { id: 'N', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'O': { id: 'O', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'P': { id: 'P', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
+  'Q': { id: 'Q', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
+  'R': { id: 'R', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
+  'S': { id: 'S', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
+  'T': { id: 'T', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
+  'Beyond P': { id: 'Beyond P', equivalency: 'Post-High School Mastery', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
+  'Beyond T': { id: 'Beyond T', equivalency: 'University Mastery', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
 };
 
 export const UNIVERSAL_RICH_MEDIA = {

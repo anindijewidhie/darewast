@@ -141,7 +141,7 @@ const UniversityDashboardView: React.FC<Props> = ({
                       disabled={isCreating || !subjectQuery.trim()}
                       className="w-full py-4 bg-dare-purple text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-dare-purple/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
                     >
-                      {isCreating ? 'Synthesizing...' : 'Generate research module'}
+                      {isCreating ? 'Synthesizing...' : 'Generate research chapters'}
                     </button>
                  </div>
               </div>

@@ -73,7 +73,7 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
       {/* Progress Bar Mini */}
       <div className="mb-6 md:mb-8 space-y-2 relative z-10">
          <div className="flex justify-between items-center text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">
-            <span>Node Recovery</span>
+            <span>Chapter Recovery</span>
             <span>{lessonNumber}/12</span>
          </div>
          <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">

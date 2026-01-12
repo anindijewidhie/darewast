@@ -148,7 +148,7 @@ const DashboardView: React.FC<Props> = ({
                   disabled={isCreating}
                   className="w-full sm:w-auto px-8 md:px-12 py-4 md:py-5 bg-dare-purple text-white rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {isCreating ? 'Creating Module...' : `Initialize "${searchQuery}"`}
+                  {isCreating ? 'Synthesizing...' : `Initialize Chapters for "${searchQuery}"`}
                 </button>
               </div>
             )}
