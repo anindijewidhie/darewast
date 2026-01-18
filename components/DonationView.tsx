@@ -12,46 +12,80 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const accounts = [
-    { type: 'Bank', name: 'Global Education Fund', account: '888-DARE-001', icon: '🏦' },
-    { type: 'Digital Wallet', name: 'A. Widhi (Founder) / PayPal', account: 'awidhi@darewast.io', icon: '📱' },
-    { type: 'Infrastructure', name: 'Cloud & Server Costs', account: 'infrastructure@darewast.io', icon: '☁️' }
+    { type: 'Primary Fund', name: 'A. Widhi Bank Jago', account: '107863277869', icon: '🏦' },
+    { type: 'Site Owner / Founder', name: 'A. Widhi PayPal', account: 'dhea_wasisto@yahoo.com', icon: '👑' },
+    { type: 'Network Ops', name: 'Infrastructure Support', account: 'ops@darewast.io', icon: '☁️' }
+  ];
+
+  const allocations = [
+    { label: 'Contributors', percent: 40, icon: '🌱', color: 'dare-teal', desc: 'Scholars and Professional Educators.' },
+    { label: 'Maintenance', percent: 20, icon: '⚙️', color: 'dare-gold', desc: 'Servers and API throughput costs.' },
+    { label: 'Development', percent: 20, icon: '💻', color: 'dare-purple', desc: 'Mobile app and AI model refining.' },
+    { label: 'Site Owner', percent: 20, icon: '👑', color: 'slate-800', desc: 'Strategic architecture and operations.' },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto py-12 animate-fadeIn px-4">
+    <div className="max-w-5xl mx-auto py-12 animate-fadeIn px-4">
       <button onClick={onBack} className="mb-8 text-gray-500 hover:text-dare-teal flex items-center dark:text-gray-400 transition-all group font-bold">
         <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> {t('backToDashboard')}
       </button>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border border-gray-100 dark:border-slate-800">
-        <div className="bg-gradient-to-br from-dare-teal via-dare-gold to-dare-purple p-12 md:p-20 text-white text-center relative">
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+      <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-white/10">
+        <div className="bg-slate-900 p-12 md:p-24 text-white text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-dare-teal/10 rounded-full blur-[120px]"></div>
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-dare-purple/10 rounded-full blur-[120px]"></div>
+          
           <div className="relative z-10 space-y-6">
-            <h2 className="text-5xl md:text-7xl font-black tracking-tighter leading-none">{t('supportDarewast')}</h2>
-            <p className="text-white/90 max-w-2xl mx-auto text-xl font-medium leading-relaxed">
-              Fund the maintenance of this site, the development of the mobile apps, and support the visionary founder keeping global education free for everyone.
+            <div className="inline-block px-4 py-1.5 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-4 border border-white/10 backdrop-blur-md">
+              Universal Fund
+            </div>
+            <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-4">
+              Transparent <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Allocation</span>
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-xl font-medium leading-relaxed">
+              Every contribution is architected to sustain the darewast ecosystem 24/7. We maintain a strict allocation matrix for global academic equity.
             </p>
           </div>
         </div>
 
+        {/* 40/20/20/20 Matrix */}
+        <div className="px-8 md:px-16 py-12 md:py-20 bg-gray-50 dark:bg-slate-800/30 border-y border-gray-100 dark:border-slate-800">
+           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              {allocations.map(item => (
+                <div key={item.label} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col items-center text-center group hover:-translate-y-1 transition-all">
+                   <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform">
+                      {item.icon}
+                   </div>
+                   <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter mb-1">{item.percent}%</p>
+                   <p className={`text-[10px] font-black uppercase tracking-widest mb-4 ${item.label === 'Contributors' ? 'text-dare-teal' : 'text-gray-400'}`}>{item.label}</p>
+                   <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic">"{item.desc}"</p>
+                   <div className="mt-6 w-full h-1 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full transition-all duration-1000" style={{ width: `${item.percent}%`, backgroundColor: item.color === 'dare-teal' ? '#53CDBA' : (item.color === 'dare-gold' ? '#CCB953' : (item.color === 'dare-purple' ? '#B953CC' : '#1e293b')) }}></div>
+                   </div>
+                </div>
+              ))}
+           </div>
+        </div>
+
         <div className="p-8 md:p-16">
           <div className="grid md:grid-cols-2 gap-16">
-            <div className="space-y-8">
+            <div className="space-y-8 text-left">
               <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                <span className="text-dare-teal">🛡️</span> Single Founder Support
+                <span className="text-dare-teal">🛡️</span> Institutional Channels
               </h3>
               <div className="space-y-6">
                 {accounts.map(acc => (
-                  <div key={acc.name} className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 hover:scale-[1.02] transition-all">
+                  <div key={acc.name} className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 hover:scale-[1.01] transition-all">
                     <div className="text-4xl bg-white dark:bg-slate-700 w-16 h-16 flex items-center justify-center rounded-2xl shadow-sm">
                       {acc.icon}
                     </div>
                     <div className="flex-1">
                       <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest mb-1">{acc.type}</p>
                       <p className="font-black text-gray-900 dark:text-white leading-none mb-2">{acc.name}</p>
-                      <p className="text-gray-500 dark:text-gray-400 font-mono text-sm break-all">{acc.account}</p>
+                      <p className="text-gray-500 dark:text-gray-400 font-mono text-xs break-all opacity-60">{acc.account}</p>
                     </div>
-                    <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('Copied to clipboard'); }} className="p-3 bg-dare-teal/10 text-dare-teal rounded-xl hover:bg-dare-teal hover:text-white transition-all">
+                    <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('Credential Copied'); }} className="p-3 bg-dare-teal/10 text-dare-teal rounded-xl hover:bg-dare-teal hover:text-white transition-all shadow-sm">
                       📋
                     </button>
                   </div>
@@ -59,44 +93,41 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
               </div>
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-10 text-left">
               <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                <span className="text-dare-gold">📲</span> Global Exam Hub
+                <span className="text-dare-gold">🧩</span> Mastery Vision
               </h3>
-              <div className="aspect-square max-w-[320px] mx-auto bg-gray-50 dark:bg-slate-800 rounded-[3.5rem] flex items-center justify-center border-4 border-dashed border-gray-200 dark:border-slate-700 relative overflow-hidden group">
-                <div className="w-full h-full p-10 flex flex-col items-center justify-center text-center opacity-60 group-hover:opacity-100 transition-opacity">
-                   <div className="grid grid-cols-4 grid-rows-4 gap-3 w-full h-full">
-                     {Array.from({length: 16}).map((_, i) => (
-                       <div key={i} className={`rounded-lg ${Math.random() > 0.5 ? 'bg-slate-800 dark:bg-slate-200' : 'bg-dare-gold/20'}`}></div>
-                     ))}
+              <div className="p-10 bg-slate-950 rounded-[3rem] text-white relative overflow-hidden shadow-2xl border border-white/5 group">
+                <div className="absolute inset-0 bg-gradient-to-br from-dare-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <p className="relative z-10 text-lg font-bold italic leading-relaxed text-slate-400">
+                  "By supporting darewast, you are directly funding the contributors who architect our specialized modules. 40% of every dollar goes to the scholars and professionals, while the rest maintains the world's first 24/7 universal education grid."
+                </p>
+                <div className="mt-10 flex items-center gap-4 relative z-10">
+                   <div className="w-12 h-12 bg-dare-gold rounded-xl flex items-center justify-center text-slate-900 text-2xl font-black shadow-xl shadow-dare-gold/20">d</div>
+                   <div>
+                      <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none">darewast Global</p>
+                      <p className="text-dare-gold font-black text-[8px] uppercase tracking-[0.2em] mt-1">Foundation for Equity</p>
                    </div>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="bg-white dark:bg-slate-700 p-4 rounded-3xl shadow-2xl border-2 border-dare-gold animate-bounce">
-                    <span className="text-3xl">☕</span>
-                  </div>
-                </div>
               </div>
-              <p className="text-center text-gray-500 dark:text-gray-400 font-bold text-sm italic">
-                Contributions go directly toward infrastructure and expanding the world's largest online examination provider.
+              <p className="text-center text-gray-400 dark:text-gray-500 font-bold text-[10px] uppercase tracking-widest italic">
+                Contributions are archived for global infrastructure audits.
               </p>
             </div>
           </div>
 
-          <div className="mt-20 p-10 bg-slate-900 rounded-[3.5rem] relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 right-0 p-10 opacity-10 text-9xl">💡</div>
-            <div className="relative z-10">
-              <h4 className="text-dare-gold font-black uppercase text-xs tracking-widest mb-4">A Note from A. Widhi (anindijewidhie)</h4>
-              <p className="text-slate-300 text-lg font-medium leading-relaxed italic">
-                "darewast is architected with a single mission: to spread knowledge across over 20 subjects in 14 languages, ensuring that mastery is never limited by borders or resources. 100% of these contributions go directly to server clusters, API endpoints for localized content, and maintaining this ecosystem 24/7. We are on the path to becoming the world's largest 24/7 online lesson, education, and exam provider for all curricula, methods, and providers."
+          <div className="mt-20 p-10 bg-gray-50 dark:bg-slate-800/50 rounded-[3.5rem] relative overflow-hidden border border-gray-100 dark:border-slate-800">
+            <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl">💡</div>
+            <div className="relative z-10 text-left">
+              <h4 className="text-dare-purple font-black uppercase text-[10px] tracking-[0.3em] mb-4">Message from the Architect</h4>
+              <p className="text-gray-500 dark:text-gray-400 text-base font-medium leading-relaxed italic">
+                "darewast is architected to spread knowledge across over 20 subjects in 14 languages. 100% of these funds are strictly allocated as stated above to ensure that this site, the AI tutors, and our global examination provider remain available 24/7 to every human with a mastery ambition."
               </p>
               <div className="mt-8 flex items-center gap-4">
-                 <div className="flex">
-                    <div className="w-12 h-12 rounded-2xl border-2 border-dare-teal bg-white dark:bg-slate-800 flex items-center justify-center text-2xl shadow-lg">👑</div>
-                 </div>
+                 <div className="w-10 h-10 rounded-xl bg-dare-purple text-white flex items-center justify-center font-black shadow-lg shadow-dare-purple/20">AW</div>
                  <div>
-                    <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none">A. Widhi</p>
-                    <p className="text-dare-teal font-black text-[9px] uppercase tracking-[0.2em] mt-1">Architect & Lead Engineer</p>
+                    <p className="text-gray-900 dark:text-white font-black text-[11px] uppercase tracking-widest leading-none">A. Widhi</p>
+                    <p className="text-dare-purple font-black text-[8px] uppercase tracking-[0.2em] mt-1">Site Owner & Architect</p>
                  </div>
               </div>
             </div>
