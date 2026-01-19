@@ -57,7 +57,6 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   const [isValidatingIdx, setIsValidatingIdx] = useState<number | null>(null);
   const [expandedPointIdx, setExpandedPointIdx] = useState<number | null>(0);
 
-  // Lesson Timer State
   const [timeLeft, setTimeLeft] = useState(DEFAULT_LESSON_TIME);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
 
@@ -84,7 +83,6 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
     return () => clearInterval(interval);
   }, [loading, isFinishing, loadingMessages]);
 
-  // Lesson Countdown Logic
   useEffect(() => {
     if (loading || isFinishing || isTimerPaused) return;
 
@@ -122,7 +120,6 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   const handleCheckTextAnswer = async (i: number) => {
     const ans = textInputs[i] || '';
     setIsValidatingIdx(i);
-    // Simulate AI "Chapter Logic Validation"
     await new Promise(r => setTimeout(r, 800));
     setUserAnswers({ ...userAnswers, [i]: ans });
     setCheckedIndices(prev => new Set(prev).add(i));
@@ -188,14 +185,18 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
 
   const themeColor = useMemo(() => {
     switch (subject.category) {
-      case 'Literacy': return '#53CDBA'; case 'Numeracy': return '#CCB953'; case 'Science': return '#4D96FF';
-      case 'Humanities': return '#FF9F43'; case 'Tech': return '#B953CC'; default: return '#53CDBA';
+      case 'Literacy': return '#53CDBA'; 
+      case 'Numeracy': return '#CCB953'; 
+      case 'Science': return '#4D96FF';
+      case 'Humanities': return '#FF9F43'; 
+      case 'Tech': return '#B953CC'; 
+      default: return '#53CDBA';
     }
   }, [subject.category]);
 
   const progressPercent = lesson ? Math.round((checkedIndices.size / (lesson.exercises.length || 1)) * 100) : 0;
 
-  const renderExplanation = useMemo(() => {
+  const renderExplanationText = useMemo(() => {
     if (!lesson?.explanation) return null;
     if (!lesson?.pronunciationGuide || lesson.pronunciationGuide.length === 0) {
       return <p className="text-xl sm:text-2xl md:text-3xl font-medium text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{lesson.explanation}</p>;
@@ -216,11 +217,10 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                 onClick={() => setActivePronunciation(guide)}
                 className="relative inline-block cursor-pointer group"
               >
-                <span className="text-dare-teal font-black border-b-2 md:border-b-4 border-dare-teal/30 hover:border-dare-teal transition-all">
+                <span className="text-dare-teal font-black border-b-2 md:border-b-4 border-dare-teal transition-all">
                   {part}
                 </span>
                 <span className="absolute -top-1 -right-1 flex h-2 md:h-3 w-2 md:w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-dare-teal opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 md:h-3 w-2 md:w-3 bg-dare-teal"></span>
                 </span>
               </span>
@@ -273,16 +273,16 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                     <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest mb-1">Pronunciation Guide</p>
                     <h4 className="text-3xl md:text-4xl font-black dark:text-white tracking-tighter">{activePronunciation.word}</h4>
                  </div>
-                 <button onClick={() => playSpeech(activePronunciation.word, `pronounce-${activePronunciation.word}`)} className="w-12 h-12 md:w-14 md:h-14 bg-dare-teal/10 text-dare-teal rounded-2xl flex items-center justify-center text-xl md:text-2xl hover:scale-110 active:scale-95 transition-all">
+                 <button onClick={() => playSpeech(activePronunciation.word, `pronounce-${activePronunciation.word}`)} className="w-12 h-12 md:w-14 md:h-14 bg-dare-teal text-white rounded-2xl flex items-center justify-center text-xl md:text-2xl hover:scale-110 active:scale-95 transition-all">
                     🔊
                  </button>
               </div>
               <div className="space-y-4">
-                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
+                 <div className="p-4 bg-gray-100 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Phonetic IPA</p>
                     <p className="text-lg md:text-xl font-mono text-gray-700 dark:text-gray-300">/{activePronunciation.phonetic}/</p>
                  </div>
-                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
+                 <div className="p-4 bg-gray-100 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
                     <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Phonic Breakdown</p>
                     <p className="text-base md:text-lg font-bold text-gray-800 dark:text-gray-100 italic">"{activePronunciation.guide}"</p>
                  </div>
@@ -299,12 +299,12 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
 
       <div className="flex items-center justify-between mb-6 md:mb-10">
         <button onClick={onBack} className="text-gray-400 hover:text-dare-teal font-black uppercase tracking-widest text-[10px] md:text-xs transition-all">← Abort Session</button>
-        <button onClick={() => setIsTutorOpen(true)} className="px-3 py-1.5 md:px-5 md:py-2 bg-white dark:bg-slate-900 border-2 border-dare-teal/30 text-dare-teal rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest md:tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all">
+        <button onClick={() => setIsTutorOpen(true)} className="px-3 py-1.5 md:px-5 md:py-2 bg-white dark:bg-slate-900 border-2 border-dare-teal text-dare-teal rounded-full font-black text-[9px] md:text-[10px] uppercase tracking-widest md:tracking-[0.2em] shadow-xl hover:scale-105 active:scale-95 transition-all">
           📞 Request A.I. Support
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[4rem] shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-white/10 overflow-hidden relative">
+      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] md:rounded-[4rem] shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-gray-100 dark:border-slate-800 overflow-hidden relative">
         <header className="relative h-[250px] md:h-[450px] flex items-end p-6 md:p-12 overflow-hidden text-white">
            <div className="absolute inset-0 z-0">
               <img 
@@ -312,16 +312,16 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                 className="w-full h-full object-cover grayscale opacity-40 mix-blend-overlay scale-105"
                 alt=""
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
+              <div className="absolute inset-0 bg-slate-900 opacity-60"></div>
               <div 
-                className="absolute inset-0 opacity-40 animate-pulse" 
-                style={{ background: `radial-gradient(circle at 70% 30%, ${themeColor}33 0%, transparent 70%)` }}
+                className="absolute inset-0 opacity-40" 
+                style={{ background: `radial-gradient(circle at 70% 30%, ${themeColor} 0%, transparent 70%)` }}
               ></div>
            </div>
 
            <div className="relative z-10 space-y-4 md:space-y-6 w-full">
               <div className="flex items-center gap-3 md:gap-4">
-                 <div className="w-12 h-12 md:w-20 md:h-20 bg-white/20 backdrop-blur-xl rounded-[1.2rem] md:rounded-[2rem] flex items-center justify-center text-2xl md:text-5xl shadow-2xl border border-white/20">
+                 <div className="w-12 h-12 md:w-20 md:h-20 bg-white dark:bg-slate-800 rounded-[1.2rem] md:rounded-[2rem] flex items-center justify-center text-2xl md:text-5xl shadow-2xl">
                     {subject.icon}
                  </div>
                  <div>
@@ -338,15 +338,14 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
            </div>
         </header>
 
-        <div className="sticky top-0 z-[60] bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl px-4 md:px-12 py-3 md:py-4 border-b border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6">
+        <div className="sticky top-0 z-[60] bg-white dark:bg-slate-900 px-4 md:px-12 py-3 md:py-4 border-b border-gray-100 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6">
            <div className="flex gap-2 md:gap-4 w-full md:w-auto">
              <button onClick={() => setActiveTab('concept')} className={`flex-1 md:flex-none px-3 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'concept' ? 'bg-dare-teal text-white shadow-lg' : 'bg-gray-100 dark:bg-slate-800 text-gray-400'}`}>{t('concept')}</button>
              <button onClick={() => setActiveTab('media')} className={`flex-1 md:flex-none px-3 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'media' ? 'bg-dare-teal text-white shadow-lg' : 'bg-gray-100 dark:bg-slate-800 text-gray-400'}`}>{t('mediaHub')}</button>
            </div>
            
            <div className="flex items-center gap-3 md:gap-8 w-full md:w-auto">
-             {/* Timer Component */}
-             <div className="flex items-center gap-2 md:gap-3 bg-gray-50 dark:bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm">
+             <div className="flex items-center gap-2 md:gap-3 bg-gray-50 dark:bg-slate-800 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border border-gray-100 dark:border-slate-700">
                 <button 
                   onClick={() => setIsTimerPaused(!isTimerPaused)}
                   className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-lg transition-all text-[10px] md:text-base ${isTimerPaused ? 'bg-dare-gold text-white' : 'bg-dare-teal text-white'}`}
@@ -362,7 +361,6 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                 </div>
              </div>
 
-             {/* Mastery Progress */}
              <div className="flex items-center gap-3 md:gap-4 flex-1 md:flex-none">
                <div className="flex-1 md:w-48 h-1.5 md:h-2 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                   <div className={`h-full transition-all duration-1000 ease-out`} style={{ width: `${progressPercent}%`, backgroundColor: themeColor }}></div>
@@ -389,57 +387,59 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                     <span className="hidden xs:inline">{isReading === 'explanation' ? (isPaused ? 'Resume' : 'Pause') : 'Synthesis Voice'}</span>
                   </button>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-2 border-transparent hover:border-dare-teal transition-all shadow-inner">
-                  {renderExplanation}
+                
+                <div className="space-y-12">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-2 border-transparent hover:border-dare-teal transition-all shadow-inner">
+                    {renderExplanationText}
+                  </div>
+
+                  {lesson?.timelinePoints && (
+                    <div className="space-y-8">
+                       <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.5em]">The Logic Chain</h3>
+                       <div className="grid gap-4">
+                          {lesson.timelinePoints.map((point, idx) => {
+                            const isExpanded = expandedPointIdx === idx;
+                            return (
+                              <div 
+                                key={idx} 
+                                onClick={() => setExpandedPointIdx(isExpanded ? null : idx)}
+                                className={`group relative flex flex-col p-6 md:p-8 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer ${isExpanded ? 'bg-white dark:bg-slate-800 shadow-2xl border-transparent' : 'bg-slate-50 dark:bg-slate-800/50 border-transparent hover:border-gray-200 dark:hover:border-slate-700'}`}
+                                style={isExpanded ? { borderTopColor: themeColor, borderTopWidth: '4px' } : {}}
+                              >
+                                 <div className="flex items-center gap-4 md:gap-6">
+                                    <div 
+                                      className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.2rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl transition-all duration-500 shadow-lg ${isExpanded ? 'text-white' : 'bg-white dark:bg-slate-700 text-gray-400'}`}
+                                      style={isExpanded ? { backgroundColor: themeColor } : {}}
+                                    >
+                                      {point.icon}
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className={`text-lg md:text-2xl font-black tracking-tight ${isExpanded ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
+                                        {point.title}
+                                      </h4>
+                                      <p className={`text-[9px] font-black uppercase tracking-widest ${isExpanded ? 'text-dare-teal' : 'text-gray-400'}`}>
+                                        {isExpanded ? 'Node Expanded' : 'Click to analyze'}
+                                      </p>
+                                    </div>
+                                    <div className={`text-xl transition-transform duration-500 ${isExpanded ? 'rotate-180 opacity-100' : 'opacity-20 text-gray-400'}`}>
+                                      ▼
+                                    </div>
+                                 </div>
+                                 <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0'}`}>
+                                    <div className="p-5 md:p-8 bg-gray-50 dark:bg-slate-900 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
+                                       <p className="text-base md:text-xl font-bold text-gray-700 dark:text-gray-300 leading-relaxed italic">
+                                         {point.detail}
+                                       </p>
+                                    </div>
+                                 </div>
+                              </div>
+                            );
+                          })}
+                       </div>
+                    </div>
+                  )}
                 </div>
               </section>
-
-              {lesson?.timelinePoints && (
-                <section className="space-y-8 md:space-y-12">
-                   <h2 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.5em]">The Logic Chain</h2>
-                   <div className="relative pl-8 md:pl-12 border-l-2 md:border-l-4 border-dashed border-gray-100 dark:border-slate-800 space-y-8 md:space-y-10">
-                      {lesson.timelinePoints.map((point, idx) => {
-                        const isExpanded = expandedPointIdx === idx;
-                        return (
-                          <div 
-                            key={idx} 
-                            className="relative group cursor-pointer"
-                            onClick={() => setExpandedPointIdx(isExpanded ? null : idx)}
-                            role="button"
-                            aria-expanded={isExpanded}
-                            tabIndex={0}
-                            onKeyDown={(e) => e.key === 'Enter' && setExpandedPointIdx(isExpanded ? null : idx)}
-                          >
-                             <div 
-                                className={`absolute -left-[30px] md:-left-[44px] top-0 w-10 h-10 md:w-16 md:h-16 bg-white dark:bg-slate-900 border-2 md:border-4 rounded-[1rem] md:rounded-[1.5rem] flex items-center justify-center text-xl md:text-3xl shadow-xl transition-all duration-500 z-10 ${isExpanded ? 'scale-110' : 'border-gray-100 dark:border-slate-800'}`}
-                                style={{ borderColor: isExpanded ? themeColor : undefined }}
-                              >
-                                {point.icon}
-                                {isExpanded && (
-                                  <div className="absolute inset-0 rounded-[1rem] md:rounded-[1.5rem] animate-ping opacity-20" style={{ backgroundColor: themeColor }}></div>
-                                )}
-                             </div>
-                             <div className={`p-6 md:p-8 rounded-[1.5rem] md:rounded-[2.5rem] border-2 transition-all duration-500 ${isExpanded ? 'bg-white dark:bg-slate-800 shadow-2xl' : 'bg-gray-50 dark:bg-slate-800/30 border-transparent hover:border-gray-200 dark:hover:border-slate-700'}`} style={{ borderColor: isExpanded ? `${themeColor}40` : undefined }}>
-                                <div className="flex justify-between items-center">
-                                   <h3 className={`text-lg md:text-xl font-black tracking-tight transition-all duration-300 ${isExpanded ? 'dark:text-white translate-x-2' : 'text-gray-400'}`} style={{ color: isExpanded ? undefined : 'inherit' }}>
-                                      {point.title}
-                                   </h3>
-                                   <span className={`text-xs transition-transform duration-500 ${isExpanded ? 'rotate-180 opacity-100' : 'opacity-20'}`}>▼</span>
-                                </div>
-                                <div className={`overflow-hidden transition-all duration-700 ease-in-out ${isExpanded ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                   <div className="p-4 md:p-6 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-700">
-                                      <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 font-medium leading-relaxed">
-                                        {point.detail}
-                                      </p>
-                                   </div>
-                                </div>
-                             </div>
-                          </div>
-                        );
-                      })}
-                   </div>
-                </section>
-              )}
 
               <section className="space-y-8 md:space-y-12">
                 <h2 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.5em]">Mastery Validation</h2>
@@ -450,7 +450,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                     const isValidating = isValidatingIdx === i;
                     
                     return (
-                      <div key={i} className={`p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border-2 transition-all duration-500 relative ${isChecked ? 'bg-emerald-50/20 border-emerald-500/30' : 'bg-gray-50 dark:bg-slate-800/50 border-transparent'}`}>
+                      <div key={i} className={`p-6 md:p-10 rounded-[2rem] md:rounded-[3.5rem] border-2 transition-all duration-500 relative ${isChecked ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500' : 'bg-slate-50 dark:bg-slate-800 border-transparent'}`}>
                         <div className="flex justify-between items-start mb-6 md:mb-8 gap-4">
                            <div className="flex-1">
                               <p className="text-[8px] md:text-[9px] font-black text-dare-purple uppercase tracking-[0.2em] md:tracking-[0.3em] mb-2 md:mb-3">Validation Protocol #{i+1}</p>
@@ -459,7 +459,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                            {!isChecked && ex.hint && (
                              <button 
                                onClick={() => toggleHint(i)} 
-                               className={`shrink-0 px-3 py-1.5 md:px-4 md:py-2 rounded-xl flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${isHintVisible ? 'bg-dare-gold text-white shadow-lg rotate-3 scale-105' : 'bg-white dark:bg-slate-900 text-dare-gold border border-dare-gold/20 hover:bg-dare-gold/5'}`}
+                               className={`shrink-0 px-3 py-1.5 md:px-4 md:py-2 rounded-xl flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${isHintVisible ? 'bg-dare-gold text-white shadow-lg rotate-3 scale-105' : 'bg-white dark:bg-slate-900 text-dare-gold border border-dare-gold hover:bg-dare-gold/10'}`}
                              >
                                <span>💡</span>
                                <span className="hidden xs:inline">{t('hint')}</span>
@@ -468,11 +468,10 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                         </div>
                         
                         {isHintVisible && !isChecked && (
-                          <div className="mb-6 md:mb-8 p-4 md:p-6 bg-amber-50/50 dark:bg-amber-900/10 border-2 border-dashed border-dare-gold/40 rounded-[1.5rem] md:rounded-[2rem] animate-fadeIn relative overflow-hidden group">
-                             <div className="absolute top-0 right-0 w-20 md:w-24 h-20 md:h-24 bg-dare-gold/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                          <div className="mb-6 md:mb-8 p-4 md:p-6 bg-amber-50 dark:bg-amber-900/10 border-2 border-dashed border-dare-gold rounded-[1.5rem] md:rounded-[2rem] animate-fadeIn relative overflow-hidden group">
                              <button 
                                onClick={() => toggleHint(i)}
-                               className="absolute top-3 md:top-4 right-3 md:right-4 w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full bg-dare-gold/10 text-dare-gold hover:bg-dare-gold hover:text-white transition-all z-10"
+                               className="absolute top-3 md:top-4 right-3 md:right-4 w-6 h-6 md:w-8 md:h-8 flex items-center justify-center rounded-full bg-dare-gold text-white hover:scale-110 transition-all z-10"
                                aria-label="Dismiss Hint"
                              >
                                ✕
@@ -516,7 +515,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
                                 value={isChecked ? userAnswers[i] : (textInputs[i] || '')} 
                                 onChange={(e) => setTextInputs({ ...textInputs, [i]: e.target.value })} 
                                 placeholder="Formal Response Required..." 
-                                className={`w-full p-4 md:p-6 bg-white dark:bg-slate-950 rounded-[1.5rem] md:rounded-[2rem] border-2 outline-none font-bold text-base md:text-lg ${isChecked ? 'border-emerald-500 text-emerald-600' : 'border-gray-100 focus:border-dare-teal shadow-inner'}`} 
+                                className={`w-full p-4 md:p-6 bg-white dark:bg-slate-950 rounded-[1.5rem] md:rounded-[2rem] border-2 outline-none font-bold text-base md:text-lg ${isChecked ? 'border-emerald-500 text-emerald-600' : 'border-gray-100 dark:border-slate-800 focus:border-dare-teal shadow-inner'}`} 
                               />
                               {!isChecked && (
                                 <button 
@@ -541,7 +540,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
             <section className="animate-fadeIn grid sm:grid-cols-2 gap-6 md:gap-8">
                {lesson?.mediaResources?.map((res) => (
                  <div key={res.id} className="p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border-2 border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-dare-teal transition-all group shadow-sm">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-50 dark:bg-slate-800 rounded-[1rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 dark:bg-slate-800 rounded-[1rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 group-hover:scale-110 transition-transform">
                       {res.type === 'ebook' ? '📖' : res.type === 'video' ? '🎬' : '🎙️'}
                     </div>
                     <p className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:mb-2">{res.type}</p>
@@ -560,7 +559,8 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
           {checkedIndices.size === (lesson?.exercises?.length || 0) && (
             <button 
               onClick={handleFinishLesson} 
-              className="w-full py-8 md:py-10 bg-gradient-to-r from-dare-teal via-dare-purple to-dare-gold text-white rounded-[2rem] md:rounded-[3rem] font-black text-xl md:text-3xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+              className="w-full py-8 md:py-10 bg-dare-teal text-white rounded-[2rem] md:rounded-[3rem] font-black text-xl md:text-3xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all"
+              style={{ backgroundColor: themeColor }}
             >
               Finalize Mastery Chapter 🎓
             </button>

@@ -12,16 +12,16 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const accounts = [
-    { type: 'Primary Fund', name: 'A. Widhi Bank Jago', account: '107863277869', icon: '🏦' },
-    { type: 'Site Owner / Founder', name: 'A. Widhi PayPal', account: 'dhea_wasisto@yahoo.com', icon: '👑' },
-    { type: 'Network Ops', name: 'Infrastructure Support', account: 'ops@darewast.io', icon: '☁️' }
+    { type: 'Site Owner / Bank Jago', name: 'A. Widhi', account: '107863277869', icon: '🏦' },
+    { type: 'Site Owner / PayPal', name: 'A. Widhi', account: 'dhea_wasisto@yahoo.com', icon: '💳' },
+    { type: 'Site Owner / E-Wallets', name: 'A. Widhi (OVO/GoPay/Dana)', account: '+628567239000', icon: '📱' }
   ];
 
   const allocations = [
-    { label: 'Contributors', percent: 40, icon: '🌱', color: 'dare-teal', desc: 'Scholars and Professional Educators.' },
-    { label: 'Maintenance', percent: 20, icon: '⚙️', color: 'dare-gold', desc: 'Servers and API throughput costs.' },
-    { label: 'Development', percent: 20, icon: '💻', color: 'dare-purple', desc: 'Mobile app and AI model refining.' },
-    { label: 'Site Owner', percent: 20, icon: '👑', color: 'slate-800', desc: 'Strategic architecture and operations.' },
+    { label: 'Contributors', percent: 40, icon: '🌱', color: 'dare-teal', desc: 'Rewarding the scholars and professionals who architect our modules.' },
+    { label: 'Maintenance', percent: 20, icon: '⚙️', color: 'dare-gold', desc: 'Covering server upkeep and high-performance API throughput.' },
+    { label: 'Development', percent: 20, icon: '💻', color: 'dare-purple', desc: 'Funding mobile app optimization and advanced AI model refining.' },
+    { label: 'Site Owner', percent: 20, icon: '👑', color: 'slate-800', desc: 'Supporting the strategic architecture and daily operations.' },
   ];
 
   return (
@@ -38,13 +38,13 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
           
           <div className="relative z-10 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-4 border border-white/10 backdrop-blur-md">
-              Universal Fund
+              Universal Mastery Fund
             </div>
             <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-4">
               Transparent <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Allocation</span>
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-xl font-medium leading-relaxed">
-              Every contribution is architected to sustain the darewast ecosystem 24/7. We maintain a strict allocation matrix for global academic equity.
+              Every contribution is strictly architected to sustain the darewast ecosystem 24/7. We maintain a precise allocation matrix for global academic equity.
             </p>
           </div>
         </div>
@@ -58,7 +58,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
                       {item.icon}
                    </div>
                    <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter mb-1">{item.percent}%</p>
-                   <p className={`text-[10px] font-black uppercase tracking-widest mb-4 ${item.label === 'Contributors' ? 'text-dare-teal' : 'text-gray-400'}`}>{item.label}</p>
+                   <p className={`text-[10px] font-black uppercase tracking-widest mb-4 ${item.label === 'Contributors' ? 'text-dare-teal' : (item.label === 'Maintenance' ? 'text-dare-gold' : (item.label === 'Development' ? 'text-dare-purple' : 'text-gray-500'))}`}>{item.label}</p>
                    <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic">"{item.desc}"</p>
                    <div className="mt-6 w-full h-1 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full transition-all duration-1000" style={{ width: `${item.percent}%`, backgroundColor: item.color === 'dare-teal' ? '#53CDBA' : (item.color === 'dare-gold' ? '#CCB953' : (item.color === 'dare-purple' ? '#B953CC' : '#1e293b')) }}></div>
@@ -71,21 +71,24 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
         <div className="p-8 md:p-16">
           <div className="grid md:grid-cols-2 gap-16">
             <div className="space-y-8 text-left">
-              <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                <span className="text-dare-teal">🛡️</span> Institutional Channels
-              </h3>
+              <div className="space-y-2">
+                <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+                  <span className="text-dare-teal">🛡️</span> Direct Channels
+                </h3>
+                <p className="text-sm font-medium text-gray-500">Funds go directly to the site owner for transparent redistribution according to the 40/20/20/20 matrix.</p>
+              </div>
               <div className="space-y-6">
                 {accounts.map(acc => (
-                  <div key={acc.name} className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 hover:scale-[1.01] transition-all">
+                  <div key={acc.type} className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 hover:scale-[1.01] transition-all">
                     <div className="text-4xl bg-white dark:bg-slate-700 w-16 h-16 flex items-center justify-center rounded-2xl shadow-sm">
                       {acc.icon}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest mb-1">{acc.type}</p>
-                      <p className="font-black text-gray-900 dark:text-white leading-none mb-2">{acc.name}</p>
-                      <p className="text-gray-500 dark:text-gray-400 font-mono text-xs break-all opacity-60">{acc.account}</p>
+                      <p className="font-black text-gray-900 dark:text-white leading-none mb-2 truncate">{acc.name}</p>
+                      <p className="text-gray-500 dark:text-gray-400 font-mono text-xs break-all opacity-80">{acc.account}</p>
                     </div>
-                    <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('Credential Copied'); }} className="p-3 bg-dare-teal/10 text-dare-teal rounded-xl hover:bg-dare-teal hover:text-white transition-all shadow-sm">
+                    <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('Copied to Clipboard'); }} className="p-3 bg-dare-teal/10 text-dare-teal rounded-xl hover:bg-dare-teal hover:text-white transition-all shadow-sm shrink-0">
                       📋
                     </button>
                   </div>
@@ -100,18 +103,18 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
               <div className="p-10 bg-slate-950 rounded-[3rem] text-white relative overflow-hidden shadow-2xl border border-white/5 group">
                 <div className="absolute inset-0 bg-gradient-to-br from-dare-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <p className="relative z-10 text-lg font-bold italic leading-relaxed text-slate-400">
-                  "By supporting darewast, you are directly funding the contributors who architect our specialized modules. 40% of every dollar goes to the scholars and professionals, while the rest maintains the world's first 24/7 universal education grid."
+                  "By supporting darewast, you are directly fueling the global contributors who architect our specialized modules. 40% of every dollar goes to the scholars and professionals, while the rest maintains the world's first 24/7 universal education grid."
                 </p>
                 <div className="mt-10 flex items-center gap-4 relative z-10">
                    <div className="w-12 h-12 bg-dare-gold rounded-xl flex items-center justify-center text-slate-900 text-2xl font-black shadow-xl shadow-dare-gold/20">d</div>
                    <div>
-                      <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none">darewast Global</p>
-                      <p className="text-dare-gold font-black text-[8px] uppercase tracking-[0.2em] mt-1">Foundation for Equity</p>
+                      <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none">darewast Foundation</p>
+                      <p className="text-dare-gold font-black text-[8px] uppercase tracking-[0.2em] mt-1">Universal Academic Equity</p>
                    </div>
                 </div>
               </div>
               <p className="text-center text-gray-400 dark:text-gray-500 font-bold text-[10px] uppercase tracking-widest italic">
-                Contributions are archived for global infrastructure audits.
+                All contributions are archived for infrastructure audits.
               </p>
             </div>
           </div>
@@ -121,13 +124,13 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
             <div className="relative z-10 text-left">
               <h4 className="text-dare-purple font-black uppercase text-[10px] tracking-[0.3em] mb-4">Message from the Architect</h4>
               <p className="text-gray-500 dark:text-gray-400 text-base font-medium leading-relaxed italic">
-                "darewast is architected to spread knowledge across over 20 subjects in 14 languages. 100% of these funds are strictly allocated as stated above to ensure that this site, the AI tutors, and our global examination provider remain available 24/7 to every human with a mastery ambition."
+                "darewast is architected to spread knowledge across over 20 subjects in 14 languages. 100% of these funds are strictly allocated as stated above to ensure that this hub, the AI tutors, and our global examination provider remain available 24/7 to every human with a mastery ambition."
               </p>
               <div className="mt-8 flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-dare-purple text-white flex items-center justify-center font-black shadow-lg shadow-dare-purple/20">AW</div>
+                 <div className="w-10 h-10 rounded-xl bg-dare-purple text-white flex items-center justify-center font-black shadow-lg shadow-dare-purple/20 text-xs">AW</div>
                  <div>
                     <p className="text-gray-900 dark:text-white font-black text-[11px] uppercase tracking-widest leading-none">A. Widhi</p>
-                    <p className="text-dare-purple font-black text-[8px] uppercase tracking-[0.2em] mt-1">Site Owner & Architect</p>
+                    <p className="text-dare-purple font-black text-[8px] uppercase tracking-[0.2em] mt-1">Founder & Site Architect</p>
                  </div>
               </div>
             </div>
