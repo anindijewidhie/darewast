@@ -15,7 +15,7 @@ export type MasteryLevel =
   | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T'
   | 'Beyond P' | 'Beyond T';
 
-export type EducationalStage = 'Preschool' | 'Primary' | 'Middle' | 'High' | 'University';
+export type EducationalStage = 'Preschool' | 'Primary' | 'Middle' | 'High' | 'University' | 'Transition';
 
 export type ContributorRole = 'General' | 'Professional';
 
@@ -31,6 +31,17 @@ export type EducationTrack =
   | 'VocationalUniversity'
   | 'DistanceVocationalSchool'
   | 'DistanceVocationalUniversity';
+
+export type DistanceSchoolType = 
+  | '6-3-3' | '4-4-4' | '8-4' | '7-4' | '4-3-4' | '8-3' | '4-4-3' | '5-5' | '7-3';
+
+export interface TransitionProgram {
+  id: string;
+  targetAge: number;
+  targetTypes: DistanceSchoolType[];
+  yearsRemaining: number;
+  enrolledDate: string;
+}
 
 export interface AccessibilitySettings {
   dyslexicFont: boolean;
@@ -99,6 +110,7 @@ export interface LessonContent {
   lessonNumber: number;
   isExam?: boolean;
   isRelearn?: boolean;
+  isTransition?: boolean;
   relearnStage?: EducationalStage;
   eraNote?: string;
   methodApplied?: LearningMethod | string;
@@ -157,7 +169,8 @@ export type View =
   | 'fast-track-hub'
   | 'certificate'
   | 'exam-hall'
-  | 'relearn-hub';
+  | 'relearn-hub'
+  | 'transition-hub';
 
 export interface ScheduledSession {
   id: string;
@@ -236,6 +249,9 @@ export interface User {
   accessibility?: AccessibilitySettings;
   culturalBackground?: string;
   track?: EducationTrack;
+  distanceSchoolType?: DistanceSchoolType;
+  degreeDuration?: number;
+  transitionProgram?: TransitionProgram;
   studentNumber?: string;
   institutionName?: string;
   scheduledSessions?: ScheduledSession[];
@@ -249,7 +265,7 @@ export interface Certificate {
   subTopic?: string;
   equivalency?: string;
   verificationId: string;
-  programType: 'regular' | 'fast-track' | 'relearn';
+  programType: 'regular' | 'fast-track' | 'relearn' | 'transition';
   score: number; // 0-10
   gradeDescription: string;
 }

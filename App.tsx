@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Subject, Language, UserProgress, SubjectProgress, View, User, MasteryLevel, Certificate as CertificateType, AccessibilitySettings, LessonContent, EducationTrack, SubjectCategory } from './types';
+import { Subject, Language, UserProgress, SubjectProgress, View, User, MasteryLevel, Certificate as CertificateType, AccessibilitySettings, LessonContent, EducationTrack, SubjectCategory, TransitionProgram } from './types';
 import { SUBJECTS, MASTERY_LEVEL_ORDER, LANGUAGES, LEVEL_METADATA, UNIVERSAL_RICH_MEDIA } from './constants';
 import { translations } from './translations';
 import LessonView from './components/LessonView';
@@ -20,6 +20,7 @@ import MethodCombinationView from './components/MethodCombinationView';
 import ContributorView from './components/ContributorView';
 import FastTrackHubView from './components/FastTrackHubView';
 import RelearnHubView from './components/RelearnHubView';
+import TransitionHubView from './components/TransitionHubView';
 import Certificate from './components/Certificate';
 import MasteryExamView from './components/MasteryExamView';
 import ExamPrepView from './components/ExamPrepView';
@@ -145,15 +146,15 @@ const App: React.FC = () => {
     const metadata = LEVEL_METADATA[currentSubjectProgress.level];
     const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 5;
 
-    if (activeLesson?.isRelearn) {
+    if (activeLesson?.isRelearn || activeLesson?.isTransition) {
         const tenPointScore = parseFloat(((score / totalExercises) * 10).toFixed(1));
         const cert: CertificateType = {
           userName: user.name,
-          subjectName: `${activeSubject.name} (${activeLesson.relearnStage})`,
+          subjectName: activeLesson.isTransition ? `${activeSubject.name} (Bridge)` : `${activeSubject.name} (${activeLesson.relearnStage})`,
           level: currentSubjectProgress.level,
           date: new Date().toLocaleDateString(),
-          verificationId: `RELEARN-RESTORE-${Date.now()}`,
-          programType: 'relearn',
+          verificationId: activeLesson.isTransition ? `TRANS-BRIDGE-${Date.now()}` : `RELEARN-RESTORE-${Date.now()}`,
+          programType: activeLesson.isTransition ? 'transition' : 'relearn',
           score: tenPointScore,
           gradeDescription: getGradeTier(tenPointScore)
         };
@@ -245,7 +246,8 @@ const App: React.FC = () => {
         onOpenPlacement: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-placement'); },
         onOpenAssessment: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-assessment'); },
         onOpenFastTrack: () => setCurrentView('fast-track-hub'),
-        onOpenRelearn: () => setCurrentView('relearn-hub')
+        onOpenRelearn: () => setCurrentView('relearn-hub'),
+        onOpenTransition: () => setCurrentView('transition-hub')
     };
 
     switch (currentView) {
@@ -364,6 +366,16 @@ const App: React.FC = () => {
             onBack={() => handleTrackChange((Object.values(progress)[0] as SubjectProgress).track || 'Standard')} 
             onLaunchRelearn={(lesson) => { setActiveLesson(lesson); setCurrentView('lesson'); }}
             onOpenRelearnPlacement={() => setCurrentView('relearn-placement')}
+          />
+        )}
+
+        {currentView === 'transition-hub' && user && (
+          <TransitionHubView 
+            user={user} 
+            language={selectedLang} 
+            onBack={() => setCurrentView('dashboard')}
+            onEnroll={(program) => handleUpdateUser({ transitionProgram: program })}
+            onStartLesson={(sub, isTrans) => { setActiveSubject(sub); setActiveLesson({ isTransition: isTrans } as any); setCurrentView('lesson'); }}
           />
         )}
 

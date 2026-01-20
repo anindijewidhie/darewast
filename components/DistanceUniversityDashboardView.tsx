@@ -22,7 +22,7 @@ interface Props {
 }
 
 const DistanceUniversityDashboardView: React.FC<Props> = ({ 
-  user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
+  user, progress, language, onStartLesson, onStartPrep, onTrackChange,
   onOpenPlacement, onOpenAssessment,
   dynamicSubjects, onCreateSubject
 }) => {
@@ -31,6 +31,8 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
 
   const categories: (SubjectCategory | 'All')[] = ['All', 'Science', 'Tech', 'Humanities', 'Ethics'];
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
+
+  const degreeDuration = user.degreeDuration || 4;
 
   const filteredSubjects = useMemo(() => {
     return allAvailableSubjects.filter(sub => selectedCategory === 'All' || sub.category === selectedCategory);
@@ -44,8 +46,13 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
         
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex-1 space-y-6 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest border border-blue-500/40 backdrop-blur-md">
-               🏛️ darewast Distance University
+            <div className="flex flex-wrap justify-center md:justify-start gap-2">
+               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 text-blue-400 rounded-full text-xs font-black uppercase tracking-widest border border-blue-500/40 backdrop-blur-md">
+                  🏛️ darewast Distance University
+               </div>
+               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full text-xs font-black uppercase tracking-widest border border-white/20">
+                  📜 {degreeDuration}-Year Degree Track
+               </div>
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
               Global Distance Academy
@@ -106,22 +113,22 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 rounded-full blur-3xl"></div>
               <div className="flex items-center gap-3 mb-8">
                  <div className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center text-xl">📜</div>
-                 <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.3em]">Degree Tracker</h3>
+                 <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.3em]">Institutional Progress</h3>
               </div>
               <div className="space-y-6">
                  <div>
                     <div className="flex justify-between items-center mb-2">
-                       <span className="text-[10px] font-black text-gray-400 uppercase">Academy Completion</span>
-                       <span className="text-[10px] font-black text-blue-600">85%</span>
+                       <span className="text-[10px] font-black text-gray-400 uppercase">Degree Completion</span>
+                       <span className="text-[10px] font-black text-blue-600">Year 1 of {degreeDuration}</span>
                     </div>
                     <div className="h-2 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                       <div className="h-full bg-blue-600" style={{ width: '85%' }}></div>
+                       <div className="h-full bg-blue-600" style={{ width: `${(1 / degreeDuration) * 100}%` }}></div>
                     </div>
                  </div>
                  <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Active Research</p>
-                    <p className="text-xs font-bold dark:text-white">Applied Physics Module III</p>
-                    <p className="text-[9px] text-gray-500">Mentored by Dr. Gemini AI</p>
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Academic Status</p>
+                    <p className="text-xs font-bold dark:text-white">Active Undergraduate Candidate</p>
+                    <p className="text-[9px] text-gray-500">Mastery nodes verified 24/7</p>
                  </div>
               </div>
            </div>
@@ -130,16 +137,16 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
               <div className="absolute -inset-10 bg-gradient-to-tr from-blue-900/20 to-dare-purple/20 blur-3xl opacity-50"></div>
               <div className="relative z-10">
                 <span className="text-5xl block mb-6">🎓</span>
-                <h4 className="font-black text-white mb-3 uppercase tracking-widest text-xs">Scholarly Recognition</h4>
-                <p className="text-xs text-slate-400 font-medium mb-6 leading-relaxed">Your distance thesis has been archived in the Global Knowledge Base.</p>
+                <h4 className="font-black text-white mb-3 uppercase tracking-widest text-xs">Credential Hub</h4>
+                <p className="text-xs text-slate-400 font-medium mb-6 leading-relaxed">Your professional certification track is active for this {degreeDuration}-year cycle.</p>
                 <div className="flex justify-between items-center bg-white/5 rounded-2xl p-4 border border-white/5">
                    <div className="text-left">
-                      <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Global H-Index</p>
-                      <p className="text-2xl font-black text-white">4.8</p>
+                      <p className="text-[8px] font-black text-blue-400 uppercase tracking-widest">Enrollment</p>
+                      <p className="text-2xl font-black text-white">Active</p>
                    </div>
                    <div className="text-right">
-                      <p className="text-[8px] font-black text-dare-teal uppercase tracking-widest">XP Multiplier</p>
-                      <p className="text-2xl font-black text-white">1.5x</p>
+                      <p className="text-[8px] font-black text-dare-teal uppercase tracking-widest">XP Rate</p>
+                      <p className="text-2xl font-black text-white">1.8x</p>
                    </div>
                 </div>
               </div>

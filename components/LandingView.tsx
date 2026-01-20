@@ -74,21 +74,27 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
       {/* 1. Cinematic Hero Section */}
       <section className="relative py-12 md:py-32 lg:py-56 overflow-hidden bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto text-center relative z-10 px-4 md:px-6">
-          <p className="text-dare-teal text-[10px] md:text-sm font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-8 md:mb-12 animate-fadeIn">
-            {t('hallSubtitle')}
-          </p>
+          <div className="flex flex-col items-center mb-8 md:mb-12">
+            <div className="inline-block px-4 py-1.5 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-4 shadow-lg shadow-emerald-500/20">
+              {t('yearRoundEnrollment')}
+            </div>
+            <p className="text-dare-teal text-[10px] md:text-sm font-black uppercase tracking-[0.4em] md:tracking-[0.6em] animate-fadeIn">
+              {t('hallSubtitle')}
+            </p>
+          </div>
           
           <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[11.5rem] font-black text-gray-900 dark:text-white mb-8 md:mb-10 leading-[0.95] md:leading-[0.8] tracking-tighter">
             Universal Mastery For <span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Everyone</span>
           </h1>
           
-          <p className="text-xl md:text-3xl lg:text-4xl text-gray-500 dark:text-gray-400 mb-12 md:mb-16 leading-relaxed max-w-5xl mx-auto font-medium px-4">
+          <p className="text-xl md:text-3xl lg:text-4xl text-gray-500 dark:text-gray-400 mb-6 leading-relaxed max-w-5xl mx-auto font-medium px-4">
             {t('heroSubtitle')}
           </p>
+          <p className="text-sm md:text-lg font-black text-dare-gold uppercase tracking-[0.3em] mb-12 md:mb-16 italic">
+            " {t('mondayStartNote')} "
+          </p>
           
-          {/* Brand-Colored Mastery Console */}
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 max-w-5xl mx-auto">
-            {/* PLACEMENT TEST - GOLD */}
             <button 
               onClick={onPlacementTest}
               className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-gold text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-gold/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-yellow-700/30"
@@ -97,7 +103,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
               <span className="relative z-10 flex items-center gap-2">🎯 {t('placementTest')}</span>
             </button>
 
-            {/* ASSESSMENT - TEAL */}
             <button 
               onClick={onJoin}
               className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-teal text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-teal/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-teal-700/30"
@@ -106,7 +111,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
               <span className="relative z-10 flex items-center gap-2">📊 {t('assessmentTitle')}</span>
             </button>
 
-            {/* ENROLLMENT - PURPLE */}
             <button 
               onClick={onJoin}
               className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-purple text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-purple/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-purple-800/30"
@@ -117,7 +121,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
           </div>
         </div>
 
-        {/* Decorative Floating Nodes */}
         <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
            {SUBJECTS.slice(0, 15).map((sub, i) => (
              <div key={sub.id} className="absolute animate-float" style={{
@@ -131,13 +134,16 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
         </div>
       </section>
 
-      {/* 2. Redesigned Academic Breadth Section */}
+      {/* Breadth Section */}
       <section className="py-20 md:py-24 bg-gray-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-6 text-center">
-           <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em] mb-12 md:mb-16">Academic Breadth</h2>
+           <div className="mb-12 md:mb-16">
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em] mb-4">Academic Breadth</h2>
+              <div className="w-16 h-1 bg-dare-teal mx-auto rounded-full"></div>
+           </div>
            
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-              {coreDisciplines.map((discipline, idx) => (
+              {coreDisciplines.map((discipline) => (
                 <div 
                   key={discipline.name} 
                   className={`p-8 md:p-10 bg-white dark:bg-slate-900 rounded-[3rem] md:rounded-[3.5rem] shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col items-center gap-4 md:gap-6 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden`}
@@ -158,17 +164,16 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
                 </div>
               ))}
               
-              {/* Special 'And More' Card */}
-              <div className="p-8 md:p-10 bg-gradient-to-br from-slate-800 to-slate-950 rounded-[3rem] md:rounded-[3.5rem] shadow-2xl flex flex-col items-center justify-center gap-4 text-white">
+              <div className="p-8 md:p-10 bg-slate-900 rounded-[3rem] md:rounded-[3.5rem] shadow-2xl flex flex-col items-center justify-center gap-4 text-white">
                  <span className="text-3xl md:text-4xl">🚀</span>
                  <h3 className="font-black text-xl md:text-2xl tracking-tighter">Over 24+ Subjects</h3>
-                 <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Spanning all major disciplines</p>
+                 <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">365 Day Enrollment Active</p>
               </div>
            </div>
         </div>
       </section>
 
-      {/* 3. Trust & Verification Section */}
+      {/* Trust & Verification Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-6 py-24 md:py-32">
          <div className="bg-slate-900 rounded-[3rem] md:rounded-[5rem] p-8 md:p-32 text-center text-white relative overflow-hidden shadow-2xl border border-white/5">
             <div className="absolute -top-10 -right-10 p-20 opacity-5 text-[8rem] md:text-[18rem] font-black rotate-12 tracking-tighter pointer-events-none">DARE</div>
@@ -224,7 +229,7 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
          </div>
       </section>
 
-      {/* 4. App Download Section */}
+      {/* App Download Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-6 py-24 text-center">
         <div className="bg-gradient-to-br from-dare-teal via-dare-purple to-dare-gold p-12 md:p-32 rounded-[3.5rem] md:rounded-[5rem] text-white shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-white/5 opacity-10 pattern-grid-lg"></div>
@@ -263,7 +268,7 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
         </div>
       </section>
 
-      {/* 5. Footer & Mission */}
+      {/* Footer & Mission */}
       <footer className="mt-20 md:mt-40 text-center py-20 md:py-24 border-t border-gray-100 dark:border-slate-800">
          <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 dark:bg-slate-900 rounded-[1.8rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl mx-auto mb-8 md:mb-10 shadow-inner">👑</div>
          <p className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] md:tracking-[0.8em] text-gray-400 mb-4 md:mb-6">{t('founderFull')}</p>

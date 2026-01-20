@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Language, EducationTrack } from '../types';
+import { User, Language, EducationTrack, DistanceSchoolType } from '../types';
 import { translations } from '../translations';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 'sign-in' }) => {
   const [view, setView] = useState<'sign-in' | 'sign-up' | 'forgot-password'>(initialMode);
   const [track, setTrack] = useState<EducationTrack>('Standard');
+  const [distanceType, setDistanceType] = useState<DistanceSchoolType>('6-3-3');
+  const [degreeDuration, setDegreeDuration] = useState<number>(4);
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -36,10 +38,17 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    const age = calculateAge(birthDate);
+
+    // University track restriction
+    if ((track.includes('University') || track.includes('Uni')) && age < 18) {
+      alert(t('under18Restriction'));
+      return;
+    }
+
     setIsSubmitting(true);
     await new Promise(r => setTimeout(r, 1200));
     
-    const age = calculateAge(birthDate);
     onLogin({
       name: name || "Scholar",
       username: username || "scholar_1",
@@ -55,6 +64,8 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
       points: 0,
       badges: [],
       track: track,
+      distanceSchoolType: track === 'DistanceSchool' ? distanceType : undefined,
+      degreeDuration: track.includes('University') ? degreeDuration : undefined,
       studentNumber: studentNumber,
       institutionName: institutionName,
       xp: 0,
@@ -66,7 +77,6 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call to send reset link
     await new Promise(r => setTimeout(r, 1500));
     setIsSubmitting(false);
     setResetSent(true);
@@ -84,6 +94,9 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
     { id: 'DistanceVocationalUniversity', label: 'Distance Voc-Uni', cat: 'Vocational' },
   ];
 
+  const distanceTypes: DistanceSchoolType[] = ['6-3-3', '4-4-4', '8-4', '7-4', '4-3-4', '8-3', '4-4-3', '5-5', '7-3'];
+  const degreeDurations = [1, 2, 3, 4];
+
   return (
     <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-950 flex animate-fadeIn overflow-y-auto">
       <div className="grid lg:grid-cols-2 w-full min-h-screen">
@@ -91,7 +104,7 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
           <div className="absolute top-0 right-0 p-20 opacity-10 text-9xl font-black">DARE</div>
           <div className="relative z-10">
             <h2 className="text-6xl font-black mb-6">Master <br/>Every Skill.</h2>
-            <p className="text-xl opacity-90 max-w-md">9 specialized branches covering academic, distance, and vocational mastery 24/7.</p>
+            <p className="text-xl opacity-90 max-w-md">Specialized branches covering academic, distance, and vocational mastery 24/7.</p>
           </div>
           <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
         </div>
@@ -170,8 +183,46 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
                       </button>
                     ))}
                   </div>
+                  
+                  {track === 'DistanceSchool' && (
+                    <div className="mt-4 animate-fadeIn">
+                       <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Distance School Structure</p>
+                       <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
+                         {distanceTypes.map(dt => (
+                           <button 
+                            key={dt}
+                            onClick={() => setDistanceType(dt)}
+                            className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${distanceType === dt ? 'bg-dare-gold text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
+                           >
+                            Type {dt}
+                           </button>
+                         ))}
+                       </div>
+                    </div>
+                  )}
+
+                  {track.includes('University') && (
+                    <div className="mt-4 animate-fadeIn">
+                       <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">{t('degreeDuration')}</p>
+                       <div className="grid grid-cols-4 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
+                         {degreeDurations.map(d => (
+                           <button 
+                            key={d}
+                            onClick={() => setDegreeDuration(d)}
+                            className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${degreeDuration === d ? 'bg-dare-purple text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
+                           >
+                            {d}Y
+                           </button>
+                         ))}
+                       </div>
+                    </div>
+                  )}
+
                   {['DistanceSchool', 'DistanceVocationalSchool'].includes(track) && (
-                    <p className="mt-3 text-[9px] text-rose-500 font-bold text-center italic animate-pulse">Distance schooling recommended for Primary to High School only.</p>
+                    <p className="mt-3 text-[9px] text-rose-500 font-bold text-center italic">Distance schooling recommended for Primary to High School only.</p>
+                  )}
+                  {track.includes('University') && (
+                    <p className="mt-3 text-[9px] text-dare-purple font-bold text-center italic">{t('under18Restriction')}</p>
                   )}
                 </div>
 
@@ -185,6 +236,10 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
                   <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('username')}</label>
                     <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('birthDate')}</label>
+                    <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('emailAddress')}</label>

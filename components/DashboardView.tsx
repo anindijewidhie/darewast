@@ -26,6 +26,7 @@ interface Props {
   onOpenFastTrack: () => void;
   onOpenExamHall: () => void;
   onOpenRelearn: () => void;
+  onOpenTransition: () => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string) => Promise<Subject | undefined>;
 }
@@ -34,7 +35,7 @@ const DashboardView: React.FC<Props> = ({
   user, progress, language, onStartLesson, onStartExam, onStartPrep, 
   onUpdateUser, onUpdateProgress, onTrackChange, onLogout, onOpenConverter, onOpenPlacementGlobal,
   onOpenPlacement, onOpenAssessment, onOpenCombination, onOpenLeaderboard, onOpenFastTrack, onOpenExamHall,
-  onOpenRelearn, dynamicSubjects, onCreateSubject
+  onOpenRelearn, onOpenTransition, dynamicSubjects, onCreateSubject
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
@@ -57,6 +58,15 @@ const DashboardView: React.FC<Props> = ({
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [searchQuery, selectedCategory, dynamicSubjects]);
 
+  const nextMonday = useMemo(() => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = (day === 0 ? 1 : 8 - day);
+    const result = new Date(today);
+    result.setDate(today.getDate() + diff);
+    return result.toLocaleDateString(language === 'Indonesian' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  }, [language]);
+
   const handleCreateNew = async () => {
     if (!searchQuery.trim()) return;
     setIsCreating(true);
@@ -70,6 +80,8 @@ const DashboardView: React.FC<Props> = ({
       setIsCreating(false);
     }
   };
+
+  const isEligibleForTransition = [5, 6, 11, 12, 13].includes(user.age);
 
   return (
     <div className="animate-fadeIn max-w-7xl mx-auto px-2 md:px-4 pb-24">
@@ -102,6 +114,39 @@ const DashboardView: React.FC<Props> = ({
       <div className="grid lg:grid-cols-12 gap-8 md:gap-10 items-start">
         {/* 2. Main Grid */}
         <div className="lg:col-span-8 space-y-8 md:space-y-10">
+          
+          <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
+             {/* Institutional Status Banner */}
+            <div className="bg-emerald-500 p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group">
+               <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">365</div>
+               <div className="relative z-10">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{t('institutionalCycle')}</p>
+                  <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{t('yearRoundEnrollment')}</h3>
+               </div>
+               <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 relative z-10 w-full">
+                  <p className="text-[8px] font-black uppercase tracking-widest mb-0.5">{t('nextModuleStart')}</p>
+                  <p className="text-xs font-black italic">{nextMonday}</p>
+               </div>
+            </div>
+
+            {isEligibleForTransition && (
+              <button 
+                onClick={onOpenTransition}
+                className="bg-dare-purple p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group hover:scale-[1.02] transition-all text-left"
+              >
+                <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">BRIDGE</div>
+                <div className="relative z-10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{t('transitionHub')}</p>
+                    <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{user.transitionProgram ? t('enrolledTransition') : t('transitionProgramTitle')}</h3>
+                </div>
+                <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 relative z-10 w-full flex items-center justify-between">
+                    <p className="text-[10px] font-black uppercase tracking-widest">{user.transitionProgram ? 'Review Bridge' : 'Begin Bridging'}</p>
+                    <span className="text-xl">→</span>
+                </div>
+              </button>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-3 md:p-4 rounded-[2rem] md:rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800">
             <div className="relative flex-1 w-full">
               <input 
