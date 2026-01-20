@@ -239,6 +239,12 @@ export interface PaymentPreferences {
   walletNumber?: string;
 }
 
+export interface MasterySchedule {
+  type: 'preset' | 'custom';
+  presetId?: 'M-F' | 'M-S' | 'M-Sun';
+  activeDays: number[]; // 0: Sun, 1: Mon, ..., 6: Sat
+}
+
 export interface User {
   name: string;
   username: string;
@@ -250,6 +256,7 @@ export interface User {
   isMinor: boolean;
   dailyGoal: number;
   timeSpentToday: number;
+  studyHistory: Record<string, number>; // YYYY-MM-DD: minutes
   contributions: number;
   streak: number;
   xp: number;
@@ -261,6 +268,7 @@ export interface User {
   professionalCredentials?: ProfessionalCredentials;
   weeklyStipend?: number;
   paymentPreferences?: PaymentPreferences;
+  masterySchedule?: MasterySchedule;
   academicDNA?: {
     era: CurriculumEra;
     method: LearningMethod;

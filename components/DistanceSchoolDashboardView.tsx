@@ -17,6 +17,8 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
+  // Added onOpenSpecialization to the Props interface
+  onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
 }
@@ -24,6 +26,8 @@ interface Props {
 const DistanceSchoolDashboardView: React.FC<Props> = ({ 
   user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
   onOpenPlacement, onOpenAssessment,
+  // Destructured onOpenSpecialization from props
+  onOpenSpecialization,
   dynamicSubjects, onCreateSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
@@ -139,7 +143,8 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
                   subject={sub} 
                   progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
                   onClick={() => onStartLesson(sub)} 
-                  onOpenSpecialization={() => {}} 
+                  // Use onOpenSpecialization prop instead of empty function
+                  onOpenSpecialization={() => onOpenSpecialization(sub)} 
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
                   onExamPrep={() => onStartPrep(sub)}

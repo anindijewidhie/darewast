@@ -149,12 +149,15 @@ const App: React.FC = () => {
 
   const handleStartLesson = (sub: Subject, isTrans: boolean = false) => {
     const day = new Date().getDay();
-    const isWeekend = day === 0 || day === 6;
+    
+    // Logic updated to respect user's Mastery Schedule
+    const activeDays = user?.masterySchedule?.activeDays || [1, 2, 3, 4, 5]; // Default M-F
+    const isStudyDay = activeDays.includes(day);
     const isInstitutional = user?.track !== 'Standard' || isTrans;
 
     setActiveSubject(sub);
     
-    if (isWeekend && isInstitutional) {
+    if (!isStudyDay) {
         setCurrentView('weekend-enrichment' as any);
     } else {
         setActiveLesson(isTrans ? ({ isTransition: true } as any) : null);
@@ -177,7 +180,7 @@ const App: React.FC = () => {
 
     const currentSubjectProgress = progress[activeSubject.id];
     const metadata = LEVEL_METADATA[currentSubjectProgress.level];
-    const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 5;
+    const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 4;
 
     // Transition to the 100-point Skill Point system
     const skillPoints = Math.round((score / totalExercises) * 100);

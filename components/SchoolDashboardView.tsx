@@ -17,13 +17,18 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
+  // Added onOpenSpecialization to the Props interface
+  onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
 }
 
 const SchoolDashboardView: React.FC<Props> = ({ 
   user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
-  onOpenPlacement, onOpenAssessment, dynamicSubjects, onCreateSubject
+  onOpenPlacement, onOpenAssessment, 
+  // Destructured onOpenSpecialization from props
+  onOpenSpecialization,
+  dynamicSubjects, onCreateSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
   const [curriculumInput, setCurriculumInput] = useState('');
@@ -69,7 +74,7 @@ const SchoolDashboardView: React.FC<Props> = ({
               Adaptive K-12 Campus
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-xl font-medium max-w-2xl leading-relaxed">
-              Synthesized lessons for primary through secondary levels. Sync homework and master foundational academic standards 24/7.
+              Synthesized lessons for primary through secondary levels. Small-step mastery, unlimited materials, and 24/7 adaptive AI support.
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-4">
               <button 
@@ -106,7 +111,8 @@ const SchoolDashboardView: React.FC<Props> = ({
                     subject={sub} 
                     progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
                     onClick={() => onStartLesson(sub)} 
-                    onOpenSpecialization={() => {}} 
+                    // Use onOpenSpecialization prop instead of empty function
+                    onOpenSpecialization={() => onOpenSpecialization(sub)} 
                     onPlacementTest={() => onOpenPlacement(sub)}
                     onLevelAssessment={() => onOpenAssessment(sub)}
                     onExamPrep={() => onStartPrep(sub)}

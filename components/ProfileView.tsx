@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { User, UserProgress, Language, MasteryLevel, Subject, SubjectProgress, CurriculumEra, LearningMethod, PaymentPreferences } from '../types';
+import { User, UserProgress, Language, MasteryLevel, Subject, SubjectProgress, CurriculumEra, LearningMethod, PaymentPreferences, MasterySchedule } from '../types';
 import { SUBJECTS, LEVEL_METADATA, MASTERY_LEVEL_ORDER } from '../constants';
 import { translations } from '../translations';
 import { RadarChart } from './RadarChart';
@@ -126,6 +126,21 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
         hybridMethods: undefined 
       } 
     });
+  };
+
+  const updateSchedule = (newSchedule: MasterySchedule) => {
+    onUpdateUser({ masterySchedule: newSchedule });
+  };
+
+  const toggleScheduleDay = (day: number) => {
+    const currentSchedule = user.masterySchedule || { type: 'preset', presetId: 'M-F', activeDays: [1,2,3,4,5] };
+    let newDays = [...currentSchedule.activeDays];
+    if (newDays.includes(day)) {
+      newDays = newDays.filter(d => d !== day);
+    } else {
+      newDays.push(day);
+    }
+    updateSchedule({ type: 'custom', activeDays: newDays.sort() });
   };
 
   const handleSavePayment = () => {
@@ -301,6 +316,63 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
         </div>
 
         <div className="lg:col-span-8 space-y-8">
+          {/* Mastery Schedule Section */}
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl font-black text-dare-teal">📅</div>
+             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('studySchedule')}</h3>
+             <p className="text-gray-400 dark:text-gray-500 text-xs font-bold mb-8 uppercase tracking-widest">Architect your weekly rhythm</p>
+             
+             <div className="grid md:grid-cols-12 gap-8">
+                <div className="md:col-span-5 space-y-3">
+                   {[
+                     { id: 'M-F', label: t('academicMF'), days: [1,2,3,4,5], icon: '🏫' },
+                     { id: 'M-S', label: t('dedicatedMS'), days: [1,2,3,4,5,6], icon: '📚' },
+                     { id: 'M-Sun', label: t('unstoppableMSun'), days: [0,1,2,3,4,5,6], icon: '🔥' },
+                   ].map(preset => (
+                     <button
+                        key={preset.id}
+                        onClick={() => updateSchedule({ type: 'preset', presetId: preset.id as any, activeDays: preset.days })}
+                        className={`w-full p-6 rounded-[2rem] border-2 transition-all text-left flex items-center gap-4 group ${user.masterySchedule?.presetId === preset.id ? 'border-dare-teal bg-dare-teal/5 shadow-lg' : 'border-gray-50 dark:border-slate-800 bg-gray-50/50 hover:border-dare-teal/30'}`}
+                     >
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl transition-all ${user.masterySchedule?.presetId === preset.id ? 'bg-dare-teal text-white' : 'bg-white dark:bg-slate-800 text-gray-400 group-hover:scale-110'}`}>
+                           {preset.icon}
+                        </div>
+                        <div className="flex-1">
+                           <p className={`text-xs font-black uppercase tracking-widest ${user.masterySchedule?.presetId === preset.id ? 'text-dare-teal' : 'text-gray-500'}`}>{preset.label}</p>
+                           <p className="text-[9px] font-bold text-gray-400 mt-0.5">{preset.days.length} Active Nodes</p>
+                        </div>
+                     </button>
+                   ))}
+                </div>
+
+                <div className="md:col-span-7 bg-gray-50 dark:bg-slate-800/50 rounded-[2.5rem] p-8 border border-gray-100 dark:border-slate-700">
+                   <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 text-center">{t('customSchedule')}</h4>
+                   <div className="grid grid-cols-7 gap-2 mb-8">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => {
+                        const isActive = user.masterySchedule?.activeDays.includes(i);
+                        return (
+                          <button
+                            key={day}
+                            onClick={() => toggleScheduleDay(i)}
+                            className={`flex flex-col items-center gap-2 group transition-all`}
+                          >
+                             <div className={`w-full aspect-square rounded-xl border-2 flex items-center justify-center font-black text-xs transition-all ${isActive ? 'border-dare-teal bg-dare-teal text-white shadow-md' : 'border-gray-200 dark:border-slate-700 text-gray-300'}`}>
+                                {day.charAt(0)}
+                             </div>
+                             <span className={`text-[8px] font-black uppercase tracking-tighter transition-colors ${isActive ? 'text-dare-teal' : 'text-gray-400'}`}>{day}</span>
+                          </button>
+                        );
+                      })}
+                   </div>
+                   <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 text-center">
+                      <p className="text-xs font-bold text-gray-500 leading-relaxed italic">
+                        "Customizing your schedule affects logic synthesis. Non-study days are dynamically architected for recharge and enrichment."
+                      </p>
+                   </div>
+                </div>
+             </div>
+          </div>
+
           {user.contributorRole && (
             <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left relative overflow-hidden">
                <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl font-black text-dare-gold">💰</div>

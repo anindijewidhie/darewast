@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, Language, Subject, EducationTrack, SubjectCategory } from '../types';
-import { SUBJECTS } from '../constants';
+import { SUBJECTS, LEVEL_METADATA } from '../constants';
 import { translations } from '../translations';
 import SubjectCard from './SubjectCard';
 
@@ -17,13 +17,18 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
+  // Added onOpenSpecialization to the Props interface
+  onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
 }
 
 const UniversityDashboardView: React.FC<Props> = ({ 
   user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
-  onOpenPlacement, onOpenAssessment, dynamicSubjects, onCreateSubject
+  onOpenPlacement, onOpenAssessment, 
+  // Destructured onOpenSpecialization from props
+  onOpenSpecialization,
+  dynamicSubjects, onCreateSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
   const [subjectQuery, setSubjectQuery] = useState('');
@@ -98,7 +103,7 @@ const UniversityDashboardView: React.FC<Props> = ({
                   <button 
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-dare-purple border-dare-purple text-white shadow-lg shadow-dare-purple/20' : 'border-gray-100 dark:border-slate-800 text-gray-500 hover:border-dare-purple/40'}`}
+                    className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-dare-purple border-dare-purple text-white shadow-lg shadow-dare-purple/20' : 'border-gray-100 dark:border-slate-800 text-gray-400 hover:border-dare-purple/40'}`}
                   >
                     {cat}
                   </button>
@@ -113,7 +118,8 @@ const UniversityDashboardView: React.FC<Props> = ({
                   subject={sub}
                   progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }}
                   onClick={() => onStartLesson(sub)}
-                  onOpenSpecialization={() => {}}
+                  // Use onOpenSpecialization prop instead of empty function
+                  onOpenSpecialization={() => onOpenSpecialization(sub)}
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
                   onExamPrep={() => onStartPrep(sub)}
