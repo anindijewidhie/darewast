@@ -16,22 +16,32 @@ export const generateLesson = async (
 ): Promise<LessonContent> => {
   const age = user?.age || 10;
   const culturalBackground = user?.culturalBackground || 'Global';
-  const track = progress?.[subject.id]?.track || 'Standard';
+  const subProg = progress?.[subject.id];
+  const track = subProg?.track || 'Standard';
+  const interests = subProg?.specializations?.join(', ') || 'General Knowledge';
+  const activeMethod = user?.academicDNA?.method || 'Kumon-style';
   
   const prompt = `
-    ROLE: World-Class Academic Architect.
+    ROLE: World-Class Academic Architect & Personalization Specialist.
     TASK: Design Chapter ${lessonNumber}/12 for ${subject.name} Level ${level}.
-    METHOD: Kumon-style incrementalism. Atomic steps, no cognitive overload.
-    AUDIENCE: ${age} years old, Cultural Context: ${culturalBackground}, Education Track: ${track}.
-    LANGUAGE: ${language}.
+    METHOD: ${activeMethod}.
+    
+    PERSONALIZATION PARAMETERS:
+    - Target Age: ${age} years old.
+    - Mastery Level: ${level}.
+    - Interests/Specializations: ${interests}.
+    - Education Track: ${track}.
+    - Cultural Context: ${culturalBackground}.
+    - Language: ${language}.
     
     CONTENT REQUIREMENTS:
-    1. A short, inspiring title.
-    2. A conceptual introduction (narrative hook).
-    3. Deep pedagogical explanation.
-    4. PRONUNCIATION GUIDE: Identify 3-5 key academic or difficult words from the explanation. Provide their phonetic spelling and a simple guide on how to say them.
-    5. 5 Timeline points showing the logic chain.
-    6. Real-world examples adapted to the user's age.
+    1. A short title.
+    2. PEDAGOGICAL ADAPTATIONS (VARK):
+       - Visual: A text-based description of a "Mental Model Map" for this concept.
+       - Auditory: A conversational "Lecture Script" for an AI tutor to speak.
+       - Kinesthetic: A practical "Action Drill" or at-home experiment to test the concept physically.
+       - Reading: A high-rigor "Deep Dive" scholarly analysis for linguistic learners.
+    3. Exercises: 4 validation steps.
   `;
 
   const response = await ai.models.generateContent({
@@ -45,6 +55,16 @@ export const generateLesson = async (
         properties: {
           title: { type: Type.STRING },
           explanation: { type: Type.STRING },
+          adaptations: {
+            type: Type.OBJECT,
+            properties: {
+              visualMapDescription: { type: Type.STRING },
+              auditoryScript: { type: Type.STRING },
+              kinestheticActivity: { type: Type.STRING },
+              readingDeepDive: { type: Type.STRING }
+            },
+            required: ["visualMapDescription", "auditoryScript", "kinestheticActivity", "readingDeepDive"]
+          },
           pronunciationGuide: {
             type: Type.ARRAY,
             items: {
@@ -97,7 +117,7 @@ export const generateLesson = async (
             }
           }
         },
-        required: ["title", "explanation", "examples", "exercises", "mediaResources"]
+        required: ["title", "explanation", "examples", "exercises", "mediaResources", "adaptations"]
       },
     },
   });
@@ -124,7 +144,7 @@ export const generateMasteryExam = async (
 ): Promise<LessonContent> => {
   const prompt = `Generate a 15-question FORMAL MASTERY EXAM for ${subject.name} Level ${level}. 
   Standard: International Academic Integrity. Language: ${language}. User Age: ${user.age}. 
-  Include logic traps and application-based questions.`;
+  Include logic traps and application-based questions tailored to localized context: ${user.culturalBackground}.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-pro-preview",
@@ -166,7 +186,8 @@ export const generatePlacementTest = async (
   testType: 'placement' | 'assessment' | 'relearn'
 ) => {
   const prompt = `Generate a 10-question ${testType} diagnostic for ${subject?.name || 'General Knowledge'}. 
-  Targeting age ${user?.age || 18}. Accommodation: ${accommodation}. Language: ${language}. Output JSON questions.`;
+  Targeting age ${user?.age || 18}. Accommodation: ${accommodation}. Language: ${language}. 
+  Ensure questions are age-appropriate and localized to ${user?.culturalBackground || 'Global context'}.`;
   
   const response = await ai.models.generateContent({ 
     model: "gemini-3-flash-preview", 
@@ -207,7 +228,7 @@ export const analyzeTestResults = async (
 ): Promise<string> => {
   const prompt = `Analyze test results for ${subject.name}. Score: ${score}/${total}. Recommended Level: ${level}. 
   User Age: ${user?.age || 18}. Language: ${language}. 
-  Provide a brief, encouraging academic insight about their performance.`;
+  Provide a brief, encouraging academic insight localized to their cultural background (${user?.culturalBackground}).`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -218,13 +239,25 @@ export const analyzeTestResults = async (
 
 export const generateCustomSubject = async (q: string, t: EducationTrack, l: Language) => {
   const prompt = `Define a learning subject based on query: "${q}". 
-  Provide icon, name, category, description, and 5 subtopics. Track: ${t}. Language: ${l}.`;
+  Provide icon, name, category, description, and 5 subtopics. Track: ${t}. Language: ${l}. 
+  Ensure description is engaging and localized for the global learner.`;
   
   const response = await ai.models.generateContent({ 
     model: "gemini-3-flash-preview", 
     contents: prompt, 
     config: { 
-      responseMimeType: "application/json" 
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          icon: { type: Type.STRING },
+          name: { type: Type.STRING },
+          category: { type: Type.STRING },
+          description: { type: Type.STRING },
+          subtopics: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["icon", "name", "category", "description", "subtopics"]
+      }
     } 
   });
   return JSON.parse(response.text || '{}');
@@ -238,7 +271,8 @@ export const generateExamPrep = async (
   user: User
 ): Promise<LessonContent & { tacticalTips: string[] }> => {
   const prompt = `Generate Exam Prep Level ${week} for ${subject.name} targeting ${boardName}. 
-  User Age: ${user.age}. Language: ${language}. Include tactical tips for this specific exam board.`;
+  User Age: ${user.age}. Language: ${language}. Include tactical tips for this specific exam board. 
+  Localize content for ${user.culturalBackground}.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -286,7 +320,8 @@ export const generateGuardianReport = async (
 ): Promise<string> => {
   const prompt = `Generate a progress report for the guardian of ${user.name}. 
   Language: ${language}. Summary of subjects and levels: ${JSON.stringify(progress)}.
-  Write a professional yet supportive letter summarizing achievements and focus areas.`;
+  Write a professional yet supportive letter summarizing achievements and focus areas, 
+  respecting the cultural norms of ${user.culturalBackground}.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -303,6 +338,7 @@ export const generateHybridLesson = async (
 ): Promise<LessonContent> => {
   const prompt = `Generate a HYBRID chapter combining ${sub1.name} and ${sub2.name}. 
   Target Age: ${user.age}. Language: ${language}. 
+  Localize content for ${user.culturalBackground}.
   Find interdisciplinary bridges between these subjects.`;
 
   const response = await ai.models.generateContent({
@@ -354,7 +390,7 @@ export const generateRelearnLesson = async (
 ): Promise<LessonContent> => {
   const prompt = `Generate a RELEARN restoration chapter for ${subject.name} at the ${stage} stage. 
   User Age: ${user.age}. Language: ${language}. Fast Track: ${isFastTrack}.
-  Focus on identifying and fixing fundamental gaps.`;
+  Focus on identifying and fixing fundamental gaps, localized for ${user.culturalBackground}.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",

@@ -16,8 +16,9 @@ interface Props {
 const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelected, initialSecondaryLanguage, onClose, onSave }) => {
   const [selected, setSelected] = useState<string[]>(initialSelected);
   const [songLanguage, setSongLanguage] = useState<Language>(initialSecondaryLanguage || language);
+  const [customTopic, setCustomTopic] = useState('');
   
-  const t = (key: string) => translations[language][key] || translations['English'][key] || key;
+  const t = (key: string) => translations[language]?.[key] || translations['English']?.[key] || key;
 
   const toggle = (option: string) => {
     if (selected.includes(option)) {
@@ -27,7 +28,17 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
     }
   };
 
+  const addCustom = (e: React.FormEvent) => {
+    e.preventDefault();
+    const topic = customTopic.trim();
+    if (topic && !selected.includes(topic)) {
+      setSelected([...selected, topic]);
+      setCustomTopic('');
+    }
+  };
+
   const isVocal = subject.id === 'music-vocal';
+  const displayOptions = subject.suggestedSubTopics || [];
 
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-xl animate-fadeIn">
@@ -36,14 +47,14 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
           <div className="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black">{subject.icon}</div>
           <div className="relative z-10">
             <h3 className="text-3xl font-black mb-2">Academic DNA: {subject.name}</h3>
-            <p className="text-white/80 font-medium">Select specific sub-disciplines to focus your mastery path.</p>
+            <p className="text-white/80 font-medium">Calibrate your personalized chapter logic for unlimited variations.</p>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
           {isVocal && (
             <section className="animate-fadeIn">
-               <h4 className="text-[10px] font-black text-dare-teal uppercase tracking-[0.3em] mb-4">Target Song Language</h4>
+               <h4 className="text-[10px] font-black text-dare-teal uppercase tracking-[0.3em] mb-4">Target Language (Vocal Focus)</h4>
                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                  {LANGUAGES.map(lang => (
                    <button 
@@ -60,33 +71,65 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
           )}
 
           <section>
-            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">{isVocal ? 'Vocal Genres' : 'Focus Areas'}</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {subject.availableSpecializations?.map(option => {
+            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Suggested Sub-Disciplines</h4>
+            <div className="flex flex-wrap gap-2">
+              {displayOptions.map(option => {
                 const isActive = selected.includes(option);
                 return (
                   <button
                     key={option}
                     onClick={() => toggle(option)}
-                    className={`p-6 rounded-[2rem] text-left border-2 transition-all flex items-center justify-between group ${
+                    className={`px-5 py-3 rounded-2xl border-2 transition-all font-black text-[10px] uppercase tracking-widest ${
                       isActive 
-                      ? 'border-dare-teal bg-dare-teal/5 shadow-lg' 
-                      : 'border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-gray-400'
+                      ? 'border-dare-teal bg-dare-teal text-white shadow-lg' 
+                      : 'border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-gray-400 hover:border-dare-teal/30'
                     }`}
                   >
-                    <span className={`font-black uppercase tracking-widest text-xs ${isActive ? 'text-dare-teal' : ''}`}>{option}</span>
-                    <div className={`w-6 h-6 rounded-full border-2 transition-all flex items-center justify-center ${isActive ? 'bg-dare-teal border-dare-teal text-white' : 'border-gray-300'}`}>
-                      {isActive && <span className="text-[10px]">✓</span>}
-                    </div>
+                    {option}
                   </button>
                 );
               })}
             </div>
           </section>
+
+          <section>
+            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Custom Mastery Focus</h4>
+            <form onSubmit={addCustom} className="flex gap-2">
+               <input 
+                 type="text"
+                 value={customTopic}
+                 onChange={(e) => setCustomTopic(e.target.value)}
+                 placeholder="Enter any interest (e.g. Space Exploration, Robotics)..."
+                 className="flex-1 p-4 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-dare-purple rounded-2xl outline-none font-bold text-sm dark:text-white transition-all shadow-inner"
+               />
+               <button 
+                 type="submit"
+                 className="px-6 py-4 bg-dare-purple text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-dare-purple/20 active:scale-95 transition-all"
+               >
+                 Add
+               </button>
+            </form>
+          </section>
+
+          {selected.length > 0 && (
+            <section className="animate-fadeIn">
+               <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Active Synthesis Markers</h4>
+               <div className="flex flex-wrap gap-2">
+                  {selected.map(s => (
+                    <div key={s} className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest animate-fadeIn">
+                       <span>{s}</span>
+                       <button onClick={() => toggle(s)} className="text-dare-teal hover:text-rose-500">✕</button>
+                    </div>
+                  ))}
+               </div>
+            </section>
+          )}
           
           {selected.length === 0 && (
-            <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 text-center">
-              <p className="text-sm font-bold text-amber-600">Please select at least one focus area to begin.</p>
+            <div className="p-8 bg-amber-50 dark:bg-amber-900/10 rounded-[2.5rem] border border-dashed border-amber-200 dark:border-amber-900/30 text-center">
+              <p className="text-sm font-bold text-amber-600 dark:text-amber-400 leading-relaxed italic">
+                "Specialization is the key to deep mastery. Select a focus area to theme your upcoming unlimited chapters."
+              </p>
             </div>
           )}
         </div>
@@ -99,11 +142,10 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
             Cancel
           </button>
           <button 
-            disabled={selected.length === 0}
             onClick={() => onSave(selected, isVocal ? songLanguage : undefined)}
-            className="flex-1 py-4 bg-dare-teal text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-dare-teal/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+            className="flex-1 py-4 bg-dare-teal text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-dare-teal/20 hover:scale-[1.02] active:scale-95 transition-all"
           >
-            Confirm DNA Configuration
+            Update DNA Synthesis
           </button>
         </div>
       </div>

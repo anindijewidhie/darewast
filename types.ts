@@ -10,6 +10,8 @@ export type CurriculumEra = 'Modern' | 'Legacy' | 'Classical';
 
 export type LearningMethod = 'Kumon-style' | 'Montessori-inspired' | 'Waldorf-aligned' | 'Traditional-Rote' | 'Inquiry-based' | 'Practical-Vocational';
 
+export type LearningStyle = 'Unified' | 'Visual' | 'Auditory' | 'Reading' | 'Kinesthetic';
+
 export type MasteryLevel = 
   | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' 
   | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T'
@@ -41,6 +43,16 @@ export interface TransitionProgram {
   targetTypes: DistanceSchoolType[];
   yearsRemaining: number;
   enrolledDate: string;
+}
+
+export interface CreditRecord {
+  subjectId: string;
+  subjectName: string;
+  level: MasteryLevel;
+  creditsUS: number;
+  creditsECTS: number;
+  verificationId: string;
+  completionDate: string;
 }
 
 export interface AccessibilitySettings {
@@ -92,6 +104,13 @@ export interface PronunciationEntry {
   guide: string;
 }
 
+export interface MultiModalAdaptation {
+  visualMapDescription: string;
+  auditoryScript: string;
+  kinestheticActivity: string;
+  readingDeepDive: string;
+}
+
 export interface LessonContent {
   title: string;
   subTopic?: string;
@@ -99,6 +118,7 @@ export interface LessonContent {
   pronunciationGuide?: PronunciationEntry[];
   timelinePoints?: TimelinePoint[];
   examples: string[];
+  adaptations: MultiModalAdaptation;
   exercises: {
     question: string;
     options?: string[];
@@ -123,7 +143,7 @@ export interface LessonContent {
 export interface SubjectProgress {
   level: MasteryLevel;
   lessonNumber: number; // 1 to 12
-  lastScore?: { correct: number; total: number; tenPointScale?: number; gradeTier?: string };
+  lastScore?: { correct: number; total: number; skillPoints?: number; gradeTier?: string };
   specializations?: string[];
   secondaryLanguage?: Language;
   currentTheme?: string;
@@ -170,7 +190,8 @@ export type View =
   | 'certificate'
   | 'exam-hall'
   | 'relearn-hub'
-  | 'transition-hub';
+  | 'transition-hub'
+  | 'credit-transfer';
 
 export interface ScheduledSession {
   id: string;
@@ -252,6 +273,7 @@ export interface User {
   distanceSchoolType?: DistanceSchoolType;
   degreeDuration?: number;
   transitionProgram?: TransitionProgram;
+  creditRecords?: CreditRecord[];
   studentNumber?: string;
   institutionName?: string;
   scheduledSessions?: ScheduledSession[];
@@ -266,6 +288,6 @@ export interface Certificate {
   equivalency?: string;
   verificationId: string;
   programType: 'regular' | 'fast-track' | 'relearn' | 'transition';
-  score: number; // 0-10
+  score: number; // 0-100 (Skill Points)
   gradeDescription: string;
 }

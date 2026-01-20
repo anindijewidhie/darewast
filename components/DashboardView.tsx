@@ -27,6 +27,7 @@ interface Props {
   onOpenExamHall: () => void;
   onOpenRelearn: () => void;
   onOpenTransition: () => void;
+  onOpenCreditTransfer: () => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string) => Promise<Subject | undefined>;
 }
@@ -35,7 +36,7 @@ const DashboardView: React.FC<Props> = ({
   user, progress, language, onStartLesson, onStartExam, onStartPrep, 
   onUpdateUser, onUpdateProgress, onTrackChange, onLogout, onOpenConverter, onOpenPlacementGlobal,
   onOpenPlacement, onOpenAssessment, onOpenCombination, onOpenLeaderboard, onOpenFastTrack, onOpenExamHall,
-  onOpenRelearn, onOpenTransition, dynamicSubjects, onCreateSubject
+  onOpenRelearn, onOpenTransition, onOpenCreditTransfer, dynamicSubjects, onCreateSubject
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
@@ -57,6 +58,9 @@ const DashboardView: React.FC<Props> = ({
       })
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [searchQuery, selectedCategory, dynamicSubjects]);
+
+  const isMonday = new Date().getDay() === 1;
+  const isWeekend = [0, 6].includes(new Date().getDay());
 
   const nextMonday = useMemo(() => {
     const today = new Date();
@@ -89,20 +93,22 @@ const DashboardView: React.FC<Props> = ({
       <header className="py-8 md:py-12 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 border-b border-gray-100 dark:border-slate-800 mb-8 md:mb-12">
         <div className="space-y-1 text-center md:text-left">
           <h1 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
-            Mastery Hub
+            {t('masteryHub')}
           </h1>
-          <p className="text-dare-teal font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[8px] md:text-[9px]">Hello, {user.name} • {user.rank}</p>
+          <p className="text-dare-teal font-black uppercase tracking-[0.2em] md:tracking-[0.4em] text-[8px] md:text-[9px]">{t('hello') || 'Hello'}, {user.name} • {user.rank}</p>
         </div>
         
         <div className="flex gap-2 md:gap-3">
           {[
-            { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'dare-teal' },
-            { id: 'relearn', icon: '🩹', action: onOpenRelearn, color: 'rose-500' },
-            { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'dare-gold' },
+            { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'dare-teal', tooltip: t('combineLessons') },
+            { id: 'relearn', icon: '🩹', action: onOpenRelearn, color: 'rose-500', tooltip: t('relearnLab') },
+            { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'dare-gold', tooltip: t('examHall') },
+            { id: 'credits', icon: '📜', action: onOpenCreditTransfer, color: 'blue-600', tooltip: t('creditTransfer') },
           ].map(tool => (
             <button 
               key={tool.id} 
               onClick={tool.action}
+              title={tool.tooltip}
               className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-lg flex items-center justify-center text-xl md:text-2xl hover:scale-110 active:scale-95 transition-all group"
             >
               <span className="group-hover:rotate-12 transition-transform">{tool.icon}</span>
@@ -117,11 +123,11 @@ const DashboardView: React.FC<Props> = ({
           
           <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
              {/* Institutional Status Banner */}
-            <div className="bg-emerald-500 p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group">
-               <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">365</div>
+            <div className={`${isMonday ? 'bg-indigo-600 animate-pulse' : 'bg-emerald-500'} p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group`}>
+               <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">{isMonday ? 'REFRESH' : '365'}</div>
                <div className="relative z-10">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{t('institutionalCycle')}</p>
-                  <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{t('yearRoundEnrollment')}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{isMonday ? t('mondayRefresh') : t('institutionalCycle')}</p>
+                  <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{isMonday ? t('materialsUpdated') : t('yearRoundEnrollment')}</h3>
                </div>
                <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 relative z-10 w-full">
                   <p className="text-[8px] font-black uppercase tracking-widest mb-0.5">{t('nextModuleStart')}</p>
@@ -140,10 +146,27 @@ const DashboardView: React.FC<Props> = ({
                     <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{user.transitionProgram ? t('enrolledTransition') : t('transitionProgramTitle')}</h3>
                 </div>
                 <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 relative z-10 w-full flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-widest">{user.transitionProgram ? 'Review Bridge' : 'Begin Bridging'}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest">{user.transitionProgram ? t('reviewBridge') || 'Review Bridge' : t('beginBridging') || 'Begin Bridging'}</p>
                     <span className="text-xl">→</span>
                 </div>
               </button>
+            )}
+
+            {isWeekend && user.track !== 'Standard' && (
+              <div className="sm:col-span-2 p-8 bg-indigo-950 rounded-[2.5rem] border-2 border-indigo-500/30 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-10 opacity-5 text-7xl font-black uppercase tracking-tighter">Weekend</div>
+                 <div className="relative z-10">
+                    <p className="text-indigo-400 font-black uppercase tracking-[0.4em] text-[10px] mb-2">{t('weekendMode')}</p>
+                    <h4 className="text-2xl font-black tracking-tight">{t('institutionalDrillsPaused') || 'Institutional drills are currently paused.'}</h4>
+                    <p className="text-indigo-200/60 font-medium text-sm mt-1">{t('accessModulesMonday') || 'Access formal mastery modules again this Monday.'}</p>
+                 </div>
+                 <button 
+                    onClick={() => onOpenFastTrack()} // Just an example, ideally it navigates to enrichment
+                    className="relative z-10 px-8 py-4 bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all shrink-0"
+                 >
+                    {t('exploreEnrichment') || 'Explore Enrichment'} →
+                 </button>
+              </div>
             )}
           </div>
 
@@ -187,13 +210,13 @@ const DashboardView: React.FC<Props> = ({
               ))
             ) : (
               <div className="sm:col-span-2 py-16 md:py-24 text-center bg-gray-50 dark:bg-slate-900/50 rounded-[2.5rem] md:rounded-[4rem] border-4 border-dashed border-gray-100 dark:border-slate-800 px-6">
-                <p className="text-gray-400 font-bold mb-6 md:mb-8 text-base md:text-lg">Subject "{searchQuery}" not in local database.</p>
+                <p className="text-gray-400 font-bold mb-6 md:mb-8 text-base md:text-lg">{t('subjectNotFound') || 'Subject not in local database.'}</p>
                 <button 
                   onClick={handleCreateNew}
                   disabled={isCreating}
                   className="w-full sm:w-auto px-8 md:px-12 py-4 md:py-5 bg-dare-purple text-white rounded-2xl md:rounded-[2rem] font-black text-lg md:text-xl shadow-2xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  {isCreating ? 'Synthesizing...' : `Initialize Chapters for "${searchQuery}"`}
+                  {isCreating ? t('detecting') : `${t('initializeChapters') || 'Initialize Chapters for'} "${searchQuery}"`}
                 </button>
               </div>
             )}
@@ -203,12 +226,12 @@ const DashboardView: React.FC<Props> = ({
         {/* 3. Stats Sidebar */}
         <aside className="lg:col-span-4 lg:sticky lg:top-32 space-y-6 md:space-y-8 pb-12 lg:pb-0">
           <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] md:rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800">
-            <h3 className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6 md:mb-8 text-center">Your Mastery Matrix</h3>
+            <h3 className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-6 md:mb-8 text-center">{t('masteryMatrix') || 'Your Mastery Matrix'}</h3>
             <RadarChart progress={progress} subjects={allAvailableSubjects.slice(0, 8)} />
             
             <div className="mt-8 md:mt-12 space-y-2 md:space-y-3">
-              <button onClick={onOpenPlacementGlobal} className="w-full py-3 md:py-4 bg-dare-gold text-slate-900 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[8px] md:text-[10px] shadow-xl shadow-dare-gold/20 hover:scale-[1.02] transition-all">Placement Diagnostic</button>
-              <button onClick={onOpenConverter} className="w-full py-3 md:py-4 bg-gray-50 dark:bg-slate-800 text-gray-400 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[8px] md:text-[10px] hover:bg-gray-100 transition-all">Level Mapping Tool</button>
+              <button onClick={onOpenPlacementGlobal} className="w-full py-3 md:py-4 bg-dare-gold text-slate-900 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[8px] md:text-[10px] shadow-xl shadow-dare-gold/20 hover:scale-[1.02] transition-all">{t('placementTitle')}</button>
+              <button onClick={onOpenConverter} className="w-full py-3 md:py-4 bg-gray-50 dark:bg-slate-800 text-gray-400 rounded-xl md:rounded-2xl font-black uppercase tracking-widest text-[8px] md:text-[10px] hover:bg-gray-100 transition-all">{t('gradeConverter')}</button>
             </div>
           </div>
 
@@ -217,12 +240,16 @@ const DashboardView: React.FC<Props> = ({
              <p className="text-[8px] md:text-[9px] font-black text-dare-teal uppercase tracking-[0.4em] mb-4">Academic DNA</p>
              <div className="space-y-3 md:space-y-4">
                 <div className="flex justify-between items-center text-[10px] md:text-xs">
-                   <span className="text-slate-500 font-bold">Method:</span>
+                   <span className="text-slate-500 font-bold">{t('learningMethod') || 'Method'}:</span>
                    <span className="font-black text-white">{user.academicDNA?.method || 'Kumon-style'}</span>
                 </div>
                 <div className="flex justify-between items-center text-[10px] md:text-xs">
-                   <span className="text-slate-500 font-bold">Era:</span>
+                   <span className="text-slate-500 font-bold">{t('curriculumEra') || 'Era'}:</span>
                    <span className="font-black text-white">{user.academicDNA?.era || 'Modern'}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] md:text-xs pt-2 border-t border-white/5">
+                   <span className="text-slate-500 font-bold">{t('educationTrack') || 'Track'}:</span>
+                   <span className="font-black text-white">{user.track || 'Independent'}</span>
                 </div>
              </div>
           </div>

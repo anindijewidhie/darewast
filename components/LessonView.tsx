@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Subject, Language, LessonContent, User, MasteryLevel, UserProgress, MediaItem, SubjectProgress, PronunciationEntry } from '../types';
+import { Subject, Language, LessonContent, User, MasteryLevel, UserProgress, MediaItem, SubjectProgress, PronunciationEntry, LearningStyle } from '../types';
 import { generateLesson } from '../services/geminiService';
 import { translations } from '../translations';
 import { LEVEL_METADATA } from '../constants';
@@ -35,7 +35,7 @@ const LANG_BCP47: Record<string, string> = {
   'Portuguese': 'pt-PT', 'Russian': 'ru-RU', 'Hindi': 'hi-IN', 'Bengali': 'bn-IN', 'Urdu': 'ur-PK'
 };
 
-const DEFAULT_LESSON_TIME = 1200; // 20 minutes
+const DEFAULT_LESSON_TIME = 1800; // 30 minutes (darewast standard)
 
 const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, user, progress, initialLesson, onComplete, onBack, onUpdateProgress }) => {
   const [activeLesson, setActiveLesson] = useState(lessonNumber);
@@ -50,6 +50,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   const [isReading, setIsReading] = useState<string | null>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [activeTab, setActiveTab] = useState<'concept' | 'media'>('concept');
+  const [learningStyle, setLearningStyle] = useState<LearningStyle>('Unified');
   const [completedMedia, setCompletedMedia] = useState<Set<string>>(new Set());
   const [isFinishing, setIsFinishing] = useState(false);
   const [activePronunciation, setActivePronunciation] = useState<PronunciationEntry | null>(null);
@@ -57,11 +58,16 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   const [isValidatingIdx, setIsValidatingIdx] = useState<number | null>(null);
   const [expandedPointIdx, setExpandedPointIdx] = useState<number | null>(0);
 
-  const [timeLeft, setTimeLeft] = useState(DEFAULT_LESSON_TIME);
+  // Use study duration if defined in fast track, otherwise default 30
+  const initialTime = progress?.[subject.id]?.fastTrackDuration ? progress[subject.id].fastTrackDuration * 60 : DEFAULT_LESSON_TIME;
+  const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
   const saveKey = `darewast-save-${user.username}-${subject.id}-${level}-${activeLesson}`;
+
+  // darewast AV standard durations
+  const mediaDurations = [5, 10, 15, 30, 45, 60];
 
   const loadingMessages = useMemo(() => [
     "Aligning Academic DNA...",
@@ -106,7 +112,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   };
 
   const handleResetTimer = () => {
-    setTimeLeft(DEFAULT_LESSON_TIME);
+    setTimeLeft(initialTime);
     setIsTimerPaused(false);
   };
 
@@ -320,17 +326,38 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
            </div>
 
            <div className="relative z-10 space-y-4 md:space-y-6 w-full">
-              <div className="flex items-center gap-3 md:gap-4">
-                 <div className="w-12 h-12 md:w-20 md:h-20 bg-white dark:bg-slate-800 rounded-[1.2rem] md:rounded-[2rem] flex items-center justify-center text-2xl md:text-5xl shadow-2xl">
-                    {subject.icon}
-                 </div>
-                 <div>
-                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] opacity-80 mb-1">Module: {subject.name}</p>
-                    <div className="flex gap-2">
-                       <span className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border border-white/10">Level {level}</span>
-                       <span className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border border-white/10">Chapter {activeLesson}/12</span>
-                    </div>
-                 </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 md:gap-4">
+                  <div className="w-12 h-12 md:w-20 md:h-20 bg-white dark:bg-slate-800 rounded-[1.2rem] md:rounded-[2rem] flex items-center justify-center text-2xl md:text-5xl shadow-2xl">
+                      {subject.icon}
+                  </div>
+                  <div>
+                      <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.4em] opacity-80 mb-1">Module: {subject.name}</p>
+                      <div className="flex gap-2">
+                        <span className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border border-white/10">Level {level}</span>
+                        <span className="px-2 md:px-3 py-0.5 md:py-1 bg-white/10 rounded-lg text-[8px] md:text-[9px] font-black uppercase tracking-widest border border-white/10">Chapter {activeLesson}/12</span>
+                      </div>
+                  </div>
+                </div>
+                {/* VARK Style Switcher */}
+                <div className="bg-black/40 backdrop-blur-md p-1.5 rounded-2xl flex gap-1 border border-white/10">
+                   {[
+                     { id: 'Unified', icon: '🌀' },
+                     { id: 'Visual', icon: '👁️' },
+                     { id: 'Auditory', icon: '👂' },
+                     { id: 'Reading', icon: '📖' },
+                     { id: 'Kinesthetic', icon: '🛠️' }
+                   ].map(style => (
+                     <button 
+                       key={style.id}
+                       onClick={() => setLearningStyle(style.id as LearningStyle)}
+                       title={`${style.id} Learning Mode`}
+                       className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${learningStyle === style.id ? 'bg-white text-slate-900 scale-110' : 'text-white/40 hover:bg-white/10'}`}
+                     >
+                       {style.icon}
+                     </button>
+                   ))}
+                </div>
               </div>
               <h1 className="text-3xl md:text-7xl font-black tracking-tighter leading-[1] md:leading-[0.9] drop-shadow-2xl">
                 {lesson?.title}
@@ -373,71 +400,105 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
         <div className="p-6 md:p-12 space-y-16 md:space-y-24">
           {activeTab === 'concept' ? (
             <>
+              {/* Learning Style Specific Content */}
               <section className="animate-fadeIn">
-                <div className="flex items-center justify-between mb-6 md:mb-8">
-                  <div className="flex flex-col">
-                    <h2 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] md:tracking-[0.5em] mb-1">Foundational Theory</h2>
-                    <p className="text-[8px] md:text-[9px] font-bold text-dare-teal uppercase tracking-widest">Interactive guide active • Click teal words</p>
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">
+                      {learningStyle === 'Visual' ? '👁️' : learningStyle === 'Auditory' ? '👂' : learningStyle === 'Reading' ? '📖' : learningStyle === 'Kinesthetic' ? '🛠️' : '🌀'}
+                    </span>
+                    <h2 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.5em]">{learningStyle} Optimized Adaptation</h2>
                   </div>
-                  <button 
-                    onClick={() => playSpeech(lesson?.explanation || '', 'explanation')} 
-                    className={`flex items-center gap-2 md:gap-3 px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl md:rounded-2xl transition-all font-black text-[8px] md:text-[10px] uppercase tracking-widest ${isReading === 'explanation' ? 'bg-dare-teal text-white scale-105 shadow-xl' : 'bg-gray-50 dark:bg-slate-800 text-gray-400 hover:text-dare-teal'}`}
-                  >
-                    <SpeakerIcon active={isReading === 'explanation'} paused={isPaused} />
-                    <span className="hidden xs:inline">{isReading === 'explanation' ? (isPaused ? 'Resume' : 'Pause') : 'Synthesis Voice'}</span>
-                  </button>
                 </div>
-                
-                <div className="space-y-12">
-                  <div className="bg-slate-50 dark:bg-slate-800 p-6 md:p-12 rounded-[2rem] md:rounded-[3.5rem] border-2 border-transparent hover:border-dare-teal transition-all shadow-inner">
-                    {renderExplanationText}
-                  </div>
 
-                  {lesson?.timelinePoints && (
-                    <div className="space-y-8">
-                       <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.5em]">The Logic Chain</h3>
-                       <div className="grid gap-4">
-                          {lesson.timelinePoints.map((point, idx) => {
-                            const isExpanded = expandedPointIdx === idx;
-                            return (
-                              <div 
-                                key={idx} 
-                                onClick={() => setExpandedPointIdx(isExpanded ? null : idx)}
-                                className={`group relative flex flex-col p-6 md:p-8 rounded-[2rem] border-2 transition-all duration-300 cursor-pointer ${isExpanded ? 'bg-white dark:bg-slate-800 shadow-2xl border-transparent' : 'bg-slate-50 dark:bg-slate-800/50 border-transparent hover:border-gray-200 dark:hover:border-slate-700'}`}
-                                style={isExpanded ? { borderTopColor: themeColor, borderTopWidth: '4px' } : {}}
-                              >
-                                 <div className="flex items-center gap-4 md:gap-6">
-                                    <div 
-                                      className={`w-12 h-12 md:w-16 md:h-16 rounded-[1.2rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl transition-all duration-500 shadow-lg ${isExpanded ? 'text-white' : 'bg-white dark:bg-slate-700 text-gray-400'}`}
-                                      style={isExpanded ? { backgroundColor: themeColor } : {}}
-                                    >
-                                      {point.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className={`text-lg md:text-2xl font-black tracking-tight ${isExpanded ? 'text-gray-900 dark:text-white' : 'text-gray-400'}`}>
-                                        {point.title}
-                                      </h4>
-                                      <p className={`text-[9px] font-black uppercase tracking-widest ${isExpanded ? 'text-dare-teal' : 'text-gray-400'}`}>
-                                        {isExpanded ? 'Node Expanded' : 'Click to analyze'}
-                                      </p>
-                                    </div>
-                                    <div className={`text-xl transition-transform duration-500 ${isExpanded ? 'rotate-180 opacity-100' : 'opacity-20 text-gray-400'}`}>
-                                      ▼
-                                    </div>
-                                 </div>
-                                 <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[500px] mt-6 opacity-100' : 'max-h-0 opacity-0'}`}>
-                                    <div className="p-5 md:p-8 bg-gray-50 dark:bg-slate-900 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
-                                       <p className="text-base md:text-xl font-bold text-gray-700 dark:text-gray-300 leading-relaxed italic">
-                                         {point.detail}
-                                       </p>
-                                    </div>
-                                 </div>
-                              </div>
-                            );
-                          })}
+                <div className={`p-8 md:p-12 rounded-[2.5rem] border-2 shadow-inner transition-all duration-700 ${
+                  learningStyle === 'Kinesthetic' ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-500/30' :
+                  learningStyle === 'Auditory' ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-500/30' :
+                  learningStyle === 'Visual' ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-500/30' :
+                  'bg-slate-50 dark:bg-slate-800 border-transparent'
+                }`}>
+                   {learningStyle === 'Unified' && (
+                     <div className="space-y-8">
+                        {renderExplanationText}
+                        {lesson?.timelinePoints && (
+                          <div className="grid gap-4 mt-12">
+                             {lesson.timelinePoints.map((point, idx) => (
+                               <div key={idx} className="flex items-center gap-6 p-6 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-700">
+                                  <div className="w-14 h-14 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-3xl shadow-sm">{point.icon}</div>
+                                  <div>
+                                     <h4 className="text-lg font-black dark:text-white">{point.title}</h4>
+                                     <p className="text-sm font-medium text-gray-500">{point.detail}</p>
+                                  </div>
+                               </div>
+                             ))}
+                          </div>
+                        )}
+                     </div>
+                   )}
+                   
+                   {learningStyle === 'Visual' && (
+                     <div className="space-y-8 animate-fadeIn">
+                       <div className="inline-block px-4 py-1.5 bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest mb-4">Mental Model Canvas</div>
+                       <p className="text-xl md:text-3xl font-medium text-blue-900 dark:text-blue-100 leading-relaxed italic">
+                         {lesson?.adaptations.visualMapDescription}
+                       </p>
+                       <div className="pt-8 border-t border-blue-100 dark:border-blue-900/50">
+                          <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-2">Visual Logic Summary</p>
+                          <ul className="grid sm:grid-cols-2 gap-4">
+                             {lesson?.examples.map((ex, i) => (
+                               <li key={i} className="flex items-center gap-3 p-4 bg-white/50 dark:bg-white/5 rounded-2xl border border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-sm">
+                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span> {ex}
+                               </li>
+                             ))}
+                          </ul>
                        </div>
-                    </div>
-                  )}
+                     </div>
+                   )}
+
+                   {learningStyle === 'Auditory' && (
+                     <div className="space-y-8 animate-fadeIn">
+                       <div className="flex items-center justify-between">
+                         <div className="inline-block px-4 py-1.5 bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest">Conversational Synthesis</div>
+                         <button 
+                           onClick={() => playSpeech(lesson?.adaptations.auditoryScript || '', 'auditory-lecture')}
+                           className="flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/20 hover:scale-105 transition-all"
+                         >
+                            <SpeakerIcon active={isReading === 'auditory-lecture'} paused={isPaused} />
+                            <span>{isReading === 'auditory-lecture' ? 'Pause Lecture' : 'Start Lecture'}</span>
+                         </button>
+                       </div>
+                       <p className="text-xl md:text-3xl font-medium text-indigo-900 dark:text-indigo-100 leading-relaxed whitespace-pre-wrap font-serif italic">
+                         "{lesson?.adaptations.auditoryScript}"
+                       </p>
+                     </div>
+                   )}
+
+                   {learningStyle === 'Reading' && (
+                     <div className="space-y-8 animate-fadeIn">
+                        <div className="inline-block px-4 py-1.5 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest mb-4">Scholarly Deep-Dive</div>
+                        <div className="prose dark:prose-invert max-w-none">
+                           <p className="text-xl md:text-3xl font-medium text-gray-800 dark:text-gray-100 leading-relaxed tracking-tight first-letter:text-7xl first-letter:font-black first-letter:text-dare-teal first-letter:mr-3 first-letter:float-left">
+                             {lesson?.adaptations.readingDeepDive}
+                           </p>
+                        </div>
+                     </div>
+                   )}
+
+                   {learningStyle === 'Kinesthetic' && (
+                     <div className="space-y-8 animate-fadeIn">
+                        <div className="inline-block px-4 py-1.5 bg-amber-500 text-white rounded-xl text-[9px] font-black uppercase tracking-widest mb-4">Practical Action Protocol</div>
+                        <div className="bg-white/40 dark:bg-black/20 p-8 md:p-12 rounded-[2rem] border-2 border-dashed border-amber-500/50">
+                           <h4 className="text-2xl md:text-4xl font-black text-amber-900 dark:text-amber-100 mb-6 tracking-tighter">Experiment: Hands-On Test</h4>
+                           <p className="text-xl md:text-2xl font-bold text-amber-800 dark:text-amber-200 leading-relaxed mb-8">
+                             {lesson?.adaptations.kinestheticActivity}
+                           </p>
+                           <div className="flex flex-wrap gap-4">
+                              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-[10px] uppercase tracking-widest">At-Home Materials</div>
+                              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 rounded-full border border-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-[10px] uppercase tracking-widest">Skill: Practical Test</div>
+                           </div>
+                        </div>
+                     </div>
+                   )}
                 </div>
               </section>
 
@@ -537,22 +598,36 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
               </section>
             </>
           ) : (
-            <section className="animate-fadeIn grid sm:grid-cols-2 gap-6 md:gap-8">
-               {lesson?.mediaResources?.map((res) => (
-                 <div key={res.id} className="p-6 md:p-8 rounded-[2rem] md:rounded-[3rem] border-2 border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-dare-teal transition-all group shadow-sm">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 dark:bg-slate-800 rounded-[1rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 group-hover:scale-110 transition-transform">
-                      {res.type === 'ebook' ? '📖' : res.type === 'video' ? '🎬' : '🎙️'}
-                    </div>
-                    <p className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:mb-2">{res.type}</p>
-                    <h3 className="text-lg md:text-xl font-black dark:text-white mb-4 md:mb-6 leading-tight line-clamp-2">{res.title}</h3>
-                    <button 
-                      onClick={() => toggleMediaCompletion(res.id, res.type as any)}
-                      className={`w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all ${completedMedia.has(res.id) ? 'bg-emerald-500 text-white' : 'bg-dare-teal text-white shadow-xl'}`}
-                    >
-                      {completedMedia.has(res.id) ? '✓ Resource Mastered' : 'Engage Resource'}
-                    </button>
-                 </div>
-               ))}
+            <section className="animate-fadeIn space-y-12">
+               <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
+                {lesson?.mediaResources?.map((res) => (
+                  <div key={res.id} className="p-6 md:p-8 rounded-[2.5rem] md:rounded-[3rem] border-2 border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-dare-teal transition-all group shadow-sm flex flex-col justify-between">
+                      <div>
+                        <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 dark:bg-slate-800 rounded-[1rem] md:rounded-[1.5rem] flex items-center justify-center text-2xl md:text-3xl mb-4 md:mb-6 group-hover:scale-110 transition-transform">
+                          {res.type === 'ebook' ? '📖' : res.type === 'video' ? '🎬' : '🎙️'}
+                        </div>
+                        <p className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 md:mb-2">{res.type}</p>
+                        <h3 className="text-lg md:text-xl font-black dark:text-white mb-4 md:mb-6 leading-tight line-clamp-2">{res.title}</h3>
+                      </div>
+                      
+                      <div className="space-y-4 mt-auto">
+                        <div className="flex flex-wrap gap-1">
+                          {mediaDurations.map(mins => (
+                            <button key={mins} className="px-2 py-1 bg-gray-50 dark:bg-slate-800 rounded-lg text-[7px] font-black uppercase text-gray-500 hover:bg-dare-teal/10 hover:text-dare-teal transition-all">
+                              {mins}m
+                            </button>
+                          ))}
+                        </div>
+                        <button 
+                          onClick={() => toggleMediaCompletion(res.id, res.type as any)}
+                          className={`w-full py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all ${completedMedia.has(res.id) ? 'bg-emerald-500 text-white' : 'bg-dare-teal text-white shadow-xl'}`}
+                        >
+                          {completedMedia.has(res.id) ? '✓ Resource Mastered' : 'Engage Resource'}
+                        </button>
+                      </div>
+                  </div>
+                ))}
+               </div>
             </section>
           )}
 

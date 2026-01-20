@@ -17,16 +17,22 @@ const FastTrackHubView: React.FC<Props> = ({ user, progress, language, onBack, o
   const [configuringSubject, setConfiguringSubject] = useState<Subject | null>(null);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
+  // darewast standard study durations
   const durations = [
-    { label: `0.5 ${t('hour')}`, value: 30 },
-    { label: `1 ${t('hour')}`, value: 60 },
-    { label: `1.5 ${t('hours')}`, value: 90 },
-    { label: `2 ${t('hours')}`, value: 120 },
-    { label: `3 ${t('hours')}`, value: 180 },
+    { label: `5 ${t('minutes')}`, value: 5 },
+    { label: `10 ${t('minutes')}`, value: 10 },
+    { label: `15 ${t('minutes')}`, value: 15 },
+    { label: `30 ${t('minutes')}`, value: 30 },
+    { label: `45 ${t('minutes')}`, value: 45 },
+    { label: `60 ${t('minutes')}`, value: 60 },
+    { label: `90 ${t('minutes')}`, value: 90 },
+    { label: `120 ${t('minutes')}`, value: 120 },
+    { label: `180 ${t('minutes')}`, value: 180 },
+    { label: `240 ${t('minutes')}`, value: 240 },
   ];
 
   const getFastTrackStatus = (subjectId: string) => progress[subjectId]?.isFastTrack || false;
-  const getFastTrackDuration = (subjectId: string) => progress[subjectId]?.fastTrackDuration || 60;
+  const getFastTrackDuration = (subjectId: string) => progress[subjectId]?.fastTrackDuration || 30;
 
   const handleToggleFastTrack = (subject: Subject) => {
     if (getFastTrackStatus(subject.id)) {
@@ -58,28 +64,28 @@ const FastTrackHubView: React.FC<Props> = ({ user, progress, language, onBack, o
 
       {configuringSubject && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-xl animate-fadeIn">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-white/20 overflow-hidden flex flex-col">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl border border-white/20 overflow-hidden flex flex-col max-h-[85vh]">
             <div className="p-10 bg-gradient-to-r from-rose-500 to-rose-600 text-white relative">
                <div className="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black">{configuringSubject.icon}</div>
                <h3 className="text-3xl font-black mb-2">{t('fastTrack')} {t('setup')}</h3>
                <p className="text-white/80 font-medium">{configuringSubject.name}</p>
             </div>
             
-            <div className="p-10 space-y-8">
+            <div className="p-10 space-y-8 overflow-y-auto custom-scrollbar">
               <section>
                 <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-6">{t('dailyLearningTime')}</h4>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {durations.map(d => (
                     <button
                       key={d.value}
                       onClick={() => applyConfiguration(d.value)}
-                      className="p-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 hover:border-rose-500 hover:bg-rose-500/5 transition-all text-left flex items-center justify-between group"
+                      className="p-5 rounded-2xl border-2 border-gray-100 dark:border-slate-800 hover:border-rose-500 hover:bg-rose-500/5 transition-all text-left flex flex-col justify-between group"
                     >
-                      <div className="flex items-center gap-4">
-                        <span className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">⏰</span>
-                        <span className="font-bold dark:text-white">{d.label} <span className="text-gray-400 text-xs font-medium">({d.value} {t('minutes')})</span></span>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="w-8 h-8 rounded-xl bg-gray-50 dark:bg-slate-800 flex items-center justify-center text-sm group-hover:scale-110 transition-transform">⏰</span>
+                        <span className="font-bold dark:text-white text-xs">{d.label}</span>
                       </div>
-                      <span className="text-rose-500 font-black opacity-0 group-hover:opacity-100 transition-opacity">{t('setup')} →</span>
+                      <span className="text-rose-500 font-black text-[9px] uppercase tracking-widest">{t('setup')} →</span>
                     </button>
                   ))}
                 </div>
@@ -110,17 +116,6 @@ const FastTrackHubView: React.FC<Props> = ({ user, progress, language, onBack, o
               {t('fastTrackDesc')}
             </p>
           </header>
-
-          <div className="grid md:grid-cols-2 gap-8 pt-8">
-            <div className="p-8 bg-gray-50 dark:bg-slate-800 rounded-[2.5rem] border border-gray-100 dark:border-slate-700">
-              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2">{t('foundationPath')}</p>
-              <h3 className="text-2xl font-black dark:text-white mb-2">6-12 {t('weeksShort')}</h3>
-            </div>
-            <div className="p-8 bg-gray-50 dark:bg-slate-800 rounded-[2.5rem] border border-gray-100 dark:border-slate-700">
-              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2">{t('advancedPath')}</p>
-              <h3 className="text-2xl font-black dark:text-white mb-2">12-24 {t('weeksShort')}</h3>
-            </div>
-          </div>
 
           <div className="pt-12">
             <div className="flex gap-4 mb-8 border-b border-gray-100 dark:border-slate-800">
@@ -158,7 +153,7 @@ const FastTrackHubView: React.FC<Props> = ({ user, progress, language, onBack, o
                             </p>
                             {isFast && (
                               <span className="text-[8px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded uppercase">
-                                {duration / 60}{t('hour').charAt(0)}/{t('day')}
+                                {duration} {t('minutesShort')}
                               </span>
                             )}
                          </div>

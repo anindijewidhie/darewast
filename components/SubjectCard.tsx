@@ -15,7 +15,7 @@ interface Props {
 
 const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecialization, onPlacementTest, onLevelAssessment, onExamPrep }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { level, lessonNumber, isFastTrack } = progress;
+  const { level, lessonNumber, isFastTrack, specializations } = progress;
   const metadata = LEVEL_METADATA[level];
 
   const themeColor = React.useMemo(() => {
@@ -43,7 +43,6 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
       <div className={`absolute -top-10 -right-10 w-32 md:w-40 h-32 md:h-40 rounded-full blur-[60px] md:blur-[80px] transition-opacity duration-1000 ${isHovered ? 'opacity-30' : 'opacity-5'}`} style={{ backgroundColor: hexColor }}></div>
 
       <header className="flex justify-between items-start mb-6 md:mb-8 relative z-10">
-        {/* Layered App Icon Style */}
         <div className="relative group">
            <div className={`absolute inset-0 bg-gradient-to-br from-white to-transparent opacity-20 dark:opacity-10 rounded-[1.2rem] md:rounded-[1.5rem] blur-sm`}></div>
            <div className={`w-12 h-12 md:w-16 md:h-16 bg-gray-50 dark:bg-slate-800 rounded-[1.2rem] md:rounded-[1.5rem] flex items-center justify-center text-3xl md:text-4xl shadow-[0_8px_16px_rgba(0,0,0,0.08),inset_0_-4px_8px_rgba(0,0,0,0.05)] border border-white/20 dark:border-slate-700 transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
@@ -60,6 +59,12 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
            <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border transition-colors ${isHovered ? 'bg-dare-teal text-white border-dare-teal' : `bg-${themeColor}/10 text-${themeColor} border-${themeColor}/20`}`}>
               Level {level}
            </span>
+           <button 
+             onClick={(e) => { e.stopPropagation(); onOpenSpecialization(); }}
+             className={`px-2 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest transition-all ${specializations?.length ? 'bg-dare-purple text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 hover:text-dare-purple'}`}
+           >
+             🧬 DNA {specializations?.length ? `(${specializations.length})` : ''}
+           </button>
         </div>
       </header>
       
@@ -68,12 +73,20 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
         <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed line-clamp-2">
           {subject.description}
         </p>
+        {specializations && specializations.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {specializations.map(s => (
+              <span key={s} className="text-[7px] font-black px-1.5 py-0.5 bg-dare-purple/5 text-dare-purple border border-dare-purple/10 rounded uppercase">
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Progress Bar Mini */}
       <div className="mb-6 md:mb-8 space-y-2 relative z-10">
          <div className="flex justify-between items-center text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">
-            <span>Chapter Recovery</span>
+            <span>Chapter Mastery</span>
             <span>{lessonNumber}/12</span>
          </div>
          <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -93,7 +106,6 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
         </div>
       </footer>
 
-      {/* TOOLS QUICK LINKS */}
       <div className={`absolute inset-x-6 md:inset-x-8 bottom-20 md:bottom-24 flex gap-2 transition-all duration-500 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
         <button onClick={(e) => { e.stopPropagation(); onPlacementTest(); }} className="flex-1 py-1.5 md:py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg md:rounded-xl text-[7px] md:text-[8px] font-black uppercase tracking-widest border border-gray-200 dark:border-slate-700 hover:bg-dare-gold hover:text-white transition-all shadow-xl">🎯 Placement</button>
         <button onClick={(e) => { e.stopPropagation(); onExamPrep(); }} className="flex-1 py-1.5 md:py-2 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-lg md:rounded-xl text-[7px] md:text-[8px] font-black uppercase tracking-widest border border-gray-200 dark:border-slate-700 hover:bg-dare-purple hover:text-white transition-all shadow-xl">📝 Exam Prep</button>

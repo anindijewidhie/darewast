@@ -115,6 +115,9 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
+  // darewast standard study durations
+  const studyDurations = [5, 10, 15, 30, 45, 60, 90, 120, 180, 240];
+
   const handleUpdateDNA = (dna: Partial<User['academicDNA']>) => {
     onUpdateUser({ 
       academicDNA: { 
@@ -250,6 +253,21 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800 text-left">
+            <h3 className="text-xl font-black mb-6">{t('dailyGoalLabel')} ⏰</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {studyDurations.map(mins => (
+                <button
+                  key={mins}
+                  onClick={() => onUpdateGoal(mins)}
+                  className={`px-3 py-2 rounded-xl text-xs font-black transition-all ${user.dailyGoal === mins ? 'bg-dare-teal text-white shadow-lg' : 'bg-gray-50 dark:bg-slate-800 text-gray-500 hover:bg-gray-200'}`}
+                >
+                  {mins} {t('minutesShort')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800 text-left">
             <h3 className="text-xl font-black mb-6">Academic DNA 🧬</h3>
             <div className="space-y-8">
               <section>
@@ -291,7 +309,7 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
                
                <div className="grid md:grid-cols-12 gap-10">
                   <div className="md:col-span-4 space-y-4">
-                    <div className="p-8 bg-emerald-50 dark:bg-emerald-900/10 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-900/30">
+                    <div className="p-8 bg-emerald-50 dark:bg-emerald-950/10 rounded-[2.5rem] border border-emerald-100 dark:border-emerald-900/30">
                       <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">{t('estimatedWeekly')}</p>
                       <p className="text-4xl font-black text-emerald-700 dark:text-emerald-300 tracking-tight">${user.weeklyStipend} <span className="text-sm font-bold">USD</span></p>
                     </div>

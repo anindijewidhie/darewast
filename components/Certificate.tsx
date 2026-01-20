@@ -15,7 +15,7 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
   const levelInfo = LEVEL_METADATA[certificate.level as any];
   const isMaintenance = levelInfo?.type === 'maintenance';
   const isFastTrack = certificate.programType === 'fast-track';
-  const isSuperior = certificate.score >= 10.0;
+  const isSuperior = certificate.score >= 100;
 
   const handlePrint = () => {
     window.print();
@@ -27,10 +27,10 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
   const bgColor = isSuperior ? 'bg-emerald-50 dark:bg-emerald-950/20' : (isFastTrack ? 'bg-rose-50 dark:bg-rose-950/20' : 'bg-white dark:bg-slate-900');
   const borderColor = isSuperior ? 'border-emerald-500/40' : (isFastTrack ? 'border-rose-500/30' : (isMaintenance ? 'border-dare-purple/30' : 'border-dare-gold/30'));
 
-  const getScoreColor = (score: number) => {
-    if (score >= 10.0) return 'text-emerald-600 dark:text-emerald-400';
-    if (score >= 6.0) return 'text-dare-gold';
-    if (score >= 4.0) return 'text-dare-teal';
+  const getSkillPointColor = (score: number) => {
+    if (score >= 100) return 'text-emerald-600 dark:text-emerald-400';
+    if (score >= 80) return 'text-dare-teal';
+    if (score >= 60) return 'text-dare-gold';
     return 'text-rose-500';
   };
 
@@ -89,17 +89,17 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
           <h3 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-6 tracking-tight font-serif uppercase print:text-7xl print:mb-14">{certificate.userName}</h3>
           
           <div className="mb-8 flex flex-col md:flex-row justify-center items-center gap-6">
-             <div className="inline-flex flex-col items-center p-6 bg-gray-50 dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-700 min-w-[200px]">
+             <div className="inline-flex flex-col items-center p-6 bg-gray-50 dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-700 min-w-[220px]">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t('scoreLabel')}</p>
-                <p className={`text-5xl font-black ${getScoreColor(certificate.score)} tracking-tighter`}>{certificate.score.toFixed(1)} <span className="text-xl opacity-40">/ 10,0</span></p>
+                <p className={`text-6xl font-black ${getSkillPointColor(certificate.score)} tracking-tighter`}>{certificate.score} <span className="text-xl opacity-40">/ 100</span></p>
                 <div className="mt-3 px-4 py-1 bg-white dark:bg-slate-900 rounded-full border border-gray-100 dark:border-slate-700">
                    <p className="text-[10px] font-black uppercase text-gray-500">{certificate.gradeDescription}</p>
                 </div>
              </div>
 
-             <div className="inline-flex flex-col items-center p-6 bg-gray-50 dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-700 min-w-[200px]">
+             <div className="inline-flex flex-col items-center p-6 bg-gray-50 dark:bg-slate-800 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-slate-700 min-w-[220px]">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Mastery Level</p>
-                <p className={`text-5xl font-black text-${primaryColor} tracking-tighter`}>{certificate.level}</p>
+                <p className={`text-6xl font-black text-${primaryColor} tracking-tighter`}>{certificate.level}</p>
                 <div className="mt-3 px-4 py-1 bg-white dark:bg-slate-900 rounded-full border border-gray-100 dark:border-slate-700">
                    <p className="text-[10px] font-black uppercase text-gray-500">{levelInfo?.equivalency}</p>
                 </div>
@@ -111,7 +111,7 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
               ? <>has successfully demonstrated ongoing excellence and maintenance of <span className={`text-${primaryColor} font-black`}>{certificate.subjectName}</span></>
               : <>{t('certificateFooter')} <span className="text-dare-teal font-black">{certificate.subjectName}</span></>
             } {t('atLevel')} <span className={`text-${primaryColor} font-black`}>{certificate.level}</span>. 
-            This dual-metric achievement verifies both <span className="font-bold">curriculum completion</span> and <span className="font-bold">technical proficiency</span>.
+            This credential verifies <span className="font-bold">curriculum completion</span> and <span className="font-bold">technical proficiency</span> acceptable by institutions worldwide.
           </p>
 
           <div className="grid grid-cols-3 items-end mt-12 print:mt-32">
@@ -125,7 +125,7 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
               <div className="w-20 h-20 border-2 border-dare-teal/20 rounded-full flex items-center justify-center opacity-50 grayscale hover:grayscale-0 transition-all print:opacity-100 print:grayscale-0 print:border-dare-teal/40 mb-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-black bg-${primaryColor}`}>d</div>
               </div>
-              <p className="text-[7px] font-black text-gray-400 uppercase tracking-widest text-center leading-tight">Accepted via Level (Schools/Academies)<br/>& Level or Score (Uni / Corporations)</p>
+              <p className="text-[7px] font-black text-gray-400 uppercase tracking-widest text-center leading-tight">Accepted via Level (Schools/Academies)<br/>& Skill Points (Universities / Corporations)</p>
             </div>
             <div className="text-right">
               <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1 print:text-xs">Institutional Anchor</p>

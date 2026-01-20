@@ -17,10 +17,13 @@ import PlacementTestView from './components/PlacementTestView';
 import ProfileView from './components/ProfileView';
 import LessonCombinationView from './components/LessonCombinationView';
 import MethodCombinationView from './components/MethodCombinationView';
+import SpecializationModal from './components/SpecializationModal';
 import ContributorView from './components/ContributorView';
 import FastTrackHubView from './components/FastTrackHubView';
 import RelearnHubView from './components/RelearnHubView';
 import TransitionHubView from './components/TransitionHubView';
+import CreditTransferView from './components/CreditTransferView';
+import WeekendEnrichmentHub from './components/WeekendEnrichmentHub';
 import Certificate from './components/Certificate';
 import MasteryExamView from './components/MasteryExamView';
 import ExamPrepView from './components/ExamPrepView';
@@ -66,6 +69,7 @@ const App: React.FC = () => {
   const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
   const [activeLesson, setActiveLesson] = useState<LessonContent | null>(null);
   const [activeCertificate, setActiveCertificate] = useState<CertificateType | null>(null);
+  const [isSpecializationModalOpen, setIsSpecializationModalOpen] = useState(false);
   const [darkMode, setDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('darewast-darkmode');
     return saved ? JSON.parse(saved) : true;
@@ -90,33 +94,13 @@ const App: React.FC = () => {
     }));
   };
 
-  const handleCreateDynamicSubject = async (query: string, curriculum?: string) => {
-    if (!user) return;
-    const track = (Object.values(progress) as SubjectProgress[])[0]?.track || 'Standard';
-    const metadata = await generateCustomSubject(query, track, selectedLang);
-    const newSubject: Subject = {
-      id: `dynamic-${Date.now()}`,
-      name: metadata.name || query,
-      icon: metadata.icon || '📚',
-      category: (metadata.category as SubjectCategory) || 'Custom',
-      description: metadata.description || 'User-generated lesson module.',
-      suggestedSubTopics: metadata.suggestedSubTopics,
-      isUserGenerated: true,
-      targetCurriculum: curriculum,
-      richMediaConfig: UNIVERSAL_RICH_MEDIA
-    };
-    
-    setDynamicSubjects(prev => [...prev, newSubject]);
-    handleUpdateProgress(newSubject.id, { level: 'A', lessonNumber: 1, track });
-    return newSubject;
-  };
-
   const handleTrackChange = (track: EducationTrack) => {
     const newProgress = { ...progress };
     Object.keys(newProgress).forEach(id => {
       newProgress[id] = { ...newProgress[id], track };
     });
     setProgress(newProgress);
+    handleUpdateUser({ track });
     
     if (track === 'School') setCurrentView('school-dashboard');
     else if (track === 'University') setCurrentView('university-dashboard');
@@ -127,6 +111,55 @@ const App: React.FC = () => {
     else if (track === 'DistanceVocationalSchool') setCurrentView('distance-vocational-school-dashboard');
     else if (track === 'DistanceVocationalUniversity') setCurrentView('distance-vocational-university-dashboard');
     else setCurrentView('dashboard');
+  };
+
+  const handleCreateDynamicSubject = async (query: string, curriculum?: string) => {
+    if (!user) return undefined;
+    try {
+      const data = await generateCustomSubject(query, user.track || 'Standard', selectedLang);
+      const newSub: Subject = {
+        id: `custom-${Date.now()}`,
+        name: data.name || query,
+        category: (data.category as SubjectCategory) || 'Custom',
+        icon: data.icon || '📚',
+        description: data.description || 'Custom generated subject',
+        suggestedSubTopics: data.subtopics || [],
+        isUserGenerated: true,
+        targetCurriculum: curriculum || data.targetCurriculum,
+        richMediaConfig: UNIVERSAL_RICH_MEDIA
+      };
+      
+      setDynamicSubjects(prev => [...prev, newSub]);
+      
+      setProgress(prev => ({
+        ...prev,
+        [newSub.id]: { 
+          level: 'A', 
+          lessonNumber: 1, 
+          track: user.track || 'Standard' 
+        }
+      }));
+
+      return newSub;
+    } catch (err) {
+      console.error("Custom Subject Synthesis Error:", err);
+      return undefined;
+    }
+  };
+
+  const handleStartLesson = (sub: Subject, isTrans: boolean = false) => {
+    const day = new Date().getDay();
+    const isWeekend = day === 0 || day === 6;
+    const isInstitutional = user?.track !== 'Standard' || isTrans;
+
+    setActiveSubject(sub);
+    
+    if (isWeekend && isInstitutional) {
+        setCurrentView('weekend-enrichment' as any);
+    } else {
+        setActiveLesson(isTrans ? ({ isTransition: true } as any) : null);
+        setCurrentView('lesson');
+    }
   };
 
   const handleLessonComplete = (score: number, lessonNum: number, xpEarned: number) => {
@@ -146,8 +179,10 @@ const App: React.FC = () => {
     const metadata = LEVEL_METADATA[currentSubjectProgress.level];
     const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 5;
 
+    // Transition to the 100-point Skill Point system
+    const skillPoints = Math.round((score / totalExercises) * 100);
+
     if (activeLesson?.isRelearn || activeLesson?.isTransition) {
-        const tenPointScore = parseFloat(((score / totalExercises) * 10).toFixed(1));
         const cert: CertificateType = {
           userName: user.name,
           subjectName: activeLesson.isTransition ? `${activeSubject.name} (Bridge)` : `${activeSubject.name} (${activeLesson.relearnStage})`,
@@ -155,8 +190,8 @@ const App: React.FC = () => {
           date: new Date().toLocaleDateString(),
           verificationId: activeLesson.isTransition ? `TRANS-BRIDGE-${Date.now()}` : `RELEARN-RESTORE-${Date.now()}`,
           programType: activeLesson.isTransition ? 'transition' : 'relearn',
-          score: tenPointScore,
-          gradeDescription: getGradeTier(tenPointScore)
+          score: skillPoints,
+          gradeDescription: getGradeTier(skillPoints)
         };
         setActiveCertificate(cert);
         setCurrentView('certificate');
@@ -164,13 +199,13 @@ const App: React.FC = () => {
         return;
     }
 
-    if (lessonNum < metadata.lessonsCount) {
+    if (lessonNum < metadata.chaptersCount) {
       setProgress(prev => ({
         ...prev,
         [activeSubject.id]: { 
           ...prev[activeSubject.id], 
           lessonNumber: lessonNum + 1,
-          lastScore: { ...prev[activeSubject.id].lastScore, correct: score, total: totalExercises }
+          lastScore: { ...prev[activeSubject.id].lastScore, correct: score, total: totalExercises, skillPoints: skillPoints }
         }
       }));
     } else {
@@ -178,21 +213,22 @@ const App: React.FC = () => {
     }
   };
 
-  const getGradeTier = (score: number): string => {
-    if (score >= 10.0) return translations[selectedLang].gradeSuperior || 'Superior';
-    if (score >= 8.0) return translations[selectedLang].gradeUp || 'Up Tier';
-    if (score >= 6.0) return translations[selectedLang].gradeUpperMiddle || 'Upper Middle Tier';
-    if (score >= 4.0) return translations[selectedLang].gradeMiddle || 'Middle Tier';
-    if (score >= 2.0) return translations[selectedLang].gradeLowerMiddle || 'Lower Middle Tier';
-    return translations[selectedLang].gradeLow || 'Low Tier';
+  const getGradeTier = (skillPoints: number): string => {
+    if (skillPoints >= 100) return t('superiorSkillPoint');
+    if (skillPoints >= 80) return t('highSkillPoint');
+    if (skillPoints >= 60) return t('mediumHighSkillPoint');
+    if (skillPoints >= 40) return t('mediumSkillPoint');
+    if (skillPoints >= 20) return t('lowMediumSkillPoint');
+    return t('lowSkillPoint');
   };
 
   const handleExamComplete = (score: number, total: number) => {
     if (!user || !activeSubject) return;
     
-    const tenPointScore = parseFloat(((score / total) * 10).toFixed(1));
-    const gradeTier = getGradeTier(tenPointScore);
-    const passThreshold = 6.0;
+    // Transition to the 100-point Skill Point system
+    const skillPoints = Math.round((score / total) * 100);
+    const gradeTier = getGradeTier(skillPoints);
+    const passThreshold = 60; // Acceptance by Schools/Uni/Companies requires ≥ 60 Skill Points
 
     const currentSubjectProgress = progress[activeSubject.id];
 
@@ -203,13 +239,14 @@ const App: React.FC = () => {
       date: new Date().toLocaleDateString(),
       verificationId: `DARE-CERT-${Date.now()}`,
       programType: currentSubjectProgress.isFastTrack ? 'fast-track' : 'regular',
-      score: tenPointScore,
+      score: skillPoints,
       gradeDescription: gradeTier
     };
     
     setActiveCertificate(cert);
 
-    if (tenPointScore >= passThreshold) {
+    // Progression logic (Requires 60+ Skill Points for institutional acceptance)
+    if (skillPoints >= passThreshold) {
       const currentIndex = MASTERY_LEVEL_ORDER.indexOf(currentSubjectProgress.level);
       if (currentIndex < MASTERY_LEVEL_ORDER.length - 1) {
         const nextLevel = MASTERY_LEVEL_ORDER[currentIndex + 1];
@@ -219,37 +256,41 @@ const App: React.FC = () => {
             ...prev[activeSubject.id], 
             level: nextLevel, 
             lessonNumber: 1,
-            lastScore: { correct: score, total: total, tenPointScale: tenPointScore, gradeTier: gradeTier }
+            lastScore: { correct: score, total: total, skillPoints: skillPoints, gradeTier: gradeTier }
           }
         }));
       }
       setCurrentView('certificate');
     } else {
-      alert(`Final Score: ${tenPointScore}/10 (${gradeTier}). Mastery gap detected. Progress requires ≥ 6.0.`);
+      alert(`Skill Point Index: ${skillPoints} / 100 (${gradeTier}). Mastery gap detected. Institutional acceptance requires ≥ 60 Skill Points.`);
       setCurrentView('dashboard');
     }
   };
 
-  const getActiveDashboard = () => {
-    const dashboardProps = {
-        user: user!,
-        progress,
-        language: selectedLang,
-        onStartLesson: (s: Subject) => { setActiveSubject(s); setCurrentView('lesson'); },
-        onStartPrep: (s: Subject) => { setActiveSubject(s); setCurrentView('exam-prep'); },
-        onUpdateUser: handleUpdateUser,
-        onUpdateProgress: handleUpdateProgress,
-        onTrackChange: handleTrackChange,
-        onBackToStandard: () => setCurrentView('dashboard'),
-        dynamicSubjects,
-        onCreateSubject: handleCreateDynamicSubject,
-        onOpenPlacement: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-placement'); },
-        onOpenAssessment: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-assessment'); },
-        onOpenFastTrack: () => setCurrentView('fast-track-hub'),
-        onOpenRelearn: () => setCurrentView('relearn-hub'),
-        onOpenTransition: () => setCurrentView('transition-hub')
-    };
+  const t = (key: string) => (translations[selectedLang]?.[key]) || (translations['English']?.[key]) || key;
 
+  const dashboardProps = {
+    user: user!,
+    progress,
+    language: selectedLang,
+    onStartLesson: handleStartLesson,
+    onStartPrep: (s: Subject) => { setActiveSubject(s); setCurrentView('exam-prep'); },
+    onUpdateUser: handleUpdateUser,
+    onUpdateProgress: handleUpdateProgress,
+    onTrackChange: handleTrackChange,
+    onBackToStandard: () => setCurrentView('dashboard'),
+    dynamicSubjects,
+    onCreateSubject: handleCreateDynamicSubject,
+    onOpenPlacement: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-placement'); },
+    onOpenAssessment: (s: Subject) => { setActiveSubject(s); setCurrentView('subject-assessment'); },
+    onOpenFastTrack: () => setCurrentView('fast-track-hub'),
+    onOpenRelearn: () => setCurrentView('relearn-hub'),
+    onOpenTransition: () => setCurrentView('transition-hub'),
+    onOpenCreditTransfer: () => setCurrentView('credit-transfer'),
+    onOpenSpecialization: (s: Subject) => { setActiveSubject(s); setIsSpecializationModalOpen(true); }
+  };
+
+  const getActiveDashboard = () => {
     switch (currentView) {
       case 'school-dashboard':
         return <SchoolDashboardView {...dashboardProps} />;
@@ -277,8 +318,6 @@ const App: React.FC = () => {
                 />;
     }
   };
-
-  const t = (key: string) => translations[selectedLang][key] || translations['English'][key] || key;
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-500`}>
@@ -375,7 +414,26 @@ const App: React.FC = () => {
             language={selectedLang} 
             onBack={() => setCurrentView('dashboard')}
             onEnroll={(program) => handleUpdateUser({ transitionProgram: program })}
-            onStartLesson={(sub, isTrans) => { setActiveSubject(sub); setActiveLesson({ isTransition: isTrans } as any); setCurrentView('lesson'); }}
+            onStartLesson={(sub, isTrans) => handleStartLesson(sub, isTrans)}
+          />
+        )}
+
+        {currentView === 'credit-transfer' && user && (
+          <CreditTransferView 
+            user={user} 
+            progress={progress} 
+            language={selectedLang} 
+            onBack={() => setCurrentView('dashboard')}
+          />
+        )}
+
+        {(currentView as any) === 'weekend-enrichment' && user && activeSubject && (
+          <WeekendEnrichmentHub
+            user={user}
+            subject={activeSubject}
+            lesson={null} 
+            language={selectedLang}
+            onBack={() => setCurrentView('dashboard')}
           />
         )}
 
@@ -422,6 +480,20 @@ const App: React.FC = () => {
         {currentView === 'grade-converter' && <GradeConverterView language={selectedLang} onBack={() => setCurrentView('dashboard')} onApply={(lvl) => { Object.keys(progress).forEach(id => handleUpdateProgress(id, { level: lvl })); setCurrentView('dashboard'); }} />}
 
         {currentView === 'donation' && <DonationView language={selectedLang} onBack={() => setCurrentView(user ? 'dashboard' : 'landing')} />}
+
+        {isSpecializationModalOpen && activeSubject && (
+          <SpecializationModal 
+            subject={activeSubject} 
+            language={selectedLang} 
+            initialSelected={progress[activeSubject.id]?.specializations || []}
+            initialSecondaryLanguage={progress[activeSubject.id]?.secondaryLanguage}
+            onClose={() => setIsSpecializationModalOpen(false)}
+            onSave={(specs, secLang) => {
+              handleUpdateProgress(activeSubject.id, { specializations: specs, secondaryLanguage: secLang });
+              setIsSpecializationModalOpen(false);
+            }}
+          />
+        )}
       </main>
     </div>
   );

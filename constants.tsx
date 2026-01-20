@@ -79,6 +79,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Literacy', 
     icon: '📖', 
     description: 'Unlocking the power of language through reading, writing, and critical linguistic analysis across multiple languages.',
+    suggestedSubTopics: ['Creative Writing', 'Linguistic Analysis', 'Classic Literature', 'Comparative Grammar'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -87,6 +88,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Numeracy', 
     icon: '🔢', 
     description: 'Mastering the universal language of numbers, logic, and abstract computational thinking from foundations to complex sets.', 
+    suggestedSubTopics: ['Number Theory', 'Linear Algebra', 'Calculus Foundations', 'Discrete Mathematics'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -95,6 +97,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Science', 
     icon: '⚛️', 
     description: 'Exploring the fundamental laws of energy, matter, and the hidden mechanics of our physical universe.', 
+    suggestedSubTopics: ['Quantum Mechanics', 'Thermodynamics', 'Electromagnetism', 'Classical Mechanics'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -103,6 +106,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Science', 
     icon: '🧪', 
     description: 'Diving into the molecular world of atoms, complex reactions, and the elemental composition of everything around us.', 
+    suggestedSubTopics: ['Organic Chemistry', 'Inorganic Chemistry', 'Biochemistry', 'Analytical Chemistry'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -111,6 +115,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Science', 
     icon: '🧬', 
     description: 'Investigating the miraculous complexity of living organisms, cellular structures, and the biological systems that sustain life.', 
+    suggestedSubTopics: ['Genetics', 'Microbiology', 'Ecology', 'Cellular Biology'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -119,6 +124,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Science', 
     icon: '🌌', 
     description: 'Journeying through the vast cosmos to understand planets, stars, black holes, and the origins of our galaxy.', 
+    suggestedSubTopics: ['Cosmology', 'Astrophysics', 'Planetary Science', 'Stellar Evolution'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -127,6 +133,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Science', 
     icon: '🌍', 
     description: 'Deciphering the physical forces that shape Earth, from geological shifts to atmospheric global climate systems.', 
+    suggestedSubTopics: ['Geology', 'Meteorology', 'Oceanography', 'Climatology'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -135,6 +142,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '📜', 
     description: 'Chronicling the rise and fall of civilizations to understand the profound events that shaped our modern world.', 
+    suggestedSubTopics: ['Ancient Civilizations', 'Medieval Era', 'Modern Global History', 'Historiography'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -143,6 +151,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '🏙️', 
     description: 'Examining how human societies organize, urbanize, and interact with their diverse environments and each other.', 
+    suggestedSubTopics: ['Urbanization', 'Human Migration', 'Cultural Landscapes', 'Economic Geography'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -151,6 +160,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '📈', 
     description: 'Analyzing the flow of wealth, market dynamics, and the engines of global finance through micro and macro perspectives.', 
+    suggestedSubTopics: ['Microeconomics', 'Macroeconomics', 'Econometrics', 'Behavioral Economics'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -159,6 +169,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '👥', 
     description: 'Studying the intricate patterns of human social behavior, collective identity, and the evolution of modern society.', 
+    suggestedSubTopics: ['Social Stratification', 'Criminology', 'Urban Sociology', 'Sociology of Education'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -167,6 +178,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '🧠', 
     description: 'Probing the depths of the human mind, from cognitive functions to the biological roots of behavioral patterns.', 
+    suggestedSubTopics: ['Cognitive Psychology', 'Developmental Psychology', 'Social Psychology', 'Neuropsychology'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -175,6 +187,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '🏛️', 
     description: 'Challenging the nature of reality, logic, and ethics through the fundamental pursuit of wisdom and critical inquiry.', 
+    suggestedSubTopics: ['Epistemology', 'Metaphysics', 'Logic', 'Aesthetics'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -183,6 +196,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '🏺', 
     description: 'Uncovering the global cultural tapestry and the biological journey of humanity from prehistory to the present day.', 
+    suggestedSubTopics: ['Cultural Anthropology', 'Biological Anthropology', 'Archaeology', 'Linguistic Anthropology'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -191,6 +205,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Humanities', 
     icon: '🕊️', 
     description: 'A global exploration of faith, belief systems, and the diverse spiritual paths that influence human culture.', 
+    suggestedSubTopics: ['Comparative Religion', 'Philosophy of Religion', 'Theology', 'Religious History'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -199,6 +214,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Tech', 
     icon: '💿', 
     description: 'Taking control of digital architecture, from low-level kernels to intuitive user interfaces across all major platforms.', 
+    suggestedSubTopics: ['Kernel Architecture', 'Memory Management', 'File Systems', 'Distributed Systems'],
     richMediaConfig: TECH_RICH_MEDIA
   },
   { 
@@ -207,6 +223,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Tech', 
     icon: '💾', 
     description: 'Mastering the essential tools of the digital age, covering applications, workflows, and their creative potential.', 
+    suggestedSubTopics: ['System Architecture', 'Product Management', 'UI/UX Design', 'Software Testing'],
     richMediaConfig: TECH_RICH_MEDIA
   },
   { 
@@ -215,6 +232,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Tech', 
     icon: '💻', 
     description: 'Coding the future through logic, algorithms, and deep mastery of major programming languages and paradigms.', 
+    suggestedSubTopics: ['Web Development', 'Mobile Development', 'Data Structures', 'Embedded Systems'],
     richMediaConfig: TECH_RICH_MEDIA
   },
   { 
@@ -223,6 +241,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Tech', 
     icon: '🤖', 
     description: 'Unlocking the secrets of neural networks, machine learning models, and the automation systems of the next frontier.', 
+    suggestedSubTopics: ['Machine Learning', 'Neural Networks', 'Natural Language Processing', 'Computer Vision'],
     richMediaConfig: TECH_RICH_MEDIA
   },
   { 
@@ -231,6 +250,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Music', 
     icon: '🎼', 
     description: 'Decoding the science of sound, harmony, rhythm, and the structural beauty of professional musical composition.', 
+    suggestedSubTopics: ['Harmony', 'Counterpoint', 'Music Analysis', 'Orchestration'],
     richMediaConfig: MUSIC_THEORY_RICH_MEDIA
   },
   { 
@@ -239,6 +259,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Music', 
     icon: '🎻', 
     description: 'Achieving technical excellence and emotional expression through proficiency in instrumental performance.', 
+    suggestedSubTopics: ['Piano Performance', 'String Pedagogy', 'Wind Instruments', 'Percussion Techniques'],
     richMediaConfig: MUSIC_PERFORMANCE_RICH_MEDIA
   },
   { 
@@ -247,6 +268,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Music', 
     icon: '🎤', 
     description: 'Mastering the art of singing, vocal techniques, and performance across every major language and musical genre.', 
+    suggestedSubTopics: ['Opera Performance', 'Contemporary Vocals', 'Choral Directing', 'Vocal Health'],
     richMediaConfig: MUSIC_PERFORMANCE_RICH_MEDIA
   },
   { 
@@ -255,6 +277,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Ethics', 
     icon: '⚖️', 
     description: 'Navigating the complex landscapes of right and wrong through deep philosophical inquiry and ethical decision-making.', 
+    suggestedSubTopics: ['Normative Ethics', 'Applied Ethics', 'Meta-ethics', 'Bioethics'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
   { 
@@ -263,6 +286,7 @@ export const SUBJECTS: Subject[] = [
     category: 'Ethics', 
     icon: '📜', 
     description: 'Understanding the pillars of justice, global legal systems, jurisprudence, and the protection of constitutional rights.', 
+    suggestedSubTopics: ['Constitutional Law', 'International Law', 'Criminal Jurisprudence', 'Corporate Law'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
   },
 ];
