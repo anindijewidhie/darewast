@@ -15,8 +15,11 @@ interface Props {
 
 const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecialization, onPlacementTest, onLevelAssessment, onExamPrep }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { level, lessonNumber, isFastTrack, specializations } = progress;
+  const { level, lessonNumber, isFastTrack, specializations, track } = progress;
   const metadata = LEVEL_METADATA[level];
+
+  // Semester Aware: Now Level itself is the semester A or B
+  const isSemesterAware = track?.includes('DistanceSchool') || track?.includes('University');
 
   const themeColor = React.useMemo(() => {
     switch (subject.category) {
@@ -31,6 +34,9 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
       case 'Humanities': return '#FB923C'; case 'Tech': return '#B953CC'; default: return '#94A3B8';
     }
   }, [subject.category]);
+
+  const isOptional = metadata.type === 'optional';
+  const isMaintenance = metadata.type === 'maintenance';
 
   return (
     <div 
@@ -56,9 +62,24 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
         </div>
 
         <div className="flex flex-col items-end gap-2">
-           <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border transition-colors ${isHovered ? 'bg-dare-teal text-white border-dare-teal' : `bg-${themeColor}/10 text-${themeColor} border-${themeColor}/20`}`}>
-              Level {level}
-           </span>
+           <div className="flex flex-col gap-1 items-end">
+              <div className="flex gap-1.5">
+                {isOptional && (
+                  <span className="px-2 py-0.5 rounded-lg bg-dare-purple/10 text-dare-purple text-[7px] font-black uppercase tracking-widest border border-dare-purple/20">
+                    Advanced Research
+                  </span>
+                )}
+                {isMaintenance && (
+                  <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-[7px] font-black uppercase tracking-widest border border-emerald-500/20">
+                    Maintenance Mode
+                  </span>
+                )}
+                <span className={`px-3 md:px-4 py-1 md:py-1.5 rounded-lg md:rounded-xl text-[8px] md:text-[10px] font-black uppercase tracking-widest border transition-colors ${isHovered ? 'bg-dare-teal text-white border-dare-teal' : `bg-${themeColor}/10 text-${themeColor} border-${themeColor}/20`}`}>
+                    {level}
+                </span>
+              </div>
+              <p className="text-[7px] font-black text-gray-400 uppercase tracking-widest">{metadata.duration}</p>
+           </div>
            <button 
              onClick={(e) => { e.stopPropagation(); onOpenSpecialization(); }}
              className={`px-2 py-1 rounded-lg text-[7px] font-black uppercase tracking-widest transition-all ${specializations?.length ? 'bg-dare-purple text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-400 hover:text-dare-purple'}`}
@@ -84,15 +105,17 @@ const SubjectCard: React.FC<Props> = ({ subject, progress, onClick, onOpenSpecia
         )}
       </div>
 
-      <div className="mb-6 md:mb-8 space-y-2 relative z-10">
-         <div className="flex justify-between items-center text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">
-            <span>Chapter Mastery</span>
-            <span>{lessonNumber}/12</span>
-         </div>
-         <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-1000`} style={{ width: `${(lessonNumber / 12) * 100}%`, backgroundColor: hexColor }}></div>
-         </div>
-      </div>
+      {!isMaintenance && (
+        <div className="mb-6 md:mb-8 space-y-2 relative z-10">
+           <div className="flex justify-between items-center text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest">
+              <span>{isOptional ? 'Syllabus Depth' : 'Mandatory Mastery'}</span>
+              <span>{lessonNumber}/12 Chapters</span>
+           </div>
+           <div className="h-1.5 w-full bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className={`h-full transition-all duration-1000`} style={{ width: `${(lessonNumber / 12) * 100}%`, backgroundColor: hexColor }}></div>
+           </div>
+        </div>
+      )}
 
       <footer className="mt-auto pt-4 md:pt-6 border-t border-gray-50 dark:border-slate-800 flex items-center justify-between relative z-10">
         <div className="text-left">

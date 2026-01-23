@@ -4,7 +4,7 @@ export type Language =
   | 'Japanese' | 'Korean' | 'Arabic' | 'Spanish' | 'French' 
   | 'Portuguese' | 'Russian' | 'Hindi' | 'Bengali' | 'Urdu';
 
-export type SubjectCategory = 'Literacy' | 'Numeracy' | 'Science' | 'Humanities' | 'Tech' | 'Music' | 'Ethics' | 'Vocational' | 'Custom';
+export type SubjectCategory = 'Literacy' | 'Numeracy' | 'Science' | 'Humanities' | 'Tech' | 'Music' | 'Ethics' | 'Vocational' | 'Arts' | 'Sports' | 'Custom';
 
 export type CurriculumEra = 'Modern' | 'Legacy' | 'Classical';
 
@@ -17,9 +17,11 @@ export type MasteryLevel =
   | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T'
   | 'Beyond P' | 'Beyond T';
 
+export type CompletionMethod = 'assessment' | 'questionnaire' | 'project' | 'performance';
+
 export type EducationalStage = 'Preschool' | 'Primary' | 'Middle' | 'High' | 'University' | 'Transition';
 
-export type ContributorRole = 'General' | 'Professional';
+export type ContributorRole = 'Contributor' | 'Educator';
 
 export type AccommodationType = 'none' | 'dyslexia' | 'visual' | 'adhd' | 'hearing' | 'idd';
 
@@ -36,6 +38,16 @@ export type EducationTrack =
 
 export type DistanceSchoolType = 
   | '6-3-3' | '4-4-4' | '8-4' | '7-4' | '4-3-4' | '8-3' | '4-4-3' | '5-5' | '7-3';
+
+export type InstitutionStatus = 'regular' | 'closed' | 'problematic' | 'independent';
+
+export interface EssayGradingResult {
+  clarity: number; // 0-100
+  coherence: number; // 0-100
+  relevance: number; // 0-100
+  feedback: string;
+  passed: boolean;
+}
 
 export interface TransitionProgram {
   id: string;
@@ -82,12 +94,15 @@ export interface Subject {
     videos?: number;
     songs?: number;
     exercisesPerLesson: number;
+    worksPerLesson?: number;
+    danceMovesPerLesson?: number;
+    simulationsPerLesson?: number;
   };
 }
 
 export interface MediaItem {
   id: string;
-  type: 'ebook' | 'blog' | 'podcast' | 'video' | 'song';
+  type: 'ebook' | 'blog' | 'podcast' | 'video' | 'song' | 'work' | 'danceMove' | 'simulation';
   title: string;
   isCompleted: boolean;
 }
@@ -125,6 +140,7 @@ export interface LessonContent {
     correctAnswer: string;
     explanation: string;
     hint?: string;
+    isEssay?: boolean;
   }[];
   level: MasteryLevel;
   lessonNumber: number;
@@ -140,6 +156,13 @@ export interface LessonContent {
   mediaResources?: MediaItem[];
 }
 
+export interface ProjectPrompt {
+  title: string;
+  objective: string;
+  requirements: string[];
+  guidelines: string;
+}
+
 export interface SubjectProgress {
   level: MasteryLevel;
   lessonNumber: number; // 1 to 12
@@ -153,6 +176,8 @@ export interface SubjectProgress {
   completedExams?: string[];
   isFastTrack?: boolean;
   fastTrackDuration?: number; // In minutes
+  totalMinutesSpent?: number;
+  hintsUsed?: number;
   relearnActive?: boolean;
   relearnStage?: EducationalStage;
   mediaProgress?: {
@@ -161,6 +186,9 @@ export interface SubjectProgress {
     completedPodcasts: string[];
     completedVideos: string[];
     completedSongs: string[];
+    completedWorks: string[];
+    completedDanceMoves: string[];
+    completedSimulations: string[];
   };
 }
 
@@ -191,7 +219,9 @@ export type View =
   | 'exam-hall'
   | 'relearn-hub'
   | 'transition-hub'
-  | 'credit-transfer';
+  | 'credit-transfer'
+  | 'transfer-portal'
+  | 'level-completion-hub';
 
 export interface ScheduledSession {
   id: string;
@@ -226,8 +256,9 @@ export interface ProfessionalCredentials {
   degree: string;
   yearsOfExperience: number;
   verificationStatus: 'unverified' | 'pending' | 'verified';
-  certificateUploaded: boolean;
-  certificateUri?: string;
+  evidenceUploaded: boolean;
+  evidenceType: 'degree' | 'report_card';
+  portfolioUrl?: string;
 }
 
 export interface PaymentPreferences {
@@ -269,6 +300,7 @@ export interface User {
   weeklyStipend?: number;
   paymentPreferences?: PaymentPreferences;
   masterySchedule?: MasterySchedule;
+  preferredLearningStyle?: LearningStyle;
   academicDNA?: {
     era: CurriculumEra;
     method: LearningMethod;
@@ -279,7 +311,10 @@ export interface User {
   culturalBackground?: string;
   track?: EducationTrack;
   distanceSchoolType?: DistanceSchoolType;
-  degreeDuration?: number;
+  degreeDuration?: number; // 1, 2, 3, or 4
+  institutionStatus?: InstitutionStatus;
+  previousInstitution?: string;
+  isTransferStudent?: boolean;
   transitionProgram?: TransitionProgram;
   creditRecords?: CreditRecord[];
   studentNumber?: string;

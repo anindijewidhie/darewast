@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { User, Language, EducationTrack, DistanceSchoolType } from '../types';
+import { User, Language, EducationTrack, DistanceSchoolType, LearningStyle } from '../types';
 import { translations } from '../translations';
 
 interface Props {
@@ -15,6 +15,7 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
   const [track, setTrack] = useState<EducationTrack>('Standard');
   const [distanceType, setDistanceType] = useState<DistanceSchoolType>('6-3-3');
   const [degreeDuration, setDegreeDuration] = useState<number>(4);
+  const [preferredLearningStyle, setPreferredLearningStyle] = useState<LearningStyle>('Unified');
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [birthDate, setBirthDate] = useState('');
@@ -70,7 +71,9 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
       institutionName: institutionName,
       xp: 0,
       level: 1,
-      rank: 'Scholar'
+      rank: 'Scholar',
+      preferredLearningStyle,
+      studyHistory: {}
     });
   };
 
@@ -96,6 +99,13 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
 
   const distanceTypes: DistanceSchoolType[] = ['6-3-3', '4-4-4', '8-4', '7-4', '4-3-4', '8-3', '4-4-3', '5-5', '7-3'];
   const degreeDurations = [1, 2, 3, 4];
+  const learningStyles: { id: LearningStyle; icon: string }[] = [
+    { id: 'Unified', icon: '🌀' },
+    { id: 'Visual', icon: '👁️' },
+    { id: 'Auditory', icon: '👂' },
+    { id: 'Reading', icon: '📖' },
+    { id: 'Kinesthetic', icon: '🛠️' }
+  ];
 
   return (
     <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-950 flex animate-fadeIn overflow-y-auto">
@@ -170,61 +180,60 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
                   <p className="text-gray-500 uppercase text-[10px] font-black tracking-widest">Unified Academic Hub</p>
                 </div>
 
-                <div className="mb-8">
-                  <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Select Educational Path</p>
-                  <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                    {tracks.map(t => (
-                      <button 
-                        key={t.id}
-                        onClick={() => setTrack(t.id)}
-                        className={`py-2 px-1 rounded-xl text-[8px] font-black uppercase transition-all ${track === t.id ? 'bg-white dark:bg-slate-800 text-dare-teal shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
+                {view === 'sign-up' && (
+                  <div className="mb-8 space-y-6">
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Educational Path</p>
+                      <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
+                        {tracks.map(t => (
+                          <button 
+                            key={t.id}
+                            type="button"
+                            onClick={() => setTrack(t.id)}
+                            className={`py-2 px-1 rounded-xl text-[8px] font-black uppercase transition-all ${track === t.id ? 'bg-white dark:bg-slate-800 text-dare-teal shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
+                          >
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">{t('preferredLearningStyle')}</p>
+                      <div className="grid grid-cols-5 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
+                        {learningStyles.map(ls => (
+                          <button 
+                            key={ls.id}
+                            type="button"
+                            onClick={() => setPreferredLearningStyle(ls.id)}
+                            title={t(ls.id.toLowerCase())}
+                            className={`py-3 rounded-xl text-xl transition-all ${preferredLearningStyle === ls.id ? 'bg-white dark:bg-slate-800 text-dare-teal shadow-sm scale-110' : 'text-gray-400 grayscale hover:grayscale-0'}`}
+                          >
+                            {ls.icon}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {track === 'DistanceSchool' && (
+                      <div className="mt-4 animate-fadeIn">
+                         <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Distance Structure</p>
+                         <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
+                           {distanceTypes.map(dt => (
+                             <button 
+                              key={dt}
+                              type="button"
+                              onClick={() => setDistanceType(dt)}
+                              className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${distanceType === dt ? 'bg-dare-gold text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
+                             >
+                              Type {dt}
+                             </button>
+                           ))}
+                         </div>
+                      </div>
+                    )}
                   </div>
-                  
-                  {track === 'DistanceSchool' && (
-                    <div className="mt-4 animate-fadeIn">
-                       <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Distance School Structure</p>
-                       <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                         {distanceTypes.map(dt => (
-                           <button 
-                            key={dt}
-                            onClick={() => setDistanceType(dt)}
-                            className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${distanceType === dt ? 'bg-dare-gold text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
-                           >
-                            Type {dt}
-                           </button>
-                         ))}
-                       </div>
-                    </div>
-                  )}
-
-                  {track.includes('University') && (
-                    <div className="mt-4 animate-fadeIn">
-                       <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">{t('degreeDuration')}</p>
-                       <div className="grid grid-cols-4 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                         {degreeDurations.map(d => (
-                           <button 
-                            key={d}
-                            onClick={() => setDegreeDuration(d)}
-                            className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${degreeDuration === d ? 'bg-dare-purple text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
-                           >
-                            {d}Y
-                           </button>
-                         ))}
-                       </div>
-                    </div>
-                  )}
-
-                  {['DistanceSchool', 'DistanceVocationalSchool'].includes(track) && (
-                    <p className="mt-3 text-[9px] text-rose-500 font-bold text-center italic">Distance schooling recommended for Primary to High School only.</p>
-                  )}
-                  {track.includes('University') && (
-                    <p className="mt-3 text-[9px] text-dare-purple font-bold text-center italic">{t('under18Restriction')}</p>
-                  )}
-                </div>
+                )}
 
                 <form onSubmit={handleAuth} className="space-y-4">
                   {view === 'sign-up' && (

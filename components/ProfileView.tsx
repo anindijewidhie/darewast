@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { User, UserProgress, Language, MasteryLevel, Subject, SubjectProgress, CurriculumEra, LearningMethod, PaymentPreferences, MasterySchedule } from '../types';
+import { User, UserProgress, Language, MasteryLevel, Subject, SubjectProgress, CurriculumEra, LearningMethod, PaymentPreferences, MasterySchedule, LearningStyle } from '../types';
 import { SUBJECTS, LEVEL_METADATA, MASTERY_LEVEL_ORDER } from '../constants';
 import { translations } from '../translations';
 import { RadarChart } from './RadarChart';
@@ -132,6 +132,10 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
     onUpdateUser({ masterySchedule: newSchedule });
   };
 
+  const updateLearningStyle = (style: LearningStyle) => {
+    onUpdateUser({ preferredLearningStyle: style });
+  };
+
   const toggleScheduleDay = (day: number) => {
     const currentSchedule = user.masterySchedule || { type: 'preset', presetId: 'M-F', activeDays: [1,2,3,4,5] };
     let newDays = [...currentSchedule.activeDays];
@@ -153,6 +157,13 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
 
   const eras: CurriculumEra[] = ['Modern', 'Legacy', 'Classical'];
   const methods: LearningMethod[] = ['Kumon-style', 'Montessori-inspired', 'Waldorf-aligned', 'Traditional-Rote', 'Inquiry-based'];
+  const styles: { id: LearningStyle; icon: string; labelKey: string }[] = [
+    { id: 'Unified', icon: '🌀', labelKey: 'unified' },
+    { id: 'Visual', icon: '👁️', labelKey: 'visual' },
+    { id: 'Auditory', icon: '👂', labelKey: 'auditory' },
+    { id: 'Reading', icon: '📖', labelKey: 'reading' },
+    { id: 'Kinesthetic', icon: '🛠️', labelKey: 'kinesthetic' }
+  ];
 
   const currentAvatar = editAvatarSeed 
     ? `https://api.dicebear.com/7.x/avataaars/svg?seed=${editAvatarSeed}`
@@ -212,10 +223,10 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
       <div className="grid lg:grid-cols-12 gap-10 items-start">
         <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
           <div className="bg-white dark:bg-slate-900 p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-center relative overflow-hidden group">
-            <div className={`absolute top-0 left-0 w-full h-2 ${user.contributorRole === 'Professional' ? 'bg-dare-gold' : 'bg-dare-teal'}`}></div>
+            <div className={`absolute top-0 left-0 w-full h-2 ${user.contributorRole === 'Educator' ? 'bg-dare-teal' : 'bg-dare-gold'}`}></div>
             
             <div className="relative inline-block mb-8 mt-4">
-              <div className={`w-40 h-40 rounded-[3rem] p-1.5 shadow-2xl ${user.contributorRole === 'Professional' ? 'bg-gradient-to-br from-dare-gold to-yellow-600' : 'bg-gradient-to-br from-dare-teal to-emerald-400'}`}>
+              <div className={`w-40 h-40 rounded-[3rem] p-1.5 shadow-2xl ${user.contributorRole === 'Educator' ? 'bg-gradient-to-br from-dare-teal to-emerald-400' : 'bg-gradient-to-br from-dare-gold to-yellow-600'}`}>
                 <div 
                   className={`w-full h-full rounded-[2.8rem] bg-white dark:bg-slate-800 overflow-hidden relative ${isEditing ? 'cursor-pointer' : ''}`}
                   onClick={() => isEditing && setEditAvatarSeed(Math.random().toString())}
@@ -240,14 +251,16 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
               <>
                 <h2 className="text-3xl font-black text-gray-900 dark:text-white leading-tight mb-1">{user.name}</h2>
                 <p className="text-dare-teal font-black text-lg tracking-tight">@{user.username}</p>
-                {user.contributorRole === 'Professional' && (
-                  <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-dare-gold/20">
-                     <p className="text-[10px] font-black text-dare-gold uppercase tracking-widest mb-1">🎖️ Professional Role</p>
+                {user.contributorRole && (
+                  <div className={`mt-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border ${user.contributorRole === 'Educator' ? 'border-dare-teal/20' : 'border-dare-gold/20'}`}>
+                     <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${user.contributorRole === 'Educator' ? 'text-dare-teal' : 'text-dare-gold'}`}>
+                        {user.contributorRole === 'Educator' ? '🎖️ Verified Educator' : '🌱 Certified Contributor'}
+                     </p>
                      <p className="text-xs font-bold dark:text-white text-left">{user.professionalCredentials?.title}</p>
-                     <p className="text-[10px] text-gray-400 text-left">{user.professionalCredentials?.institution}</p>
-                     <div className="mt-2 inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase bg-dare-gold text-slate-900">
-                        {user.professionalCredentials?.verificationStatus}
-                     </div>
+                     <p className="text-[10px] text-gray-400 text-left">{user.professionalCredentials?.degree}</p>
+                     {user.professionalCredentials?.portfolioUrl && (
+                        <a href={user.professionalCredentials.portfolioUrl} target="_blank" className="mt-2 text-[10px] font-black text-blue-500 uppercase hover:underline block text-left">View Portfolio ↗</a>
+                     )}
                   </div>
                 )}
                 <StreakVisualizer streak={user.streak} />
@@ -316,6 +329,26 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
         </div>
 
         <div className="lg:col-span-8 space-y-8">
+          {/* Cognitive Learning Style Preference */}
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl font-black text-dare-purple">🧠</div>
+             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('preferredLearningStyle')}</h3>
+             <p className="text-gray-400 dark:text-gray-500 text-xs font-bold mb-8 uppercase tracking-widest">Calibrate default AI adaptation mode</p>
+             
+             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {styles.map(style => (
+                  <button 
+                    key={style.id}
+                    onClick={() => updateLearningStyle(style.id)}
+                    className={`p-6 rounded-[2.5rem] border-2 transition-all text-center flex flex-col items-center justify-center gap-3 group ${user.preferredLearningStyle === style.id ? 'border-dare-purple bg-dare-purple/5 shadow-lg scale-105' : 'border-gray-50 dark:border-slate-800 bg-gray-50/50 hover:border-dare-purple/30'}`}
+                  >
+                    <span className="text-4xl group-hover:scale-110 transition-transform">{style.icon}</span>
+                    <p className={`text-[9px] font-black uppercase tracking-widest ${user.preferredLearningStyle === style.id ? 'text-dare-purple' : 'text-gray-500'}`}>{t(style.labelKey)}</p>
+                  </button>
+                ))}
+             </div>
+          </div>
+
           {/* Mastery Schedule Section */}
           <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left relative overflow-hidden">
              <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl font-black text-dare-teal">📅</div>
@@ -474,13 +507,13 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
             </div>
           )}
 
-          <div className="bg-white dark:bg-slate-900 p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left">
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left">
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">My Progress</h3>
             <p className="text-gray-400 dark:text-gray-500 text-xs font-bold mb-8 uppercase tracking-widest">Mastery Overview</p>
             <RadarChart progress={progress} subjects={SUBJECTS} />
           </div>
 
-          <div className="bg-white dark:bg-slate-900 p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left">
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[3.5rem] shadow-2xl border border-gray-100 dark:border-slate-800 text-left">
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-10 border-l-8 border-dare-teal pl-6">Subject Roadmap</h3>
             <div className="space-y-10">
               {SUBJECTS.map(sub => {

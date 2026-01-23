@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Subject, Language, LessonContent, User } from '../types';
 import { translations } from '../translations';
+import { PODCAST_DURATIONS } from '../constants';
 
 interface Props {
   user: User;
@@ -15,12 +16,9 @@ const WeekendEnrichmentHub: React.FC<Props> = ({ user, subject, lesson, language
   const [selectedDurations, setSelectedDurations] = useState<Record<string, number>>({});
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  // darewast standard media durations
-  const mediaDurations = [5, 10, 15, 30, 45, 60];
-
   const activities = [
     { id: 'seminar', title: t('interactiveSeminar'), icon: '📽️', type: 'video', desc: t('seminarDesc') },
-    { id: 'analysis', title: t('scholarlyAnalysis'), icon: '📑', type: 'blog', desc: t('analysisDesc') },
+    { id: 'podcast', title: 'Curriculum Podcast', icon: '🎙️', type: 'podcast', desc: 'Listen to logic breakdowns from global contributors.' },
     { id: 'lab', title: t('virtualLab'), icon: '🥽', type: 'virtual', desc: t('labDesc') },
   ];
 
@@ -64,7 +62,7 @@ const WeekendEnrichmentHub: React.FC<Props> = ({ user, subject, lesson, language
                 <div className="space-y-3">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('mediaDuration')}</p>
                   <div className="flex flex-wrap justify-center gap-1.5">
-                    {mediaDurations.map(mins => (
+                    {PODCAST_DURATIONS.map(mins => (
                       <button 
                         key={mins}
                         onClick={() => handleDurationSelect(act.id, mins)}

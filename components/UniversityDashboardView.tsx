@@ -35,7 +35,7 @@ const UniversityDashboardView: React.FC<Props> = ({
   const [isCreating, setIsCreating] = useState(false);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Science', 'Tech', 'Humanities', 'Ethics'];
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Science', 'Tech', 'Humanities', 'Arts', 'Sports', 'Ethics'];
 
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 

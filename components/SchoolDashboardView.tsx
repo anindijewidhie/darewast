@@ -35,7 +35,7 @@ const SchoolDashboardView: React.FC<Props> = ({
   const [isCreating, setIsCreating] = useState(false);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities'];
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities', 'Arts', 'Sports'];
 
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 

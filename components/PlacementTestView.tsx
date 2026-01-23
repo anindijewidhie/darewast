@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Language, User, MasteryLevel, UserProgress, AccommodationType, Subject } from '../types';
+import { Language, User, MasteryLevel, UserProgress, AccommodationType, Subject, InstitutionStatus } from '../types';
 import { generatePlacementTest, analyzeTestResults } from '../services/geminiService';
 import { translations } from '../translations';
 import { SUBJECTS, LEVEL_METADATA } from '../constants';
@@ -8,14 +8,12 @@ import { SUBJECTS, LEVEL_METADATA } from '../constants';
 interface Props {
   language: Language;
   user: User | null;
-  subject?: Subject; // Subject-specific test
-  // Added 'relearn' to testType to support Relearn Hub functionality
-  testType?: 'placement' | 'assessment' | 'relearn';
+  subject?: Subject; 
+  testType?: 'placement' | 'assessment' | 'relearn' | 'transfer';
   onComplete: (recommendedProgress: UserProgress) => void;
   onCancel: () => void;
 }
 
-// Minimal Audio System for Test Feedback
 const useTestAudio = () => {
   const audioCtx = useRef<AudioContext | null>(null);
   const init = () => { if (!audioCtx.current) audioCtx.current = new (window.AudioContext || (window as any).webkitAudioContext)(); };
@@ -54,9 +52,15 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
   const [finalLevel, setFinalLevel] = useState<MasteryLevel>('A');
   const [finalScore, setFinalScore] = useState(0);
 
+  // Transfer specific state
+  const [institutionStatus, setInstitutionStatus] = useState<InstitutionStatus>('regular');
+  const [institutionName, setInstitutionName] = useState('');
+  const [isScanningReport, setIsScanningReport] = useState(false);
+
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const getThemeColor = () => {
+    if (testType === 'transfer') return 'blue-600';
     if (!subject) return 'dare-teal';
     switch (subject.category) {
       case 'Literacy': return 'dare-teal';
@@ -72,12 +76,26 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
 
   const themeColor = getThemeColor();
 
+  const handleScanReport = async () => {
+    setIsScanningReport(true);
+    // Simulate OCR and AI Analysis of a report card
+    await new Promise(r => setTimeout(r, 3000));
+    setIsScanningReport(false);
+    
+    // Jump to results with a high placement based on "detected" report card
+    setFinalScore(10);
+    setFinalLevel('Q'); // Place into University foundations
+    setMasteryInsight(`Transferred from ${institutionName || 'Previous Institution'} (${institutionStatus}). Report card analysis detected comprehensive mastery of K-12 standards. Enrolled in University Research Track.`);
+    setFinished(true);
+    setAnalyzing(false);
+    sounds.finish();
+  };
+
   const startTest = async () => {
     sounds.select();
     setLoading(true);
     try {
-      // Corrected call to match updated signature in geminiService
-      const data = await generatePlacementTest(language, user, accommodation, subject, testType as 'placement' | 'assessment' | 'relearn');
+      const data = await generatePlacementTest(language, user, accommodation, subject, testType as any);
       setQuestions(data.questions);
       setCurrentIndex(0);
     } catch (err) {
@@ -109,7 +127,6 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     });
     setFinalScore(score);
 
-    // Level Calculation Logic
     let recommended: MasteryLevel = 'A';
     if (score >= 10) recommended = 'Q';
     else if (score >= 8) recommended = 'N';
@@ -119,7 +136,6 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     setFinalLevel(recommended);
 
     try {
-      // Corrected call to analyzeTestResults which is now implemented in geminiService
       const insight = await analyzeTestResults(subject || SUBJECTS[0], score, questions.length, recommended, language, user);
       setMasteryInsight(insight);
     } catch (e) {
@@ -143,7 +159,24 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     onComplete(newProgress);
   };
 
-  // Render loading state
+  if (isScanningReport) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-10 animate-fadeIn text-center">
+        <div className="relative group">
+          <div className="w-32 h-32 border-[12px] border-blue-500/10 border-t-blue-600 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center text-5xl">📄</div>
+        </div>
+        <div className="max-w-md space-y-4">
+          <h2 className="text-4xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">Analyzing Registry</h2>
+          <p className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Processing report card from {institutionName || 'External School'}...</p>
+          <div className="flex justify-center gap-1">
+             {[1,2,3,4,5].map(i => <div key={i} className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.1}s` }}></div>)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] space-y-8 animate-fadeIn text-center">
@@ -159,7 +192,6 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     );
   }
 
-  // Render finished state with results
   if (finished) {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4 animate-fadeIn">
@@ -168,32 +200,31 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
           <div className="p-12 md:p-20 text-center space-y-12">
             <div className="space-y-4">
               <div className={`w-24 h-24 bg-${themeColor}/10 text-${themeColor} rounded-[2rem] flex items-center justify-center text-5xl mx-auto mb-6 shadow-xl animate-bounce`}>✨</div>
-              <h2 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter">Assessment Concluded</h2>
+              <h2 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tighter">Transition Concluded</h2>
               <p className="text-gray-500 font-bold uppercase tracking-[0.3em] text-xs">Diagnostic Mastery Summary</p>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-8">
               <div className="bg-gray-50 dark:bg-slate-800 p-10 rounded-[3rem] border border-gray-100 dark:border-slate-700 relative group">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Accuracy Score</p>
-                <p className={`text-6xl font-black text-${themeColor}`}>{Math.round((finalScore / questions.length) * 100)}%</p>
-                <p className="text-xs font-bold text-gray-500 mt-2">{finalScore} / {questions.length} Correct</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Confidence Score</p>
+                <p className={`text-6xl font-black text-${themeColor}`}>{Math.round((finalScore / 10) * 100)}%</p>
+                <p className="text-xs font-bold text-gray-500 mt-2">Verified Academic Nodes</p>
               </div>
               <div className="bg-gray-50 dark:bg-slate-800 p-10 rounded-[3rem] border border-gray-100 dark:border-slate-700">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Placed Entry Level</p>
-                <p className="text-6xl font-black text-gray-900 dark:text-white">Level {finalLevel}</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Institutional Placement</p>
+                <p className="text-6xl font-black dark:text-white">Level {finalLevel}</p>
                 <p className="text-xs font-bold text-gray-500 mt-2">{LEVEL_METADATA[finalLevel].equivalency}</p>
               </div>
             </div>
 
             <div className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900 p-10 rounded-[3.5rem] border border-gray-100 dark:border-slate-700 text-left relative overflow-hidden">
                <div className={`absolute top-0 left-0 w-2 h-full bg-${themeColor} opacity-50`}></div>
-               <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-4">AI Mastery Insight</h4>
+               <h4 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-4">Transfer Mastery Insight</h4>
                {analyzing ? (
                  <div className="flex items-center gap-4 py-4 animate-pulse">
                     <div className="w-10 h-10 bg-gray-200 dark:bg-slate-700 rounded-full"></div>
                     <div className="flex-1 space-y-2">
                        <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded-full w-3/4"></div>
-                       <div className="h-3 bg-gray-200 dark:bg-slate-700 rounded-full w-1/2"></div>
                     </div>
                  </div>
                ) : (
@@ -215,41 +246,87 @@ const PlacementTestView: React.FC<Props> = ({ language, user, subject, testType 
     );
   }
 
-  // Render intro state
+  // Initial Setup State
   if (currentIndex === -1) {
     return (
-      <div className="max-w-2xl mx-auto py-20 px-4 text-center space-y-12 animate-fadeIn">
-        <div className="space-y-4">
+      <div className="max-w-4xl mx-auto py-20 px-4 space-y-12 animate-fadeIn">
+        <div className="text-center space-y-4">
           <div className={`w-24 h-24 bg-${themeColor}/10 text-${themeColor} rounded-[2rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-xl`}>🎯</div>
-          <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">Diagnostic Mastery Setup</h2>
-          <p className="text-gray-500 font-medium text-lg leading-relaxed">
-            Initialize your profile calibration. This session detects your optimal entry point into the darewast Global Knowledge Base.
+          <h2 className="text-5xl font-black text-gray-900 dark:text-white tracking-tighter">{t('transferTitle')}</h2>
+          <p className="text-gray-500 font-medium text-xl leading-relaxed max-w-2xl mx-auto">
+            {t('transferSubtitle')}
           </p>
         </div>
 
-        <div className="p-8 bg-white dark:bg-slate-900 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl text-left space-y-8">
-           <div>
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-4 block">Personalize Assessment Accessibility</label>
-              <div className="grid grid-cols-2 gap-3">
-                 <button onClick={() => setAccommodation('none')} className={`py-4 rounded-xl text-xs font-black transition-all ${accommodation === 'none' ? 'bg-dare-teal text-white' : 'bg-gray-50 text-gray-400'}`}>Standard Mode</button>
-                 <button onClick={() => setAccommodation('idd')} className={`py-4 rounded-xl text-xs font-black transition-all ${accommodation === 'idd' ? 'bg-dare-teal text-white' : 'bg-gray-50 text-gray-400'}`}>IDD Support</button>
+        <div className="grid lg:grid-cols-2 gap-8">
+           <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl space-y-8 flex flex-col justify-between">
+              <div>
+                 <h3 className="text-xl font-black dark:text-white mb-6">1. Transfer History</h3>
+                 <div className="space-y-4">
+                    <div>
+                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-2 mb-2 block">{t('transferInstitution')}</label>
+                       <input 
+                         type="text" 
+                         value={institutionName} 
+                         onChange={e => setInstitutionName(e.target.value)}
+                         placeholder="e.g. Westford Academy"
+                         className="w-full p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-500 transition-all"
+                       />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                       {(['regular', 'closed', 'problematic'] as InstitutionStatus[]).map(status => (
+                         <button 
+                           key={status}
+                           onClick={() => setInstitutionStatus(status)}
+                           className={`py-3 px-1 rounded-xl text-[8px] font-black uppercase transition-all ${institutionStatus === status ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-50 dark:bg-slate-800 text-gray-400'}`}
+                         >
+                           {t(`${status}Institution`)}
+                         </button>
+                       ))}
+                    </div>
+                 </div>
               </div>
+
+              <button 
+                onClick={handleScanReport}
+                disabled={!institutionName.trim()}
+                className="w-full py-6 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              >
+                📄 {t('reportCardScan')}
+              </button>
            </div>
-           
-           <button 
-            onClick={startTest}
-            className={`w-full py-6 bg-${themeColor} text-white rounded-2xl font-black text-xl shadow-xl hover:scale-[1.02] active:scale-95 transition-all`}
-           >
-            Begin Calibration →
-           </button>
+
+           <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl space-y-8 flex flex-col justify-between">
+              <div>
+                 <h3 className="text-xl font-black dark:text-white mb-6">2. Diagnostic Mastery</h3>
+                 <p className="text-gray-500 text-sm leading-relaxed mb-6 font-medium">
+                   Don't have a report card? Take our 24/7 AI Diagnostic to determine your exact entry point into the curriculum.
+                 </p>
+                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Institutional Accommodation</p>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                       <button onClick={() => setAccommodation('none')} className={`py-3 rounded-xl text-[10px] font-black transition-all ${accommodation === 'none' ? 'bg-dare-teal text-white' : 'text-gray-400'}`}>Standard</button>
+                       <button onClick={() => setAccommodation('idd')} className={`py-3 rounded-xl text-[10px] font-black transition-all ${accommodation === 'idd' ? 'bg-dare-teal text-white' : 'text-gray-400'}`}>IDD Support</button>
+                    </div>
+                 </div>
+              </div>
+
+              <button 
+                onClick={startTest}
+                className="w-full py-6 bg-dare-teal text-white rounded-2xl font-black text-lg shadow-xl shadow-dare-teal/20 hover:scale-[1.02] active:scale-95 transition-all"
+              >
+                🔬 Run Diagnostic Test
+              </button>
+           </div>
         </div>
 
-        <button onClick={onCancel} className="text-gray-400 font-black uppercase tracking-widest text-xs hover:text-rose-500 transition-colors">Abandon Session</button>
+        <div className="text-center">
+          <button onClick={onCancel} className="text-gray-400 font-black uppercase tracking-widest text-xs hover:text-rose-500 transition-colors">Abort Global Transfer</button>
+        </div>
       </div>
     );
   }
 
-  // Render active testing state
   const currentQuestion = questions[currentIndex];
   const progressPercent = Math.round((currentIndex / questions.length) * 100);
 

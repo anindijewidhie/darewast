@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, Language, Subject, EducationTrack, SubjectCategory, DistanceSchoolType } from '../types';
-import { SUBJECTS, LEVEL_METADATA } from '../constants';
+import { SUBJECTS, DISTANCE_SCHOOL_MAPS, getInstitutionalGrade } from '../constants';
 import { translations } from '../translations';
 import SubjectCard from './SubjectCard';
 
@@ -17,72 +17,22 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
-  // Added onOpenSpecialization to the Props interface
   onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
 }
 
 const DistanceSchoolDashboardView: React.FC<Props> = ({ 
-  user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
+  user, progress, language, onStartLesson, onStartPrep, onTrackChange,
   onOpenPlacement, onOpenAssessment,
-  // Destructured onOpenSpecialization from props
   onOpenSpecialization,
-  dynamicSubjects, onCreateSubject
+  dynamicSubjects
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const schoolType: DistanceSchoolType = user.distanceSchoolType || '6-3-3';
-  
-  const getInstitutionalLevel = (age: number, type: DistanceSchoolType) => {
-    switch (type) {
-      case '6-3-3':
-        if (age <= 5) return 'Early Childhood';
-        if (age <= 11) return 'Primary School';
-        if (age <= 14) return 'Middle School';
-        return 'High School';
-      case '4-4-4':
-        if (age <= 5) return 'Early Childhood';
-        if (age <= 9) return 'Primary School';
-        if (age <= 13) return 'Middle School';
-        return 'High School';
-      case '8-4':
-        if (age <= 5) return 'Early Childhood';
-        if (age <= 13) return 'Primary School';
-        return 'Secondary School';
-      case '7-4':
-        if (age <= 6) return 'Early Childhood';
-        if (age <= 13) return 'Primary School';
-        return 'Secondary School';
-      case '4-3-4':
-        if (age <= 6) return 'Early Childhood';
-        if (age <= 10) return 'Primary School';
-        if (age <= 13) return 'Middle School';
-        return 'High School';
-      case '8-3':
-        if (age <= 6) return 'Early Childhood';
-        if (age <= 14) return 'Primary School';
-        return 'Secondary School';
-      case '4-4-3':
-        if (age <= 6) return 'Early Childhood';
-        if (age <= 10) return 'Primary School';
-        if (age <= 14) return 'Middle School';
-        return 'Secondary School';
-      case '5-5':
-        if (age <= 7) return 'Early Childhood';
-        if (age <= 12) return 'Primary School';
-        return 'Secondary School';
-      case '7-3':
-        if (age <= 7) return 'Early Childhood';
-        if (age <= 14) return 'Primary School';
-        return 'Secondary School';
-      default:
-        return 'K-12';
-    }
-  };
-
-  const currentInstitutionalLevel = getInstitutionalLevel(user.age, schoolType);
+  const schoolMap = DISTANCE_SCHOOL_MAPS[schoolType];
 
   const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities'];
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
@@ -102,14 +52,14 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
                   🏫 Institutional Type {schoolType}
                </div>
                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-widest border border-white/40">
-                  🎓 {currentInstitutionalLevel}
+                  🗓️ Semester-Aware 24/7 Grid
                </div>
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
               Global Distance Campus
             </h1>
             <p className="text-white/80 text-xl font-medium max-w-2xl leading-relaxed">
-              Synthesized modules for {currentInstitutionalLevel} students. Small-step mastery, unlimited materials, and 24/7 adaptive AI support.
+              Master your institutional curriculum with adaptive semesters. Each Semester (A/B) consists of 12 related academic chapters.
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-4">
               <button onClick={() => onTrackChange('Standard')} className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-xs uppercase tracking-widest border border-white/20 transition-all">
@@ -129,7 +79,7 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
               <h2 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Cohort Modules</h2>
               <div className="flex gap-2">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
+                  <button key={cat} onClick={() => setSelectedCategory(cat as any)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
                     {cat}
                   </button>
                 ))}
@@ -137,34 +87,59 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
            </div>
 
            <div className="grid sm:grid-cols-2 gap-6">
-              {filteredSubjects.map(sub => (
-                <SubjectCard 
-                  key={sub.id} 
-                  subject={sub} 
-                  progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
-                  onClick={() => onStartLesson(sub)} 
-                  // Use onOpenSpecialization prop instead of empty function
-                  onOpenSpecialization={() => onOpenSpecialization(sub)} 
-                  onPlacementTest={() => onOpenPlacement(sub)}
-                  onLevelAssessment={() => onOpenAssessment(sub)}
-                  onExamPrep={() => onStartPrep(sub)}
-                />
-              ))}
+              {filteredSubjects.map(sub => {
+                const subProg = progress[sub.id] || { level: 'A', lessonNumber: 1 };
+                const gradeLabel = getInstitutionalGrade(schoolType, subProg.level);
+                return (
+                  <div key={sub.id} className="relative group">
+                    <div className="absolute -top-3 -left-3 z-20 px-3 py-1 bg-amber-600 text-white rounded-lg text-[9px] font-black uppercase tracking-widest shadow-xl border border-amber-500">
+                      Semester {gradeLabel}
+                    </div>
+                    <SubjectCard 
+                      subject={sub} 
+                      progress={subProg} 
+                      onClick={() => onStartLesson(sub)} 
+                      onOpenSpecialization={() => onOpenSpecialization(sub)} 
+                      onPlacementTest={() => onOpenPlacement(sub)}
+                      onLevelAssessment={() => onOpenAssessment(sub)}
+                      onExamPrep={() => onStartPrep(sub)}
+                    />
+                  </div>
+                );
+              })}
            </div>
         </div>
 
         <aside className="lg:col-span-4 space-y-6">
            <div className="p-8 bg-white dark:bg-slate-900 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-5 text-6xl">📊</div>
-              <h3 className="text-xs font-black text-amber-600 uppercase tracking-[0.3em] mb-6">Mastery Timeline</h3>
-              <div className="space-y-4">
-                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Academic Era</p>
-                    <p className="text-sm font-bold dark:text-white">Active Node: {currentInstitutionalLevel}</p>
-                 </div>
-                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Structure Type</p>
-                    <p className="text-sm font-bold dark:text-white">{schoolType} Academic Split</p>
+              <div className="absolute top-0 right-0 p-6 opacity-5 text-6xl text-amber-600">🏛️</div>
+              <h3 className="text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] mb-6">Type {schoolType} Structure</h3>
+              <div className="space-y-3">
+                 {schoolMap.map((stage, idx) => (
+                   <div key={idx} className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                      <div>
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{stage.stage} Stage</p>
+                        <p className="text-sm font-black dark:text-white">Grades 1 - {stage.grades}</p>
+                      </div>
+                      <span className="text-xl opacity-30">{stage.stage === 'Early' ? '🧩' : stage.stage === 'Primary' ? '✏️' : '📐'}</span>
+                   </div>
+                 ))}
+                 <div className="mt-6 p-6 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-200 dark:border-amber-800">
+                    <p className="text-[10px] font-black text-amber-600 uppercase mb-2">Mastery Cycle Legend</p>
+                    <ul className="text-xs space-y-2 font-bold text-amber-800 dark:text-amber-300">
+                       <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                          One Semester = 12 Chapters
+                       </li>
+                       <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                          Suffix A = Semester 1
+                       </li>
+                       <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                          Suffix B = Semester 2
+                       </li>
+                    </ul>
                  </div>
               </div>
            </div>

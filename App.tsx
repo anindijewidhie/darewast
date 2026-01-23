@@ -29,6 +29,7 @@ import MasteryExamView from './components/MasteryExamView';
 import ExamPrepView from './components/ExamPrepView';
 import ExamHallView from './components/ExamHallView';
 import DonationView from './components/DonationView';
+import LevelCompletionHub from './components/LevelCompletionHub';
 import { generateCustomSubject } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -149,11 +150,8 @@ const App: React.FC = () => {
 
   const handleStartLesson = (sub: Subject, isTrans: boolean = false) => {
     const day = new Date().getDay();
-    
-    // Logic updated to respect user's Mastery Schedule
-    const activeDays = user?.masterySchedule?.activeDays || [1, 2, 3, 4, 5]; // Default M-F
+    const activeDays = user?.masterySchedule?.activeDays || [1, 2, 3, 4, 5];
     const isStudyDay = activeDays.includes(day);
-    const isInstitutional = user?.track !== 'Standard' || isTrans;
 
     setActiveSubject(sub);
     
@@ -182,7 +180,6 @@ const App: React.FC = () => {
     const metadata = LEVEL_METADATA[currentSubjectProgress.level];
     const totalExercises = activeSubject.richMediaConfig?.exercisesPerLesson || 4;
 
-    // Transition to the 100-point Skill Point system
     const skillPoints = Math.round((score / totalExercises) * 100);
 
     if (activeLesson?.isRelearn || activeLesson?.isTransition) {
@@ -212,7 +209,7 @@ const App: React.FC = () => {
         }
       }));
     } else {
-      setCurrentView('mastery-exam');
+      setCurrentView('level-completion-hub');
     }
   };
 
@@ -228,10 +225,9 @@ const App: React.FC = () => {
   const handleExamComplete = (score: number, total: number) => {
     if (!user || !activeSubject) return;
     
-    // Transition to the 100-point Skill Point system
     const skillPoints = Math.round((score / total) * 100);
     const gradeTier = getGradeTier(skillPoints);
-    const passThreshold = 60; // Acceptance by Schools/Uni/Companies requires ≥ 60 Skill Points
+    const passThreshold = 60; 
 
     const currentSubjectProgress = progress[activeSubject.id];
 
@@ -248,16 +244,29 @@ const App: React.FC = () => {
     
     setActiveCertificate(cert);
 
-    // Progression logic (Requires 60+ Skill Points for institutional acceptance)
     if (skillPoints >= passThreshold) {
       const currentIndex = MASTERY_LEVEL_ORDER.indexOf(currentSubjectProgress.level);
-      if (currentIndex < MASTERY_LEVEL_ORDER.length - 1) {
-        const nextLevel = MASTERY_LEVEL_ORDER[currentIndex + 1];
+      
+      let nextLevel: MasteryLevel | null = null;
+
+      if (currentSubjectProgress.level === 'P') {
+        const choice = confirm("Level P Mastery Achieved! Would you like to continue to University Level Lessons (Level Q)?");
+        nextLevel = choice ? 'Q' : 'Beyond P';
+      } else if (currentSubjectProgress.level === 'T') {
+        alert("Level T Mastery Achieved! Enrolling in Beyond T maintenance protocol.");
+        nextLevel = 'Beyond T';
+      } else if (currentSubjectProgress.level === 'Beyond P' || currentSubjectProgress.level === 'Beyond T') {
+        nextLevel = currentSubjectProgress.level;
+      } else if (currentIndex < MASTERY_LEVEL_ORDER.length - 1) {
+        nextLevel = MASTERY_LEVEL_ORDER[currentIndex + 1];
+      }
+
+      if (nextLevel) {
         setProgress(prev => ({
           ...prev,
           [activeSubject.id]: { 
             ...prev[activeSubject.id], 
-            level: nextLevel, 
+            level: nextLevel as MasteryLevel, 
             lessonNumber: 1,
             lastScore: { correct: score, total: total, skillPoints: skillPoints, gradeTier: gradeTier }
           }
@@ -265,7 +274,7 @@ const App: React.FC = () => {
       }
       setCurrentView('certificate');
     } else {
-      alert(`Skill Point Index: ${skillPoints} / 100 (${gradeTier}). Mastery gap detected. Institutional acceptance requires ≥ 60 Skill Points.`);
+      alert(`Skill Point Index: ${skillPoints} / 100. Institutional acceptance requires ≥ 60 Skill Points.`);
       setCurrentView('dashboard');
     }
   };
@@ -311,7 +320,7 @@ const App: React.FC = () => {
       default:
         return <DashboardView 
                   {...dashboardProps} 
-                  onStartExam={(s) => { setActiveSubject(s); setCurrentView('mastery-exam'); }} 
+                  onStartExam={(s) => { setActiveSubject(s); setCurrentView('level-completion-hub'); }} 
                   onLogout={() => { setUser(null); setCurrentView('landing'); }} 
                   onOpenConverter={() => setCurrentView('grade-converter')} 
                   onOpenPlacementGlobal={() => setCurrentView('placement-test')} 
@@ -335,13 +344,12 @@ const App: React.FC = () => {
             onClick={() => setCurrentView('donation')}
             className="px-2 py-2 md:px-4 md:py-2 bg-dare-gold/10 text-dare-gold rounded-xl font-black text-[7px] md:text-[10px] uppercase tracking-widest border border-dare-gold/20 hover:bg-dare-gold hover:text-white transition-all shadow-sm flex items-center gap-1 md:gap-2"
           >
-            <span className="hidden xs:inline">💖</span> {t('donate')}
+            💖 {t('donate')}
           </button>
 
           <button 
             onClick={() => setDarkMode(!darkMode)}
             className="p-1.5 md:p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm md:text-xl"
-            aria-label="Toggle Dark Mode"
           >
             {darkMode ? '☀️' : '🌙'}
           </button>
@@ -350,7 +358,7 @@ const App: React.FC = () => {
             <select 
               value={selectedLang} 
               onChange={e => setSelectedLang(e.target.value as Language)} 
-              className="bg-white/5 border border-white/10 rounded-xl px-1.5 py-2 md:px-4 md:py-2 text-[8px] md:text-xs font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-white/10 transition-all focus:ring-2 focus:ring-dare-teal/50 appearance-none pr-4 md:pr-8"
+              className="bg-white/5 border border-white/10 rounded-xl px-1.5 py-2 md:px-4 md:py-2 text-[8px] md:text-xs font-black uppercase tracking-widest outline-none cursor-pointer hover:bg-white/10 transition-all appearance-none pr-4 md:pr-8"
             >
               {LANGUAGES.map(l => <option key={l} value={l} className="dark:bg-slate-900 text-slate-900 dark:text-white">{l}</option>)}
             </select>
@@ -391,6 +399,17 @@ const App: React.FC = () => {
             />
         )}
         
+        {currentView === 'level-completion-hub' && user && activeSubject && (
+           <LevelCompletionHub 
+              subject={activeSubject}
+              language={selectedLang}
+              level={progress[activeSubject.id].level}
+              user={user}
+              onComplete={handleExamComplete}
+              onBack={() => setCurrentView('dashboard')}
+           />
+        )}
+
         {currentView === 'fast-track-hub' && user && (
           <FastTrackHubView 
             user={user} 
@@ -466,7 +485,7 @@ const App: React.FC = () => {
             user={user}
             progress={progress}
             language={selectedLang}
-            onStartExam={(s) => { setActiveSubject(s); setCurrentView('mastery-exam'); }}
+            onStartExam={(s) => { setActiveSubject(s); setCurrentView('level-completion-hub'); }}
             onStartPrep={(s) => { setActiveSubject(s); setCurrentView('exam-prep'); }}
             onBack={() => setCurrentView('dashboard')}
           />

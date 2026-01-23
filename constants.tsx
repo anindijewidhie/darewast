@@ -1,5 +1,5 @@
 
-import { Subject, Language, MasteryLevel } from './types';
+import { Subject, Language, MasteryLevel, DistanceSchoolType } from './types';
 
 export const LANGUAGES: Language[] = [
   'English', 'Indonesian', 'Traditional Chinese', 'Simplified Chinese', 
@@ -22,54 +22,135 @@ export const MASTERY_LEVEL_ORDER: MasteryLevel[] = [
 ];
 
 export const LEVEL_METADATA: Record<MasteryLevel, LevelInfo> = {
-  'A': { id: 'A', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'B': { id: 'B', equivalency: 'Pre-Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'C': { id: 'C', equivalency: 'Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'D': { id: 'D', equivalency: 'Kindergarten', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'E': { id: 'E', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'F': { id: 'F', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'G': { id: 'G', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'H': { id: 'H', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'I': { id: 'I', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'J': { id: 'J', equivalency: 'Primary School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'K': { id: 'K', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'L': { id: 'L', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'M': { id: 'M', equivalency: 'Middle School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'N': { id: 'N', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'O': { id: 'O', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'P': { id: 'P', equivalency: 'High School', duration: '1-2 weeks', chaptersCount: 12, type: 'mandatory' },
-  'Q': { id: 'Q', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
-  'R': { id: 'R', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
-  'S': { id: 'S', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
-  'T': { id: 'T', equivalency: 'University', duration: '2-4 weeks', chaptersCount: 12, type: 'optional' },
-  'Beyond P': { id: 'Beyond P', equivalency: 'Post-High School Mastery', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
-  'Beyond T': { id: 'Beyond T', equivalency: 'University Mastery', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
+  'A': { id: 'A', equivalency: 'Pre-Kindergarten', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'B': { id: 'B', equivalency: 'Pre-Kindergarten', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'C': { id: 'C', equivalency: 'Kindergarten', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'D': { id: 'D', equivalency: 'Kindergarten', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'E': { id: 'E', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'F': { id: 'F', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'G': { id: 'G', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'H': { id: 'H', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'I': { id: 'I', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'J': { id: 'J', equivalency: 'Primary School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'K': { id: 'K', equivalency: 'Middle School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'L': { id: 'L', equivalency: 'Middle School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'M': { id: 'M', equivalency: 'Middle School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'N': { id: 'N', equivalency: 'High School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'O': { id: 'O', equivalency: 'High School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'P': { id: 'P', equivalency: 'High School', duration: '12-24 weeks', chaptersCount: 12, type: 'mandatory' },
+  'Q': { id: 'Q', equivalency: '1st Year University', duration: '24-48 weeks', chaptersCount: 12, type: 'optional' },
+  'R': { id: 'R', equivalency: '2nd Year University', duration: '24-48 weeks', chaptersCount: 12, type: 'optional' },
+  'S': { id: 'S', equivalency: '3rd Year University', duration: '24-48 weeks', chaptersCount: 12, type: 'optional' },
+  'T': { id: 'T', equivalency: '4th Year University', duration: '24-48 weeks', chaptersCount: 12, type: 'optional' },
+  'Beyond P': { id: 'Beyond P', equivalency: 'Global Skill Maintenance (Post-P)', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
+  'Beyond T': { id: 'Beyond T', equivalency: 'Expert Skill Maintenance (Post-T)', duration: 'Continuous', chaptersCount: 1, type: 'maintenance' },
 };
+
+export const DISTANCE_SCHOOL_MAPS: Record<DistanceSchoolType, { stage: string; grades: number }[]> = {
+  '6-3-3': [
+    { stage: 'Early', grades: 3 },
+    { stage: 'Primary', grades: 6 },
+    { stage: 'Middle', grades: 3 },
+    { stage: 'High', grades: 3 },
+  ],
+  '4-4-4': [
+    { stage: 'Early', grades: 3 },
+    { stage: 'Primary', grades: 4 },
+    { stage: 'Middle', grades: 4 },
+    { stage: 'High', grades: 4 },
+  ],
+  '8-4': [
+    { stage: 'Early', grades: 3 },
+    { stage: 'Primary', grades: 8 },
+    { stage: 'Secondary', grades: 4 },
+  ],
+  '7-4': [
+    { stage: 'Early', grades: 4 },
+    { stage: 'Primary', grades: 7 },
+    { stage: 'Secondary', grades: 4 },
+  ],
+  '4-3-4': [
+    { stage: 'Early', grades: 4 },
+    { stage: 'Primary', grades: 4 },
+    { stage: 'Middle', grades: 3 },
+    { stage: 'High', grades: 4 },
+  ],
+  '8-3': [
+    { stage: 'Early', grades: 4 },
+    { stage: 'Primary', grades: 8 },
+    { stage: 'Secondary', grades: 3 },
+  ],
+  '4-4-3': [
+    { stage: 'Early', grades: 4 },
+    { stage: 'Primary', grades: 4 },
+    { stage: 'Middle', grades: 4 },
+    { stage: 'High', grades: 3 },
+  ],
+  '5-5': [
+    { stage: 'Early', grades: 5 },
+    { stage: 'Primary', grades: 5 },
+    { stage: 'Secondary', grades: 5 },
+  ],
+  '7-3': [
+    { stage: 'Early', grades: 5 },
+    { stage: 'Primary', grades: 7 },
+    { stage: 'Secondary', grades: 3 },
+  ]
+};
+
+export const getInstitutionalGrade = (type: DistanceSchoolType, level: MasteryLevel) => {
+  const map = DISTANCE_SCHOOL_MAPS[type];
+  const levelIndex = MASTERY_LEVEL_ORDER.indexOf(level);
+  
+  if (levelIndex === -1) return "Maintenance Mode";
+  if (level === 'Beyond P') return "Post-P Mastery Hub";
+  if (level === 'Beyond T') return "Post-T Expert Hub";
+
+  const allSemesters: string[] = [];
+  map.forEach(stage => {
+    for (let i = 1; i <= stage.grades; i++) {
+      allSemesters.push(`${stage.stage} ${i}A`);
+      allSemesters.push(`${stage.stage} ${i}B`);
+    }
+  });
+
+  return allSemesters[levelIndex] || LEVEL_METADATA[level].equivalency;
+};
+
+export const PODCAST_DURATIONS = [15, 30, 45, 60];
 
 export const UNIVERSAL_RICH_MEDIA = {
   ebooks: 24,
   blogs: 96,
   podcasts: 48,
   videos: 96,
-  exercisesPerLesson: 4
+  exercisesPerLesson: 2 
 };
 
-const TECH_RICH_MEDIA = {
+// Specialized Configs based on User Requirements
+const COMPUTER_STUDIES_CONFIG = {
+  ...UNIVERSAL_RICH_MEDIA,
   ebooks: 24,
+  worksPerLesson: 4, 
   videos: 96,
-  exercisesPerLesson: 4
 };
 
-const MUSIC_THEORY_RICH_MEDIA = {
-  blogs: 48,
+const DANCE_CONFIG = {
+  ...UNIVERSAL_RICH_MEDIA,
+  danceMovesPerLesson: 4, 
   videos: 96,
-  exercisesPerLesson: 2
 };
 
-const MUSIC_PERFORMANCE_RICH_MEDIA = {
-  songs: 48,
+const DESIGN_CRAFT_CONFIG = {
+  ...UNIVERSAL_RICH_MEDIA,
+  worksPerLesson: 4, 
   videos: 96,
-  exercisesPerLesson: 2
+};
+
+const MIND_SPORTS_CONFIG = {
+  ...UNIVERSAL_RICH_MEDIA,
+  simulationsPerLesson: 4, 
+  videos: 96,
 };
 
 export const SUBJECTS: Subject[] = [
@@ -215,7 +296,7 @@ export const SUBJECTS: Subject[] = [
     icon: '💿', 
     description: 'Taking control of digital architecture, from low-level kernels to intuitive user interfaces across all major platforms.', 
     suggestedSubTopics: ['Kernel Architecture', 'Memory Management', 'File Systems', 'Distributed Systems'],
-    richMediaConfig: TECH_RICH_MEDIA
+    richMediaConfig: COMPUTER_STUDIES_CONFIG
   },
   { 
     id: 'computer-soft', 
@@ -224,7 +305,7 @@ export const SUBJECTS: Subject[] = [
     icon: '💾', 
     description: 'Mastering the essential tools of the digital age, covering applications, workflows, and their creative potential.', 
     suggestedSubTopics: ['System Architecture', 'Product Management', 'UI/UX Design', 'Software Testing'],
-    richMediaConfig: TECH_RICH_MEDIA
+    richMediaConfig: COMPUTER_STUDIES_CONFIG
   },
   { 
     id: 'computer-code', 
@@ -233,7 +314,7 @@ export const SUBJECTS: Subject[] = [
     icon: '💻', 
     description: 'Coding the future through logic, algorithms, and deep mastery of major programming languages and paradigms.', 
     suggestedSubTopics: ['Web Development', 'Mobile Development', 'Data Structures', 'Embedded Systems'],
-    richMediaConfig: TECH_RICH_MEDIA
+    richMediaConfig: COMPUTER_STUDIES_CONFIG
   },
   { 
     id: 'ai-ml', 
@@ -242,7 +323,7 @@ export const SUBJECTS: Subject[] = [
     icon: '🤖', 
     description: 'Unlocking the secrets of neural networks, machine learning models, and the automation systems of the next frontier.', 
     suggestedSubTopics: ['Machine Learning', 'Neural Networks', 'Natural Language Processing', 'Computer Vision'],
-    richMediaConfig: TECH_RICH_MEDIA
+    richMediaConfig: COMPUTER_STUDIES_CONFIG
   },
   { 
     id: 'music-theory', 
@@ -251,7 +332,7 @@ export const SUBJECTS: Subject[] = [
     icon: '🎼', 
     description: 'Decoding the science of sound, harmony, rhythm, and the structural beauty of professional musical composition.', 
     suggestedSubTopics: ['Harmony', 'Counterpoint', 'Music Analysis', 'Orchestration'],
-    richMediaConfig: MUSIC_THEORY_RICH_MEDIA
+    richMediaConfig: { ...UNIVERSAL_RICH_MEDIA, blogs: 48 }
   },
   { 
     id: 'music-instrument', 
@@ -260,7 +341,7 @@ export const SUBJECTS: Subject[] = [
     icon: '🎻', 
     description: 'Achieving technical excellence and emotional expression through proficiency in instrumental performance.', 
     suggestedSubTopics: ['Piano Performance', 'String Pedagogy', 'Wind Instruments', 'Percussion Techniques'],
-    richMediaConfig: MUSIC_PERFORMANCE_RICH_MEDIA
+    richMediaConfig: { ...UNIVERSAL_RICH_MEDIA, songs: 48 }
   },
   { 
     id: 'music-vocal', 
@@ -269,7 +350,7 @@ export const SUBJECTS: Subject[] = [
     icon: '🎤', 
     description: 'Mastering the art of singing, vocal techniques, and performance across every major language and musical genre.', 
     suggestedSubTopics: ['Opera Performance', 'Contemporary Vocals', 'Choral Directing', 'Vocal Health'],
-    richMediaConfig: MUSIC_PERFORMANCE_RICH_MEDIA
+    richMediaConfig: { ...UNIVERSAL_RICH_MEDIA, songs: 48 }
   },
   { 
     id: 'ethics', 
@@ -288,5 +369,41 @@ export const SUBJECTS: Subject[] = [
     description: 'Understanding the pillars of justice, global legal systems, jurisprudence, and the protection of constitutional rights.', 
     suggestedSubTopics: ['Constitutional Law', 'International Law', 'Criminal Jurisprudence', 'Corporate Law'],
     richMediaConfig: UNIVERSAL_RICH_MEDIA
+  },
+  { 
+    id: 'dance', 
+    name: 'Dance', 
+    category: 'Arts', 
+    icon: '💃', 
+    description: 'Universal movement curriculum covering all genres (Ballet, Street, Traditional) and eras (Classical to Modern).', 
+    suggestedSubTopics: ['Ballet Technique', 'Contemporary Dance', 'Hip Hop History', 'World Cultural Dance', 'Choreography Theory', 'Anatomy for Dancers'],
+    richMediaConfig: DANCE_CONFIG
+  },
+  { 
+    id: 'design', 
+    name: 'Design', 
+    category: 'Arts', 
+    icon: '🎨', 
+    description: 'Comprehensive study of visual communication, aesthetic styles, and eras from Bauhaus to Digital Minimalism.', 
+    suggestedSubTopics: ['Graphic Design History', 'UI/UX Principles', 'Industrial Design Styles', 'Fashion Design Eras', 'Sustainable Architecture', 'Color Psychology'],
+    richMediaConfig: DESIGN_CRAFT_CONFIG
+  },
+  { 
+    id: 'craft', 
+    name: 'Craft', 
+    category: 'Arts', 
+    icon: '🧶', 
+    description: 'The study of tangible creation across cultures, styles, and historical eras from pottery to industrial prototyping.', 
+    suggestedSubTopics: ['Textile Arts', 'Pottery and Ceramics', 'Woodworking History', 'Jewelry Fabrication', 'Metalsmithing', 'Indigenous Artisanship'],
+    richMediaConfig: DESIGN_CRAFT_CONFIG
+  },
+  { 
+    id: 'mind-sports', 
+    name: 'Mind Sports', 
+    category: 'Sports', 
+    icon: '🧠', 
+    description: 'Competitive mental disciplines focused on strategic mastery, memory, and high-performance cognitive execution.', 
+    suggestedSubTopics: ['Chess Strategy', 'Go (Weiqi) Mastery', 'Poker Probability', 'Competitive Memory', 'Esports Macro-Strategy', 'Mathematical Game Theory'],
+    richMediaConfig: MIND_SPORTS_CONFIG
   },
 ];

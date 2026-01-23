@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, Language, Subject, SubjectCategory, EducationTrack } from '../types';
 import { SUBJECTS } from '../constants';
@@ -126,7 +127,7 @@ const DashboardView: React.FC<Props> = ({
   
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities', 'Tech', 'Music', 'Ethics'];
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities', 'Tech', 'Music', 'Arts', 'Sports', 'Ethics'];
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 
   const filteredSubjects = useMemo(() => {

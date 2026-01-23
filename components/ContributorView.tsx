@@ -1,9 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Language, User, Subject, LessonContent, MasteryLevel, ContributorRole } from '../types';
+import { Language, User, Subject, LessonContent, MasteryLevel, ContributorRole, ProfessionalCredentials, UserProgress } from '../types';
 import { SUBJECTS, LEVEL_METADATA } from '../constants';
 import { translations } from '../translations';
 import { GoogleGenAI, Type } from "@google/genai";
+import PlacementTestView from './PlacementTestView';
 
 interface Props {
   language: Language;
@@ -20,35 +21,20 @@ interface ScanResult {
   confidence: number;
   detectedEra?: string;
   materialType?: 'textbook' | 'sheet_music' | 'source_code' | 'diagram' | 'historical_document';
-}
-
-interface ManagedLesson {
-  id: string;
-  title: string;
-  subjectIcon: string;
-  date: string;
-  level: string;
-  role: ContributorRole;
+  isEducationDegree?: boolean;
 }
 
 const ContributorView: React.FC<Props> = ({ language, user, onBack, onSuccess, onUpdateUser }) => {
   const [loading, setLoading] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState<'role' | 'evidence' | 'portfolio' | 'diagnostic' | 'hub'>(user.contributorRole ? 'hub' : 'role');
+  const [selectedRole, setSelectedRole] = useState<ContributorRole | null>(user.contributorRole || null);
+  const [evidenceType, setEvidenceType] = useState<'degree' | 'report_card' | null>(null);
+  const [portfolioUrl, setPortfolioUrl] = useState('');
+  const [isEvidenceVerified, setIsEvidenceVerified] = useState(user.professionalCredentials?.evidenceUploaded || false);
   const [selectedSubject, setSelectedSubject] = useState<Subject | 'auto'>(SUBJECTS[0]);
-  const [uploadType, setUploadType] = useState<'scan' | 'video' | 'file' | 'certificate' | null>(null);
+  const [uploadType, setUploadType] = useState<'scan' | 'file' | null>(null);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
-  const [myLessons, setMyLessons] = useState<ManagedLesson[]>([]);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [isHistoricalMode, setIsHistoricalMode] = useState(false);
-  
-  // Professional Verification State
-  const [showRoleSelect, setShowRoleSelect] = useState(!user.contributorRole);
-  const [proForm, setProForm] = useState({
-    title: user.professionalCredentials?.title || '',
-    institution: user.professionalCredentials?.institution || '',
-    degree: user.professionalCredentials?.degree || '',
-    yearsOfExperience: user.professionalCredentials?.yearsOfExperience || 0,
-    certificateUploaded: user.professionalCredentials?.certificateUploaded || false,
-  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -56,67 +42,55 @@ const ContributorView: React.FC<Props> = ({ language, user, onBack, onSuccess, o
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  useEffect(() => {
-    const saved = localStorage.getItem(`darewast-contributions-${user.username}`);
-    if (saved) {
-      setMyLessons(JSON.parse(saved));
-    }
-  }, [user.username]);
-
-  const handleSetRole = (role: ContributorRole) => {
-    if (role === 'General') {
-      onUpdateUser({ contributorRole: 'General', weeklyStipend: 200 });
-      setShowRoleSelect(false);
-    } else {
-      // Stay on role select to fill pro form
-    }
+  const handleRoleSelection = (role: ContributorRole) => {
+    setSelectedRole(role);
+    setOnboardingStep('evidence');
   };
 
-  const handleProSubmit = (e: React.FormEvent) => {
+  const handlePortfolioSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!proForm.certificateUploaded) {
-      alert(t('certRequired'));
-      return;
-    }
-    onUpdateUser({ 
-      contributorRole: 'Professional',
-      weeklyStipend: 500,
+    if (!portfolioUrl.trim()) return;
+    setOnboardingStep('diagnostic');
+  };
+
+  const handleDiagnosticComplete = (recProgress: UserProgress) => {
+    // Finalize onboarding
+    const stipend = selectedRole === 'Educator' ? 500 : 200;
+    onUpdateUser({
+      contributorRole: selectedRole!,
+      weeklyStipend: stipend,
       professionalCredentials: {
-        ...proForm,
-        verificationStatus: 'pending'
+        title: selectedRole === 'Educator' ? 'Verified Educator' : 'Certified Contributor',
+        institution: 'darewast Academy',
+        degree: evidenceType === 'degree' ? 'Bachelor/Higher' : 'Academic Portfolio',
+        yearsOfExperience: 1,
+        verificationStatus: 'verified',
+        evidenceUploaded: true,
+        evidenceType: evidenceType || 'degree',
+        portfolioUrl: portfolioUrl
       }
     });
-    setShowRoleSelect(false);
-  };
-
-  const saveContribution = (lesson: ManagedLesson) => {
-    const updated = [lesson, ...myLessons];
-    setMyLessons(updated);
-    localStorage.setItem(`darewast-contributions-${user.username}`, JSON.stringify(updated));
-    onUpdateUser({ contributions: user.contributions + 1 });
-  };
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    setIsCameraActive(false);
+    setOnboardingStep('hub');
   };
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsCameraActive(true);
       }
     } catch (err) {
-      alert("Camera access denied. Please use file upload instead.");
+      alert("Camera access denied.");
     }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
   };
 
   const captureFrame = () => {
@@ -129,363 +103,252 @@ const ContributorView: React.FC<Props> = ({ language, user, onBack, onSuccess, o
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const base64Data = canvas.toDataURL('image/jpeg').split(',')[1];
-        if (uploadType === 'certificate') {
-          processCertificate(base64Data, 'image/jpeg');
-        } else {
-          processImage(base64Data, 'image/jpeg');
-        }
+        processVerificationImage(base64Data, 'image/jpeg');
         stopCamera();
       }
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       const base64Data = (reader.result as string).split(',')[1];
-      if (uploadType === 'certificate') {
-        processCertificate(base64Data, file.type);
-      } else {
-        processImage(base64Data, file.type);
-      }
+      processVerificationImage(base64Data, file.type);
     };
     reader.readAsDataURL(file);
   };
 
-  const processCertificate = async (base64Data: string, mimeType: string) => {
+  const processVerificationImage = async (base64Data: string, mimeType: string) => {
     setLoading(true);
-    try {
-      // Simulate verification AI check
-      await new Promise(r => setTimeout(r, 2000));
-      setProForm(prev => ({ ...prev, certificateUploaded: true }));
-      setLoading(false);
-      setUploadType(null);
-      alert(t('certUploaded'));
-    } catch (err) {
-      setLoading(false);
-      alert("Certificate processing failed.");
-    }
-  };
-
-  const processImage = async (base64Data: string, mimeType: string) => {
-    setLoading(true);
-    setScanResult(null);
-
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `
-        UNIVERSAL ACADEMIC ANALYZER ROLE:
-        Analyze this educational material. Subject should be from: ${SUBJECTS.map(s => s.name).join(', ')}.
-        Language: ${language}.
-        
-        CONTRIBUTOR CONTEXT: ${user.contributorRole} Contributor.
-        ${user.contributorRole === 'Professional' ? 'PROFESSIONAL MODE: Ensure higher rigor, use formal academic terminology, and structure for university-level equivalency if applicable.' : 'GENERAL MODE: Focus on clarity, engagement, and foundational understanding.'}
-
-        FORMATTING:
-        - TRANSFORM the content into a Kumon-like lesson.
-        - Ensure steps are small and incremental.
-
-        Return output as JSON.
-      `;
-
+      const prompt = `Analyze this ${evidenceType === 'degree' ? 'University Degree' : 'Academic Report Card'}. 
+      Verify if it belongs to a ${selectedRole}. If it is a degree, check if it is Bachelor or higher and if it relates to Education.
+      Return result as JSON.`;
+      
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: {
-          parts: [
-            { inlineData: { data: base64Data, mimeType } },
-            { text: prompt }
-          ]
-        },
+        model: 'gemini-3-flash-preview',
+        contents: { parts: [{ inlineData: { data: base64Data, mimeType } }, { text: prompt }] },
         config: {
-          responseMimeType: "application/json",
+          responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              detectedSubject: { type: Type.STRING },
-              detectedLevel: { type: Type.STRING },
-              confidence: { type: Type.NUMBER },
-              detectedEra: { type: Type.STRING },
-              materialType: { type: Type.STRING },
-              lesson: {
-                type: Type.OBJECT,
-                properties: {
-                  title: { type: Type.STRING },
-                  explanation: { type: Type.STRING },
-                  examples: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  exercises: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        question: { type: Type.STRING },
-                        options: { type: Type.ARRAY, items: { type: Type.STRING } },
-                        correctAnswer: { type: Type.STRING },
-                        explanation: { type: Type.STRING }
-                      },
-                      required: ["question", "correctAnswer", "explanation"]
-                    }
-                  }
-                },
-                required: ["title", "explanation", "examples", "exercises"]
-              }
+              verified: { type: Type.BOOLEAN },
+              institution: { type: Type.STRING },
+              degreeType: { type: Type.STRING },
+              isEducationRelated: { type: Type.BOOLEAN },
+              confidence: { type: Type.NUMBER }
             },
-            required: ["detectedSubject", "detectedLevel", "lesson", "confidence"]
+            required: ['verified']
           }
         }
       });
-
+      
       const result = JSON.parse(response.text);
-      setScanResult(result);
-      setLoading(false);
+      if (result.verified) {
+        setIsEvidenceVerified(true);
+        setOnboardingStep('portfolio');
+      } else {
+        alert("Verification failed. Please ensure the document is clear and valid.");
+      }
     } catch (err) {
-      alert(t('errorGenerating'));
+      alert("Error processing document.");
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleConfirm = () => {
-    if (scanResult) {
-      const subjectMatch = SUBJECTS.find(s => s.name.toLowerCase() === scanResult.detectedSubject.toLowerCase()) || SUBJECTS[0];
-      saveContribution({
-        id: Date.now().toString(),
-        title: scanResult.lesson.title,
-        subjectIcon: subjectMatch.icon,
-        date: new Date().toISOString().split('T')[0],
-        level: scanResult.detectedLevel,
-        role: user.contributorRole || 'General'
-      });
-      alert(t('contributionSuccess'));
-      onSuccess();
-    }
-  };
-
-  if (showRoleSelect) {
+  // Onboarding UI: Role selection
+  if (onboardingStep === 'role') {
     return (
       <div className="max-w-4xl mx-auto py-20 px-6 animate-fadeIn">
-        <h2 className="text-5xl font-black text-center mb-4 dark:text-white tracking-tighter">Choose Your Contributor Path</h2>
-        <p className="text-gray-500 text-center mb-16 text-lg">Help darewast expand its global library of knowledge.</p>
+        <h2 className="text-5xl font-black text-center mb-4 dark:text-white tracking-tighter">Academic Authority Hub</h2>
+        <p className="text-gray-500 text-center mb-16 text-lg">Join the world's largest 24/7 knowledge grid.</p>
         
         <div className="grid md:grid-cols-2 gap-10">
-          {/* General Path */}
           <div className="bg-white dark:bg-slate-900 rounded-[3rem] p-10 border border-gray-100 dark:border-slate-800 shadow-2xl flex flex-col justify-between group hover:border-dare-teal transition-all">
             <div>
-              <div className="w-20 h-20 bg-dare-teal/10 text-dare-teal rounded-3xl flex items-center justify-center text-4xl mb-8 group-hover:scale-110 transition-transform">🌱</div>
-              <h3 className="text-3xl font-black mb-1 dark:text-white">General Contributor</h3>
-              <p className="text-dare-teal font-black text-xl mb-4">{t('genEarnings')}</p>
-              <p className="text-gray-500 mb-8 leading-relaxed">Perfect for enthusiasts, students, and life-long learners. Share materials you've found helpful and help others master foundations.</p>
+              <div className="w-20 h-20 bg-dare-teal/10 text-dare-teal rounded-3xl flex items-center justify-center text-4xl mb-8 group-hover:scale-110 transition-transform">🎓</div>
+              <h3 className="text-3xl font-black mb-1 dark:text-white">{t('educatorPath')}</h3>
+              <p className="text-dare-teal font-black text-xl mb-4">{t('proEarnings')}</p>
+              <p className="text-gray-500 mb-8 leading-relaxed">{t('educatorRequirement')}</p>
               <ul className="space-y-3 mb-10">
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                  <span className="text-dare-teal">✓</span> "Community Contributor" Badge
-                </li>
-                <li className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">
-                  <span className="text-dare-teal">✓</span> Earn XP for every lesson published
-                </li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">✓ Degree Verification</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">✓ Academic Diagnostic</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-600 dark:text-gray-400">✓ Weekly Stipend Channel</li>
               </ul>
             </div>
-            <button onClick={() => handleSetRole('General')} className="w-full py-5 bg-dare-teal text-white rounded-2xl font-black text-xl hover:shadow-xl hover:shadow-dare-teal/20 transition-all">Select General Path</button>
+            <button onClick={() => handleRoleSelection('Educator')} className="w-full py-5 bg-dare-teal text-white rounded-2xl font-black text-xl hover:shadow-xl shadow-dare-teal/20 transition-all">Select Educator</button>
           </div>
 
-          {/* Professional Path */}
-          <div className="bg-slate-900 rounded-[3rem] p-10 border border-slate-800 shadow-2xl flex flex-col group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5 text-8xl font-black text-white">PRO</div>
-            <div className="relative z-10 flex flex-col h-full justify-between">
-              <div>
-                <div className="w-20 h-20 bg-dare-gold/10 text-dare-gold rounded-3xl flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform">🏅</div>
-                <h3 className="text-3xl font-black mb-1 text-white">Professional Contributor</h3>
-                <p className="text-dare-gold font-black text-xl mb-4">{t('proEarnings')}</p>
-                <p className="text-gray-400 mb-8 leading-relaxed">For professional educators, researchers, and degree-holders. Provide high-rigor materials and earn professional verification.</p>
-                
-                <form onSubmit={handleProSubmit} className="space-y-4 mb-8">
-                  <input 
-                    placeholder="Professional Title (e.g. Senior Lecturer)" 
-                    className="w-full bg-slate-800 border-2 border-transparent focus:border-dare-gold rounded-xl p-3 text-white font-bold outline-none"
-                    value={proForm.title}
-                    onChange={e => setProForm({...proForm, title: e.target.value})}
-                    required
-                  />
-                  <input 
-                    placeholder="Institution" 
-                    className="w-full bg-slate-800 border-2 border-transparent focus:border-dare-gold rounded-xl p-3 text-white font-bold outline-none"
-                    value={proForm.institution}
-                    onChange={e => setProForm({...proForm, institution: e.target.value})}
-                    required
-                  />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input 
-                      placeholder="Degree" 
-                      className="w-full bg-slate-800 border-2 border-transparent focus:border-dare-gold rounded-xl p-3 text-white font-bold outline-none"
-                      value={proForm.degree}
-                      onChange={e => setProForm({...proForm, degree: e.target.value})}
-                      required
-                    />
-                    <input 
-                      type="number"
-                      placeholder="Exp. Years" 
-                      className="w-full bg-slate-800 border-2 border-transparent focus:border-dare-gold rounded-xl p-3 text-white font-bold outline-none"
-                      value={proForm.yearsOfExperience}
-                      onChange={e => setProForm({...proForm, yearsOfExperience: parseInt(e.target.value)})}
-                      required
-                    />
-                  </div>
+          <div className="bg-slate-900 rounded-[3rem] p-10 border border-slate-800 shadow-2xl flex flex-col justify-between group hover:border-dare-gold transition-all">
+            <div>
+              <div className="w-20 h-20 bg-dare-gold/10 text-dare-gold rounded-3xl flex items-center justify-center text-4xl mb-8 group-hover:scale-110 transition-transform">🌱</div>
+              <h3 className="text-3xl font-black mb-1 text-white">{t('contributorPath')}</h3>
+              <p className="text-dare-gold font-black text-xl mb-4">{t('genEarnings')}</p>
+              <p className="text-gray-400 mb-8 leading-relaxed">{t('contributorRequirement')}</p>
+              <ul className="space-y-3 mb-10">
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-400">✓ Student Report Card Accepted</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-400">✓ Portfolio Entry</li>
+                <li className="flex items-center gap-3 text-sm font-bold text-gray-400">✓ Level Placement Test</li>
+              </ul>
+            </div>
+            <button onClick={() => handleRoleSelection('Contributor')} className="w-full py-5 bg-dare-gold text-slate-900 rounded-2xl font-black text-xl hover:shadow-xl shadow-dare-gold/20 transition-all">Select Contributor</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-                  {/* Certificate Scan Button */}
-                  <button 
-                    type="button"
-                    onClick={() => { setUploadType('certificate'); startCamera(); }}
-                    className={`w-full py-4 border-2 border-dashed rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${proForm.certificateUploaded ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500' : 'border-slate-700 text-gray-400 hover:border-dare-gold hover:text-dare-gold'}`}
-                  >
-                    {proForm.certificateUploaded ? '✓ ' + t('certUploaded') : '📄 ' + t('scanUnivCert')}
-                  </button>
-
-                  <button type="submit" className="w-full py-5 bg-dare-gold text-slate-900 rounded-2xl font-black text-xl hover:shadow-xl hover:shadow-dare-gold/20 transition-all mt-4">Verify Professional Path</button>
-                </form>
-              </div>
+  // Onboarding UI: Evidence (Degree/Report Card)
+  if (onboardingStep === 'evidence') {
+    return (
+      <div className="max-w-2xl mx-auto py-20 px-6 animate-fadeIn text-center">
+        <h2 className="text-4xl font-black mb-4 dark:text-white">{t('academicEvidence')}</h2>
+        <p className="text-gray-500 mb-12">Scan your credentials to verify authority for the {selectedRole} role.</p>
+        
+        {loading ? (
+          <div className="py-20 space-y-8">
+            <div className="w-20 h-20 border-8 border-dare-teal border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="font-black text-dare-teal animate-pulse uppercase tracking-widest">{t('detecting')}</p>
+          </div>
+        ) : isCameraActive ? (
+          <div className="bg-black rounded-[3rem] overflow-hidden relative shadow-2xl">
+            <video ref={videoRef} autoPlay playsInline className="w-full aspect-video object-cover" />
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+              <button onClick={captureFrame} className="px-10 py-4 bg-dare-teal text-white rounded-2xl font-black">Capture</button>
+              <button onClick={stopCamera} className="px-6 py-4 bg-white/20 text-white rounded-2xl font-black">Cancel</button>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid gap-6">
+            <button onClick={() => { setEvidenceType('degree'); startCamera(); }} className="p-10 bg-white dark:bg-slate-900 border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-[3rem] hover:border-dare-teal transition-all group">
+              <span className="text-4xl block mb-4 group-hover:scale-110 transition-transform">📜</span>
+              <h4 className="text-xl font-black dark:text-white">{t('scanUnivCert')}</h4>
+              {selectedRole === 'Educator' && <p className="text-rose-500 text-[10px] font-black uppercase mt-2">Required for Educators</p>}
+            </button>
+            
+            <button onClick={() => { setEvidenceType('report_card'); startCamera(); }} className="p-10 bg-white dark:bg-slate-900 border-2 border-dashed border-gray-200 dark:border-slate-800 rounded-[3rem] hover:border-dare-gold transition-all group">
+              <span className="text-4xl block mb-4 group-hover:scale-110 transition-transform">📝</span>
+              <h4 className="text-xl font-black dark:text-white">{t('scanReportCard')}</h4>
+              <p className="text-gray-400 text-[10px] font-black uppercase mt-2">School/Uni Student Path</p>
+            </button>
+            
+            <button onClick={() => setOnboardingStep('portfolio')} className="text-gray-400 font-bold uppercase tracking-widest text-xs hover:text-dare-teal transition-colors mt-6">
+              Skip Evidence (Contributors Only)
+            </button>
+          </div>
+        )}
+        <canvas ref={canvasRef} className="hidden" />
       </div>
     );
   }
 
-  if (loading) {
+  // Onboarding UI: Portfolio
+  if (onboardingStep === 'portfolio') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fadeIn space-y-8">
-        <div className="relative">
-          <div className="w-24 h-24 border-8 border-dare-teal/20 border-t-dare-teal rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center text-3xl animate-pulse">🔍</div>
+      <div className="max-w-2xl mx-auto py-20 px-6 animate-fadeIn">
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 bg-dare-purple/10 text-dare-purple rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6">📁</div>
+          <h2 className="text-4xl font-black dark:text-white mb-2">{t('portfolio')}</h2>
+          <p className="text-gray-500">Provide evidence of your academic or creative work.</p>
         </div>
-        <div className="text-center">
-          <p className="text-2xl font-black text-gray-900 dark:text-white mb-2">{t('detecting')}</p>
-          <p className="text-gray-500 dark:text-gray-400 font-bold">{t('processingContribution')}</p>
-          <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest mt-4">Applying {user.contributorRole} Standards...</p>
-        </div>
+        
+        <form onSubmit={handlePortfolioSubmit} className="space-y-8">
+           <div className="space-y-4">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4">Portfolio Link (Website/Cloud/Drive)</label>
+              <input 
+                value={portfolioUrl} 
+                onChange={e => setPortfolioUrl(e.target.value)}
+                placeholder="https://portfolio.university.edu/mywork"
+                className="w-full p-6 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-purple rounded-[2rem] outline-none font-bold dark:text-white transition-all shadow-inner"
+                required
+              />
+           </div>
+           
+           <button type="submit" className="w-full py-6 bg-dare-purple text-white rounded-[2rem] font-black text-xl shadow-xl shadow-dare-purple/20 hover:scale-[1.02] active:scale-95 transition-all">
+             Continue to Diagnostic →
+           </button>
+        </form>
       </div>
     );
   }
 
+  // Onboarding UI: Diagnostic
+  if (onboardingStep === 'diagnostic') {
+    return (
+      <div className="animate-fadeIn">
+        <div className="max-w-2xl mx-auto text-center py-12 px-6">
+           <h2 className="text-4xl font-black mb-4 dark:text-white">{t('academicDiagnostic')}</h2>
+           <p className="text-gray-500">Final step: Verify your mastery level to determine your institutional authority.</p>
+        </div>
+        <PlacementTestView 
+           language={language} 
+           user={user} 
+           testType={selectedRole === 'Educator' ? 'assessment' : 'placement'}
+           onCancel={() => setOnboardingStep('portfolio')}
+           onComplete={handleDiagnosticComplete}
+        />
+      </div>
+    );
+  }
+
+  // HUB VIEW (If verified)
   return (
-    <div className="max-w-4xl mx-auto py-12 animate-fadeIn px-4">
+    <div className="max-w-6xl mx-auto py-12 px-4 animate-fadeIn">
       <div className="flex justify-between items-center mb-10">
-        <button 
-          onClick={() => { stopCamera(); onBack(); }} 
-          className="text-gray-400 hover:text-dare-purple flex items-center transition-all font-bold group"
-        >
+        <button onClick={onBack} className="text-gray-400 hover:text-dare-purple flex items-center transition-all font-bold group">
           <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> {t('backToDashboard')}
         </button>
-        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${user.contributorRole === 'Professional' ? 'bg-dare-gold/10 text-dare-gold border-dare-gold/20' : 'bg-dare-teal/10 text-dare-teal border-dare-teal/20'}`}>
-          {user.contributorRole === 'Professional' ? '🎖️ Professional Contributor ($500/wk)' : '🌱 General Contributor ($200/wk)'}
+        <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 ${user.contributorRole === 'Educator' ? 'bg-dare-teal/10 text-dare-teal border-dare-teal/20' : 'bg-dare-gold/10 text-dare-gold border-dare-gold/20'}`}>
+          {user.contributorRole === 'Educator' ? '🎖️ Verified Educator' : '🌱 Certified Contributor'}
         </div>
       </div>
 
-      {!scanResult ? (
-        <div className="space-y-12">
-          {/* Camera View */}
-          {isCameraActive ? (
-            <div className="bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-dare-teal relative">
-              <video ref={videoRef} autoPlay playsInline className="w-full h-auto aspect-video object-cover" />
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
-                <button onClick={captureFrame} className="px-10 py-5 bg-dare-teal text-white rounded-2xl font-black text-xl shadow-2xl animate-pulse">Capture</button>
-                <button onClick={stopCamera} className="px-6 py-5 bg-white/20 backdrop-blur-md text-white rounded-2xl font-black">Stop</button>
-              </div>
-              <canvas ref={canvasRef} className="hidden" />
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-8 md:p-12 border border-gray-100 dark:border-slate-800 shadow-2xl relative overflow-hidden">
+      <div className="grid lg:grid-cols-12 gap-10">
+         <div className="lg:col-span-8 space-y-12">
+            <section className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-10 md:p-12 border border-gray-100 dark:border-slate-800 shadow-2xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple"></div>
-              
               <header className="mb-12 text-center">
                 <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-4">Contribution Hub</h2>
                 <p className="text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">Transform any educational resource into a structured lesson.</p>
               </header>
 
-              <div className="space-y-12">
-                <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">1. Set Scanning Mode</h3>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{t('historicalMode')}</span>
-                      <button onClick={() => setIsHistoricalMode(!isHistoricalMode)} className={`w-12 h-6 rounded-full transition-all relative ${isHistoricalMode ? 'bg-dare-gold' : 'bg-gray-200 dark:bg-slate-800'}`}>
-                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all shadow-sm ${isHistoricalMode ? 'left-7' : 'left-1'}`}></div>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
-                    <button onClick={() => setSelectedSubject('auto')} className={`p-4 rounded-2xl text-xs font-black border-2 text-center ${selectedSubject === 'auto' ? 'border-dare-gold bg-dare-gold/5 text-dare-gold shadow-lg' : 'border-transparent bg-gray-50 dark:bg-slate-800 text-gray-500 hover:border-gray-200'}`}>
-                      <span className="text-2xl block mb-2">🤖</span>
-                      <span className="line-clamp-1">{t('autoDetect')}</span>
-                    </button>
-                    {SUBJECTS.map(sub => (
-                      <button key={sub.id} onClick={() => setSelectedSubject(sub)} className={`p-4 rounded-2xl text-xs font-black border-2 text-center ${selectedSubject !== 'auto' && selectedSubject.id === sub.id ? 'border-dare-purple bg-dare-purple/5 text-dare-purple shadow-lg' : 'border-transparent bg-gray-50 dark:bg-slate-800 text-gray-500 hover:border-gray-200'}`}>
-                        <span className="text-2xl block mb-2">{sub.icon}</span>
-                        <span className="line-clamp-1">{sub.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <div className="grid sm:grid-cols-3 gap-6">
-                    <button onClick={() => { setUploadType('scan'); startCamera(); }} className="p-10 rounded-[2rem] border-4 border-dashed border-gray-100 dark:border-slate-800 hover:border-dare-teal hover:bg-dare-teal/5 transition-all text-center space-y-4">
-                      <div className="w-16 h-16 bg-dare-teal/10 text-dare-teal rounded-3xl flex items-center justify-center text-3xl mx-auto">📷</div>
-                      <h4 className="text-lg font-black dark:text-white">Scan Paper</h4>
-                    </button>
-                    <button onClick={() => { setUploadType('file'); fileInputRef.current?.click(); }} className="p-10 rounded-[2rem] border-4 border-dashed border-gray-100 dark:border-slate-800 hover:border-dare-gold hover:bg-dare-gold/5 transition-all text-center space-y-4">
-                      <div className="w-16 h-16 bg-dare-gold/10 text-dare-gold rounded-3xl flex items-center justify-center text-3xl mx-auto">📁</div>
-                      <h4 className="text-lg font-black dark:text-white">Upload File</h4>
-                    </button>
-                    <button onClick={() => { setUploadType('video'); fileInputRef.current?.click(); }} className="p-10 rounded-[2rem] border-4 border-dashed border-gray-100 dark:border-slate-800 hover:border-dare-purple hover:bg-dare-purple/5 transition-all text-center space-y-4">
-                      <div className="w-16 h-16 bg-dare-purple/10 text-dare-purple rounded-3xl flex items-center justify-center text-3xl mx-auto">🎥</div>
-                      <h4 className="text-lg font-black dark:text-white">Video Frame</h4>
-                    </button>
-                  </div>
-                </section>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <button onClick={() => { startCamera(); }} className="p-10 rounded-[2.5rem] border-4 border-dashed border-gray-100 dark:border-slate-800 hover:border-dare-teal transition-all text-center space-y-4">
+                  <div className="w-16 h-16 bg-dare-teal/10 text-dare-teal rounded-3xl flex items-center justify-center text-3xl mx-auto">📷</div>
+                  <h4 className="text-lg font-black dark:text-white">{t('scanMaterials')}</h4>
+                </button>
+                <button onClick={() => { fileInputRef.current?.click(); }} className="p-10 rounded-[2.5rem] border-4 border-dashed border-gray-100 dark:border-slate-800 hover:border-dare-gold transition-all text-center space-y-4">
+                  <div className="w-16 h-16 bg-dare-gold/10 text-dare-gold rounded-3xl flex items-center justify-center text-3xl mx-auto">📁</div>
+                  <h4 className="text-lg font-black dark:text-white">{t('uploadFiles')}</h4>
+                </button>
               </div>
-
-              <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept={uploadType === 'video' ? 'video/*' : 'image/*'} />
-            </div>
-          )}
-
-          {/* History */}
-          {myLessons.length > 0 && (
-            <section className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 border border-gray-100 dark:border-slate-800 shadow-xl">
-               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Recent Contributions</h3>
-               <div className="space-y-4">
-                  {myLessons.map(l => (
-                    <div key={l.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
-                       <div className="flex items-center gap-4">
-                          <span className="text-2xl">{l.subjectIcon}</span>
-                          <div>
-                            <p className="font-black dark:text-white">{l.title}</p>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase">Level {l.level} • {l.date}</p>
-                          </div>
-                       </div>
-                       <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase border ${l.role === 'Professional' ? 'text-dare-gold border-dare-gold/20 bg-dare-gold/5' : 'text-dare-teal border-dare-teal/20 bg-dare-teal/5'}`}>{l.role}</span>
-                    </div>
-                  ))}
-               </div>
+              <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*" />
             </section>
-          )}
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-gray-100 dark:border-slate-800 animate-fadeIn">
-          <div className={`p-12 text-center text-white relative ${user.contributorRole === 'Professional' ? 'bg-slate-900' : 'bg-dare-teal'}`}>
-            <p className="text-xs font-black uppercase tracking-[0.3em] mb-4 opacity-80">{scanResult.detectedSubject} • Level {scanResult.detectedLevel}</p>
-            <h3 className="text-4xl font-black mb-8 leading-tight drop-shadow-lg">{scanResult.lesson.title}</h3>
-            <div className={`inline-block px-6 py-2 rounded-2xl font-black text-sm shadow-xl ${user.contributorRole === 'Professional' ? 'bg-dare-gold text-slate-900' : 'bg-white text-dare-teal'}`}>
-              Ready to Publish as {user.contributorRole}
+         </div>
+
+         <aside className="lg:col-span-4 space-y-6">
+            <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden shadow-2xl border border-white/5">
+              <div className="relative z-10">
+                <p className="text-[10px] font-black text-dare-teal uppercase tracking-[0.4em] mb-4">Institutional Stats</p>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold text-xs">Total Lessons</span>
+                    <span className="font-black text-xl">{user.contributions}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-bold text-xs">Weekly Stipend</span>
+                    <span className="font-black text-xl text-dare-gold">${user.weeklyStipend}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="p-10 space-y-8">
-            <p className="text-gray-500 dark:text-gray-400 leading-relaxed italic">"{scanResult.lesson.explanation.substring(0, 200)}..."</p>
-            <div className="flex gap-4">
-              <button onClick={handleConfirm} className="flex-1 py-5 bg-dare-teal text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 transition-all">Publish Lesson</button>
-              <button onClick={() => setScanResult(null)} className="px-10 py-5 bg-gray-100 dark:bg-slate-800 text-gray-500 rounded-2xl font-black">Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+         </aside>
+      </div>
     </div>
   );
 };
