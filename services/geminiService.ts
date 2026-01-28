@@ -94,34 +94,29 @@ export const generateLesson = async (
       : "Conceptual Clarity: Bridge theoretical gaps with practical industrial examples.";
   }
 
-  const instGrade = (user?.track?.includes('DistanceSchool') && user.distanceSchoolType) 
-    ? getInstitutionalGrade(user.distanceSchoolType, level) 
-    : null;
-
-  const config = subject.richMediaConfig;
+  const isMusic = subject.category === 'Music' || subject.id.includes('music') || subject.id === 'music-vocal' || subject.id === 'music-instrument';
 
   const prompt = `
     ROLE: World-Class Academic Architect & Neuro-Pedagogy Specialist.
-    TASK: Synthesize Personalized Chapter ${lessonNumber}/12.
+    TASK: Synthesize Personalized Chapter ${lessonNumber}/12 for Level ${level}.
     
     DAREWAST PEDAGOGICAL CONSTRAINTS:
-    - Target Age: ${age} years. (Crucial: Balance "Zone of Proximal Development". Challenging but achievable).
+    - Target Age: ${age} years.
     - Subject: ${subject.name} (Mastery Level ${level}).
+    - Chapter Context: This is Chapter ${lessonNumber} of 12 in the curriculum.
     - Method: ${activeMethod}.
-    - Cultural Context: ${culturalBackground}. (Use localized idioms, historical figures, or local flora/fauna in examples).
+    - Cultural Context: ${culturalBackground}.
     - Performance Tuning: ${difficultyTuning}.
     - Language: ${language}.
     
+    STRICT REQUIREMENT: All mediaResources (E-books, Blogs, Podcasts, Videos, Songs) MUST be explicitly and uniquely designed for THIS specific chapter (${lessonNumber}) and Level (${level}). 
+    If subject is Music/Vocal/Instrumental, at least one media item MUST be a 'song' type.
+    
     REQUIREMENTS:
     1. EXPLANATION: Deep theoretical overview adapted to ${age}yo cognitive capacity.
-    2. VARK ADAPTATIONS: 
-       - Visual: Description of a mind-map.
-       - Auditory: Conversational script.
-       - Kinesthetic: Real-world drill.
-       - Reading: High-rigor text.
-    3. EXERCISES: ${config?.exercisesPerLesson || 2} steps. 
-       - At least one MUST be 'isEssay: true' to force logical synthesis.
-       - Exercise difficulty must scale exactly to ${difficultyTuning}.
+    2. VARK ADAPTATIONS: Visual, Auditory, Kinesthetic, Reading.
+    3. EXERCISES: At least one MUST be 'isEssay: true'.
+    4. MEDIA RESOURCES: List specific titles for an e-book, blog post, podcast, and video (and song if music) that are uniquely architected for Chapter ${lessonNumber} Level ${level}.
   `;
 
   const response = await ai.models.generateContent({
@@ -144,30 +139,6 @@ export const generateLesson = async (
               readingDeepDive: { type: Type.STRING }
             },
             required: ["visualMapDescription", "auditoryScript", "kinestheticActivity", "readingDeepDive"]
-          },
-          pronunciationGuide: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                word: { type: Type.STRING },
-                phonetic: { type: Type.STRING },
-                guide: { type: Type.STRING }
-              },
-              required: ["word", "phonetic", "guide"]
-            }
-          },
-          timelinePoints: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                detail: { type: Type.STRING },
-                icon: { type: Type.STRING }
-              },
-              required: ["title", "detail", "icon"]
-            }
           },
           examples: { type: Type.ARRAY, items: { type: Type.STRING } },
           exercises: {

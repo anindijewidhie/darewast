@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { Language, User } from '../types';
+import { translations } from '../translations';
 
 interface Props {
   user: User;
@@ -20,6 +20,8 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
   const sessionPromiseRef = useRef<Promise<any> | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
+
+  const t = (key: string) => translations[language]?.[key] || translations['English'][key] || key;
 
   // Manual base64 decode (required by coding guidelines)
   const decode = (base64: string) => {
@@ -85,7 +87,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         callbacks: {
           onopen: () => {
             setIsActive(true);
@@ -153,7 +155,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
           systemInstruction: `You are darewast AITutor, architected by A. Widhi.
           Subject Context: ${context}. Language: ${language}.
           User: ${user.name}, Age ${user.age}.
-          Instructions: Be encouraging, incremental, and clear. Help them master the current concept.`,
+          Instructions: Be encouraging, incremental, and clear. Help them master the current concept. Respond in ${language}.`,
           outputAudioTranscription: {},
         },
       });
@@ -183,7 +185,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
               <h3 className="font-black text-2xl tracking-tighter mb-1">darewast Live Tutor</h3>
               <div className="flex items-center gap-2">
                  <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-400'}`}></div>
-                 <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">{isActive ? 'Universal Link Active' : 'Disconnected'}</p>
+                 <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">{isActive ? t('universalLinkActive') : t('disconnected')}</p>
               </div>
             </div>
           </div>
@@ -199,14 +201,14 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
             <div className="text-center space-y-10 py-12 animate-fadeIn">
               <div className="w-32 h-32 bg-dare-teal/10 text-dare-teal mx-auto rounded-[3rem] flex items-center justify-center text-6xl shadow-inner animate-float">📚</div>
               <div className="max-w-xs mx-auto">
-                <h4 className="text-3xl font-black mb-4 dark:text-white tracking-tight">Vocal Mastery Link</h4>
-                <p className="text-gray-500 font-medium leading-relaxed">Synthesize a direct neural link for personalized guidance. Perfect for pronunciation, logic checks, or narrative walkthroughs.</p>
+                <h4 className="text-3xl font-black mb-4 dark:text-white tracking-tight">{t('vocalMasteryLink')}</h4>
+                <p className="text-gray-500 font-medium leading-relaxed">{t('vocalMasteryDesc')}</p>
               </div>
               <button 
                 onClick={startSession}
                 className="px-14 py-7 bg-dare-teal text-white rounded-[2.5rem] font-black text-xl shadow-2xl shadow-dare-teal/30 hover:scale-105 active:scale-95 transition-all"
               >
-                Initialize Link
+                {t('initializeLink')}
               </button>
             </div>
           ) : isConnecting ? (
@@ -215,7 +217,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
                 <div className="w-24 h-24 border-[8px] border-dare-purple/20 border-t-dare-purple rounded-full animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center text-3xl">📡</div>
               </div>
-              <p className="font-black text-dare-purple uppercase tracking-[0.5em] text-[10px] animate-pulse">Syncing Knowledge Nodes...</p>
+              <p className="font-black text-dare-purple uppercase tracking-[0.5em] text-[10px] animate-pulse">{t('detecting')}</p>
             </div>
           ) : (
             <div className="space-y-10 animate-fadeIn">
@@ -248,7 +250,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
               onClick={onClose}
               className="w-full py-6 bg-rose-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95"
             >
-              Terminate Mastery Link
+              {t('terminateMasteryLink')}
             </button>
           </div>
         )}

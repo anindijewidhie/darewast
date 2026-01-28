@@ -239,7 +239,7 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
                   {view === 'sign-up' && (
                     <div>
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('fullName')}</label>
-                      <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
+                      <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" spellCheck={true} className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
                     </div>
                   )}
                   <div>

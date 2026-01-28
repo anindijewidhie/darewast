@@ -155,11 +155,15 @@ const LevelCompletionHub: React.FC<Props> = ({ subject, language, level, user, o
                
                <div className="lg:col-span-5 space-y-6">
                   <div className="bg-white dark:bg-slate-900 p-8 rounded-[3rem] border border-gray-100 dark:border-slate-800 shadow-xl">
-                     <h4 className="text-xl font-black mb-6 dark:text-white">Submission Portal</h4>
+                     <div className="flex justify-between items-center mb-6">
+                        <h4 className="text-xl font-black dark:text-white">Submission Portal</h4>
+                        <span className="text-[8px] font-black text-dare-teal uppercase bg-dare-teal/5 px-2 py-1 rounded">Spell Check Active</span>
+                     </div>
                      <textarea 
                         value={submission}
                         onChange={e => setSubmission(e.target.value)}
                         placeholder="Describe your project, upload files, or synthesize your narrative here..."
+                        spellCheck={true}
                         className="w-full p-6 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none font-bold text-sm dark:text-white transition-all min-h-[300px]"
                      />
                      <button 
@@ -182,12 +186,16 @@ const LevelCompletionHub: React.FC<Props> = ({ subject, language, level, user, o
                         ? 'Describe your performance or achievement in detail. Include links to video/audio if applicable.'
                         : 'Explain how you have mastered the core logic of this level and how it applies to real-world scenarios.'}
                    </p>
-                   <textarea 
-                      value={submission}
-                      onChange={e => setSubmission(e.target.value)}
-                      placeholder="Enter your mastery narrative..."
-                      className="w-full p-6 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-dare-gold rounded-2xl outline-none font-bold text-sm dark:text-white transition-all min-h-[250px] mb-6"
-                   />
+                   <div className="relative">
+                      <textarea 
+                         value={submission}
+                         onChange={e => setSubmission(e.target.value)}
+                         placeholder="Enter your mastery narrative..."
+                         spellCheck={true}
+                         className="w-full p-6 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-dare-gold rounded-2xl outline-none font-bold text-sm dark:text-white transition-all min-h-[250px] mb-6"
+                      />
+                      <div className="absolute bottom-10 right-4 text-[7px] font-black text-gray-300 uppercase tracking-widest pointer-events-none">Spell Check Active</div>
+                   </div>
                    <button 
                       onClick={handleProjectSubmit}
                       disabled={isGrading || !submission.trim()}

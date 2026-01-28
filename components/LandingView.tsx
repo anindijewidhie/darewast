@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { translations } from '../translations';
@@ -60,13 +59,15 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
   };
 
   const coreDisciplines = [
-    { name: 'Literacy', icon: '📖', color: '#53CDBA', desc: 'Linguistic mastery across 14 languages.' },
-    { name: 'Numeracy', icon: '🔢', color: '#CCB953', desc: 'Foundation to advanced abstract logic.' },
-    { name: 'Science', icon: '⚛️', color: '#4D96FF', desc: 'Physics, Chemistry, Biology, and Astronomy.' },
-    { name: 'Humanities', icon: '📜', color: '#FF9F43', desc: 'History, Geography, and Social Sciences.' },
-    { name: 'Tech', icon: '💻', color: '#B953CC', desc: 'OS, Software, Programming, and AI.' },
-    { name: 'Music', icon: '🎼', color: '#F368E0', desc: 'Theory, Performance, and Vocal Mastery.' },
-    { name: 'Ethics', icon: '⚖️', color: '#10AC84', desc: 'Moral inquiry and Global Jurisprudence.' }
+    { name: 'Literacy', icon: '📖', color: '#53CDBA', desc: 'Reading, writing, and linguistic analysis across languages.' },
+    { name: 'Numeracy', icon: '🔢', color: '#CCB953', desc: 'Mastering numbers, logic, and computational thinking.' },
+    { name: 'Science', icon: '⚛️', color: '#4D96FF', desc: 'Exploring physics, chemistry, biology, and astronomy.' },
+    { name: 'Humanities', icon: '📜', color: '#FF9F43', desc: 'Chronological study of civilizations and social geography.' },
+    { name: 'Ethics', icon: '⚖️', color: '#10AC84', desc: 'Navigating right and wrong through philosophical inquiry.' },
+    { name: 'Tech', icon: '💻', color: '#B953CC', desc: 'Digital architecture, kernels, and interface management.' },
+    { name: 'Arts', icon: '🎨', color: '#B953CC', desc: 'Visual communication and aesthetic styles from Bauhaus to Digital.' },
+    { name: 'Music', icon: '🎼', color: '#F368E0', desc: 'Decoding the science of sound, harmony, and composition.' },
+    { name: 'Sports', icon: '🧠', color: '#4D96FF', desc: 'Strategic mastery and high-performance cognitive execution.' }
   ];
 
   return (
@@ -83,7 +84,7 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
             </p>
           </div>
           
-          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[11.5rem] font-black text-gray-900 dark:text-white mb-8 md:mb-10 leading-[0.95] md:leading-[0.8] tracking-tighter">
+          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] font-black text-gray-900 dark:text-white mb-8 md:mb-10 leading-[0.95] md:leading-[0.8] tracking-tighter">
             Universal Mastery For <span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Everyone</span>
           </h1>
           
@@ -138,11 +139,11 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
       <section className="py-20 md:py-24 bg-gray-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-6 text-center">
            <div className="mb-12 md:mb-16">
-              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em] mb-4">Academic Breadth</h2>
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em] mb-4">Official Academic Classifications</h2>
               <div className="w-16 h-1 bg-dare-teal mx-auto rounded-full"></div>
            </div>
            
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {coreDisciplines.map((discipline) => (
                 <div 
                   key={discipline.name} 
@@ -166,8 +167,8 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
               
               <div className="p-8 md:p-10 bg-slate-900 rounded-[3rem] md:rounded-[3.5rem] shadow-2xl flex flex-col items-center justify-center gap-4 text-white">
                  <span className="text-3xl md:text-4xl">🚀</span>
-                 <h3 className="font-black text-xl md:text-2xl tracking-tighter">Over 24+ Subjects</h3>
-                 <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">365 Day Enrollment Active</p>
+                 <h3 className="font-black text-xl md:text-2xl tracking-tighter">Unlimited Synthesis</h3>
+                 <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Across All Global Curricula</p>
               </div>
            </div>
         </div>

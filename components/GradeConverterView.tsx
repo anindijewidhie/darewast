@@ -205,6 +205,7 @@ const GradeConverterView: React.FC<Props> = ({ language, onBack, onApply }) => {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="e.g. 1990s French Special Ed Levels"
+                  spellCheck={true}
                   className="w-full p-5 bg-white/5 border border-white/10 rounded-2xl font-bold text-sm outline-none focus:border-dare-gold transition-all"
                 />
                 <button 

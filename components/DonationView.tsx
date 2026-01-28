@@ -31,6 +31,9 @@ const CURRENCIES: Currency[] = [
   { code: 'KRW', symbol: '₩', rate: 1360, name: 'South Korean Won' },
   { code: 'MXN', symbol: '$', rate: 16.8, name: 'Mexican Peso' },
   { code: 'ZAR', symbol: 'R', rate: 18.3, name: 'South African Rand' },
+  { code: 'CHF', symbol: 'Fr', rate: 0.90, name: 'Swiss Franc' },
+  { code: 'SEK', symbol: 'kr', rate: 10.8, name: 'Swedish Krona' },
+  { code: 'MYR', symbol: 'RM', rate: 4.7, name: 'Malaysian Ringgit' },
 ];
 
 const DonationView: React.FC<Props> = ({ onBack, language }) => {
@@ -66,7 +69,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
     if (currency.code === 'IDR') {
         return `${currency.symbol}${converted.toLocaleString('id-ID')}`;
     }
-    if (['USD', 'CAD', 'AUD', 'SGD', 'MXN'].includes(currency.code)) {
+    if (['USD', 'CAD', 'AUD', 'SGD', 'MXN', 'SEK', 'CHF'].includes(currency.code)) {
         return `${currency.symbol}${converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     }
     return `${currency.symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: currency.rate < 10 ? 2 : 0 })}`;
@@ -84,7 +87,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
     setIsProcessing(true);
     setTimeout(() => {
         setIsProcessing(false);
-        alert(`Redirecting ${donorType === 'corporate' ? orgName : 'individual'} to secure global gateway...`);
+        alert(`Redirecting ${donorType === 'corporate' ? orgName : 'individual'} contribution to secure global gateway...`);
     }, 1000);
   };
 
@@ -142,7 +145,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
                           <input 
                             value={orgName}
                             onChange={e => setOrgName(e.target.value)}
-                            placeholder="e.g. Acme Corporation"
+                            placeholder="e.g. Universal Education Alliance"
                             className="w-full p-4 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-dare-purple rounded-2xl outline-none font-bold text-lg dark:text-white transition-all shadow-inner"
                           />
                        </div>
@@ -199,7 +202,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
                             type="number"
                             value={customValue}
                             onChange={(e) => setCustomValue(e.target.value)}
-                            placeholder="e.g. 250"
+                            placeholder="e.g. 500"
                             className="w-full p-6 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-dare-purple rounded-[2rem] outline-none font-black text-2xl dark:text-white transition-all shadow-inner pl-12"
                           />
                           <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>

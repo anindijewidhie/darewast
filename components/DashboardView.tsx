@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, Language, Subject, SubjectCategory, EducationTrack } from '../types';
 import { SUBJECTS } from '../constants';
@@ -137,8 +136,8 @@ const DashboardView: React.FC<Props> = ({
         if (!matchesCategory) return false;
         const term = searchQuery.toLowerCase().trim();
         return !term || sub.name.toLowerCase().includes(term) || sub.description.toLowerCase().includes(term);
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
+      });
+      // Removed .sort((a, b) => a.name.localeCompare(b.name)) to maintain official classification order
   }, [searchQuery, selectedCategory, dynamicSubjects]);
 
   const currentDay = new Date().getDay();
@@ -230,7 +229,7 @@ const DashboardView: React.FC<Props> = ({
 
             {isEligibleForTransition && (
               <button onClick={onOpenTransition} className="bg-dare-purple p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group hover:scale-[1.02] transition-all text-left">
-                <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">BRIDGE</div>
+                <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12 BRIDGE">BRIDGE</div>
                 <div className="relative z-10">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{t('transitionHub')}</p>
                     <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{user.transitionProgram ? t('enrolledTransition') : t('transitionProgramTitle')}</h3>
@@ -260,7 +259,7 @@ const DashboardView: React.FC<Props> = ({
 
           <div className="flex flex-col sm:flex-row gap-4 items-center bg-white dark:bg-slate-900 p-3 md:p-4 rounded-[2rem] md:rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800">
             <div className="relative flex-1 w-full">
-              <input type="text" placeholder={t('searchSubjects')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 md:pl-12 md:py-3 bg-gray-50 dark:bg-slate-800 rounded-xl md:rounded-2xl outline-none font-bold text-xs md:text-sm dark:text-white transition-all focus:ring-2 focus:ring-dare-teal/20" />
+              <input type="text" placeholder={t('searchSubjects')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} spellCheck={true} className="w-full pl-10 pr-4 py-2.5 md:pl-12 md:py-3 bg-gray-50 dark:bg-slate-800 rounded-xl md:rounded-2xl outline-none font-bold text-xs md:text-sm dark:text-white transition-all focus:ring-2 focus:ring-dare-teal/20" />
               <div className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-base md:text-lg opacity-40">🔍</div>
             </div>
             <div className="flex gap-1 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar">

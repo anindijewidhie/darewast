@@ -100,6 +100,7 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
                  value={customTopic}
                  onChange={(e) => setCustomTopic(e.target.value)}
                  placeholder="Enter any interest (e.g. Space Exploration, Robotics)..."
+                 spellCheck={true}
                  className="flex-1 p-4 bg-gray-50 dark:bg-slate-950 border-2 border-transparent focus:border-dare-purple rounded-2xl outline-none font-bold text-sm dark:text-white transition-all shadow-inner"
                />
                <button 
