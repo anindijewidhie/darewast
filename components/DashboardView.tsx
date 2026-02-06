@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, Language, Subject, SubjectCategory, EducationTrack } from '../types';
 import { SUBJECTS } from '../constants';
@@ -137,7 +138,7 @@ const DashboardView: React.FC<Props> = ({
         const term = searchQuery.toLowerCase().trim();
         return !term || sub.name.toLowerCase().includes(term) || sub.description.toLowerCase().includes(term);
       });
-      // Removed .sort((a, b) => a.name.localeCompare(b.name)) to maintain official classification order
+      // subjects are arranged according to official classifications by default from SUBJECTS array
   }, [searchQuery, selectedCategory, dynamicSubjects]);
 
   const currentDay = new Date().getDay();
@@ -229,7 +230,7 @@ const DashboardView: React.FC<Props> = ({
 
             {isEligibleForTransition && (
               <button onClick={onOpenTransition} className="bg-dare-purple p-6 rounded-[2rem] md:rounded-[2.5rem] shadow-xl text-white flex flex-col items-start justify-between gap-6 relative overflow-hidden group hover:scale-[1.02] transition-all text-left">
-                <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12 BRIDGE">BRIDGE</div>
+                <div className="absolute right-0 top-0 p-8 opacity-10 text-6xl font-black rotate-12">BRIDGE</div>
                 <div className="relative z-10">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-1 opacity-80">{t('transitionHub')}</p>
                     <h3 className="text-xl md:text-2xl font-black tracking-tight leading-tight">{user.transitionProgram ? t('enrolledTransition') : t('transitionProgramTitle')}</h3>

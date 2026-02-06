@@ -53,7 +53,7 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
 
   const accounts = [
     { type: 'Site Owner / Bank Jago', name: 'A. Widhi', account: '107863277869', icon: '🏦' },
-    { type: 'Site Owner / PayPal', name: 'A. Widhi', account: 'dhea_wasisto@yahoo.com', icon: '💳' },
+    { type: 'Site Owner / PayPal', name: 'A. Widhi', account: 'https://paypal.me/anindijewidhie', icon: '💳' },
     { type: 'Site Owner / E-Wallets', name: 'A. Widhi (OVO/GoPay/Dana)', account: '+628567239000', icon: '📱' }
   ];
 
