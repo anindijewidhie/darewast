@@ -11,321 +11,208 @@ interface Props {
 interface Currency {
   code: string;
   symbol: string;
-  rate: number; // rate relative to 1 USD
+  rate: number;
   name: string;
+  color: string;
 }
 
 const CURRENCIES: Currency[] = [
-  { code: 'USD', symbol: '$', rate: 1, name: 'US Dollar' },
-  { code: 'IDR', symbol: 'Rp', rate: 16250, name: 'Indonesian Rupiah' },
-  { code: 'EUR', symbol: '€', rate: 0.92, name: 'Euro' },
-  { code: 'GBP', symbol: '£', rate: 0.79, name: 'British Pound' },
-  { code: 'JPY', symbol: '¥', rate: 156, name: 'Japanese Yen' },
-  { code: 'AUD', symbol: 'A$', rate: 1.51, name: 'Australian Dollar' },
-  { code: 'CAD', symbol: 'C$', rate: 1.37, name: 'Canadian Dollar' },
-  { code: 'SGD', symbol: 'S$', rate: 1.35, name: 'Singapore Dollar' },
-  { code: 'CNY', symbol: '¥', rate: 7.24, name: 'Chinese Yuan' },
-  { code: 'INR', symbol: '₹', rate: 83.5, name: 'Indian Rupee' },
-  { code: 'AED', symbol: 'DH', rate: 3.67, name: 'UAE Dirham' },
-  { code: 'BRL', symbol: 'R$', rate: 5.15, name: 'Brazilian Real' },
-  { code: 'KRW', symbol: '₩', rate: 1360, name: 'South Korean Won' },
-  { code: 'MXN', symbol: '$', rate: 16.8, name: 'Mexican Peso' },
-  { code: 'ZAR', symbol: 'R', rate: 18.3, name: 'South African Rand' },
-  { code: 'CHF', symbol: 'Fr', rate: 0.90, name: 'Swiss Franc' },
-  { code: 'SEK', symbol: 'kr', rate: 10.8, name: 'Swedish Krona' },
-  { code: 'MYR', symbol: 'RM', rate: 4.7, name: 'Malaysian Ringgit' },
+  { code: 'USD', symbol: '$', rate: 1, name: 'US Dollar', color: '#53CDBA' },
+  { code: 'IDR', symbol: 'Rp', rate: 16250, name: 'Indonesian Rupiah', color: '#CCB953' },
+  { code: 'EUR', symbol: '€', rate: 0.92, name: 'Euro', color: '#B953CC' },
+  { code: 'GBP', symbol: '£', rate: 0.79, name: 'British Pound', color: '#4D96FF' },
+  { code: 'JPY', symbol: '¥', rate: 156, name: 'Japanese Yen', color: '#FF6B6B' },
+  { code: 'SGD', symbol: 'S$', rate: 1.35, name: 'Singapore Dollar', color: '#EE5253' },
 ];
+
+const INDIVIDUAL_AMOUNTS = [1, 2, 5, 10, 20, 50, 100];
+const CORPORATE_AMOUNTS = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000];
 
 const DonationView: React.FC<Props> = ({ onBack, language }) => {
   const [donorType, setDonorType] = useState<'individual' | 'corporate'>('individual');
-  const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(donorType === 'individual' ? 10 : 100);
+  const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(10);
   const [customValue, setCustomValue] = useState<string>('');
   const [currency, setCurrency] = useState<Currency>(CURRENCIES[0]);
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Corporate fields
   const [orgName, setOrgName] = useState('');
-  const [taxReceipt, setTaxReceipt] = useState(false);
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
-
-  const standardAmounts = [1, 2, 5, 10, 20, 50, 100];
-
-  const accounts = [
-    { type: 'Site Owner / Bank Jago', name: 'A. Widhi', account: '107863277869', icon: '🏦' },
-    { type: 'Site Owner / PayPal', name: 'A. Widhi', account: 'https://paypal.me/anindijewidhie', icon: '💳' },
-    { type: 'Site Owner / E-Wallets', name: 'A. Widhi (OVO/GoPay/Dana)', account: '+628567239000', icon: '📱' }
-  ];
-
-  const allocations = [
-    { label: 'Contributors', percent: 40, icon: '🌱', color: 'dare-teal', desc: 'Rewarding the scholars and professionals who architect our modules.' },
-    { label: 'Maintenance', percent: 20, icon: '⚙️', color: 'dare-gold', desc: 'Covering server upkeep and high-performance API throughput.' },
-    { label: 'Development', percent: 20, icon: '💻', color: 'dare-purple', desc: 'Funding mobile app optimization and advanced AI model refining.' },
-    { label: 'Site Owner', percent: 20, icon: '👑', color: 'slate-800', desc: 'Supporting the strategic architecture and daily operations.' },
-  ];
-
-  const formatCurrency = (val: number) => {
-    const converted = val * currency.rate;
-    if (currency.code === 'IDR') {
-        return `${currency.symbol}${converted.toLocaleString('id-ID')}`;
-    }
-    if (['USD', 'CAD', 'AUD', 'SGD', 'MXN', 'SEK', 'CHF'].includes(currency.code)) {
-        return `${currency.symbol}${converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-    return `${currency.symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: currency.rate < 10 ? 2 : 0 })}`;
-  };
 
   const currentAmountDisplay = useMemo(() => {
     if (selectedAmount === 'custom') {
       const val = parseFloat(customValue);
-      return isNaN(val) ? '-' : formatCurrency(val);
+      return isNaN(val) ? '-' : `${currency.symbol}${Math.round(val * currency.rate).toLocaleString()}`;
     }
-    return formatCurrency(selectedAmount);
+    return `${currency.symbol}${Math.round(selectedAmount * currency.rate).toLocaleString()}`;
   }, [selectedAmount, customValue, currency]);
 
   const handleDonateAction = () => {
     setIsProcessing(true);
     setTimeout(() => {
         setIsProcessing(false);
-        alert(`Redirecting ${donorType === 'corporate' ? orgName : 'individual'} contribution to secure global gateway...`);
-    }, 1000);
+        alert(`Redirecting to secure gateway for ${currentAmountDisplay} contribution via ${donorType} protocol...`);
+    }, 1200);
   };
 
+  const activeAmounts = donorType === 'individual' ? INDIVIDUAL_AMOUNTS : CORPORATE_AMOUNTS;
+
   return (
-    <div className="max-w-6xl mx-auto py-12 animate-fadeIn px-4">
-      <button onClick={onBack} className="mb-8 text-gray-500 hover:text-dare-teal flex items-center dark:text-gray-400 transition-all group font-bold">
+    <div className="max-w-7xl mx-auto py-12 animate-fadeIn px-4">
+      <button onClick={onBack} className="mb-12 text-gray-500 hover:text-dare-teal flex items-center transition-all group font-bold">
         <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> {t('backToDashboard')}
       </button>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.1)] border border-white/10">
-        <div className="bg-slate-900 p-12 md:p-24 text-white text-center relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-dare-teal/10 rounded-full blur-[120px]"></div>
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-dare-purple/10 rounded-full blur-[120px]"></div>
-          
-          <div className="relative z-10 space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-4 border border-white/10 backdrop-blur-md">
-              Universal Mastery Fund
+      <div className="grid lg:grid-cols-12 gap-10">
+        {/* Left Content Area */}
+        <div className="lg:col-span-8 space-y-10">
+          <section className="bg-slate-950 rounded-[4rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl border-4 border-white/5">
+            <div className="absolute inset-0 pattern-grid-lg opacity-10"></div>
+            <div className="absolute top-0 right-0 p-12 opacity-5 text-9xl font-black rotate-12">FUND</div>
+            <div className="relative z-10 space-y-8">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-dare-teal text-slate-950 rounded-full text-[10px] font-black uppercase tracking-[0.4em] border border-white/30">
+                Universal Academic Sovereignty
+              </div>
+              <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]">
+                darewast <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">
+                  Foundation
+                </span>
+              </h1>
+              <p className="text-slate-400 text-xl md:text-2xl font-medium leading-relaxed max-w-2xl">
+                The darewast mission is sustained by direct synthesis from global sponsors. We support all currencies, banks, and e-wallet providers for universal contribution.
+              </p>
             </div>
-            <h2 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-4">
-              Empower <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Scholars</span>
-            </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-xl font-medium leading-relaxed">
-              Fuel the world's largest 24/7 adaptive learning grid. Your contribution directly rewards contributors and maintains high-rigor infrastructure.
-            </p>
-          </div>
-        </div>
+          </section>
 
-        {/* Donor Type Selector */}
-        <div className="flex justify-center p-8 bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
-           <div className="bg-white dark:bg-slate-950 p-1.5 rounded-2xl flex gap-1 shadow-inner">
+          {/* Donor Type Selector */}
+          <div className="space-y-8">
+            <div className="bg-slate-900 p-3 rounded-[3rem] inline-flex gap-3 border-4 border-white/5">
               <button 
-                onClick={() => setDonorType('individual')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${donorType === 'individual' ? 'bg-dare-teal text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-900'}`}
+                onClick={() => { setDonorType('individual'); setSelectedAmount(10); }}
+                className={`px-10 py-4 rounded-[2.5rem] text-sm font-black uppercase tracking-widest transition-all ${donorType === 'individual' ? 'bg-dare-teal text-slate-950 shadow-xl' : 'text-gray-500 hover:text-white'}`}
               >
-                👤 {t('individualDonation')}
+                Individual
               </button>
               <button 
-                onClick={() => setDonorType('corporate')}
-                className={`px-8 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${donorType === 'corporate' ? 'bg-dare-purple text-white shadow-lg' : 'text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-900'}`}
+                onClick={() => { setDonorType('corporate'); setSelectedAmount(1000); }}
+                className={`px-10 py-4 rounded-[2.5rem] text-sm font-black uppercase tracking-widest transition-all ${donorType === 'corporate' ? 'bg-dare-purple text-white shadow-xl' : 'text-gray-500 hover:text-white'}`}
               >
-                🏢 {t('corporateDonation')}
+                Corporate / Entity
               </button>
-           </div>
-        </div>
+            </div>
 
-        {/* Donation Selector Section */}
-        <div className="p-8 md:p-16 border-b border-gray-100 dark:border-slate-800">
-           <div className="grid lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-7 space-y-10">
-                 {donorType === 'corporate' && (
-                    <div className="animate-fadeIn space-y-6">
-                       <div>
-                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 block mb-2">{t('companyName')}</label>
-                          <input 
-                            value={orgName}
-                            onChange={e => setOrgName(e.target.value)}
-                            placeholder="e.g. Universal Education Alliance"
-                            className="w-full p-4 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-dare-purple rounded-2xl outline-none font-bold text-lg dark:text-white transition-all shadow-inner"
-                          />
-                       </div>
-                       <button 
-                        onClick={() => setTaxReceipt(!taxReceipt)}
-                        className={`flex items-center gap-3 px-6 py-3 rounded-2xl border-2 transition-all ${taxReceipt ? 'border-dare-purple bg-dare-purple/5 text-dare-purple' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}
-                       >
-                         <div className={`w-5 h-5 rounded flex items-center justify-center border-2 ${taxReceipt ? 'bg-dare-purple border-dare-purple text-white' : 'border-gray-300'}`}>
-                           {taxReceipt && '✓'}
-                         </div>
-                         <span className="text-xs font-black uppercase tracking-widest">{t('taxReceiptRequested')}</span>
-                       </button>
-                    </div>
-                 )}
-
-                 <div className="flex justify-between items-end">
-                    <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">{t('selectDonationAmount')}</h3>
-                    <div className="relative group">
-                       <select 
-                         value={currency.code}
-                         onChange={(e) => setCurrency(CURRENCIES.find(c => c.code === e.target.value) || CURRENCIES[0])}
-                         className="bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-xl text-xs font-black uppercase outline-none appearance-none cursor-pointer pr-10 border border-transparent focus:border-dare-teal transition-all"
-                       >
-                         {CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.code} - {c.name}</option>)}
-                       </select>
-                       <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-xs">▼</div>
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {standardAmounts.map(amt => (
-                       <button
-                         key={amt}
-                         onClick={() => setSelectedAmount(amt)}
-                         className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-1 group ${selectedAmount === amt ? (donorType === 'individual' ? 'border-dare-teal bg-dare-teal/10 shadow-xl' : 'border-dare-purple bg-dare-purple/10 shadow-xl') + ' scale-105' : 'border-gray-50 dark:border-slate-800 hover:border-dare-teal/50'}`}
-                       >
-                          <span className={`text-2xl font-black tracking-tighter ${selectedAmount === amt ? (donorType === 'individual' ? 'text-dare-teal' : 'text-dare-purple') : 'text-gray-900 dark:text-white'}`}>{currency.symbol}{Math.round(amt * currency.rate).toLocaleString()}</span>
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{amt} USD</span>
-                       </button>
-                    ))}
-                    <button
-                      onClick={() => setSelectedAmount('custom')}
-                      className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center justify-center gap-1 ${selectedAmount === 'custom' ? 'border-dare-purple bg-dare-purple/10 shadow-xl scale-105' : 'border-gray-50 dark:border-slate-800 hover:border-dare-purple/50'}`}
-                    >
-                       <span className={`text-xl font-black uppercase tracking-widest ${selectedAmount === 'custom' ? 'text-dare-purple' : 'text-gray-400'}`}>{t('customAmount')}</span>
-                    </button>
-                 </div>
-
-                 {selectedAmount === 'custom' && (
-                    <div className="animate-fadeIn space-y-4">
-                       <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 block">{t('enterCustomAmount')} (USD)</label>
-                       <div className="relative">
-                          <input 
-                            type="number"
-                            value={customValue}
-                            onChange={(e) => setCustomValue(e.target.value)}
-                            placeholder="e.g. 500"
-                            className="w-full p-6 bg-gray-50 dark:bg-slate-800 border-2 border-transparent focus:border-dare-purple rounded-[2rem] outline-none font-black text-2xl dark:text-white transition-all shadow-inner pl-12"
-                          />
-                          <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-gray-300">$</span>
-                       </div>
-                    </div>
-                 )}
-                 
-                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] italic text-center sm:text-left">
-                   💡 {t('contributionNotes')}
-                 </p>
-              </div>
-
-              <div className="lg:col-span-5">
-                 <div className="bg-slate-900 p-10 md:p-12 rounded-[3.5rem] text-center text-white space-y-8 shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 text-7xl font-black">FUND</div>
-                    <div className="space-y-2 relative z-10">
-                       <p className="text-[10px] font-black uppercase tracking-[0.4em] text-dare-teal">Current Contribution</p>
-                       <h4 className="text-6xl font-black tracking-tighter transition-all duration-500">{currentAmountDisplay}</h4>
-                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{currency.code} Total</p>
-                    </div>
-
-                    <button 
-                      onClick={handleDonateAction}
-                      disabled={isProcessing || (selectedAmount === 'custom' && (!customValue || isNaN(parseFloat(customValue)))) || (donorType === 'corporate' && !orgName.trim())}
-                      className={`w-full py-6 text-white rounded-[2rem] font-black text-xl shadow-2xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 ${donorType === 'individual' ? 'bg-dare-teal shadow-dare-teal/20' : 'bg-dare-purple shadow-dare-purple/20'}`}
-                    >
-                       {isProcessing ? <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : <>{t('proceedToPayment')} {currentAmountDisplay} →</>}
-                    </button>
-
-                    <div className="flex justify-center gap-4 opacity-30">
-                       <span className="text-2xl">💳</span>
-                       <span className="text-2xl">🏦</span>
-                       <span className="text-2xl">📱</span>
-                       <span className="text-2xl">🌍</span>
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
-
-        {/* 40/20/20/20 Matrix */}
-        <div className="px-8 md:px-16 py-12 md:py-20 bg-gray-50 dark:bg-slate-800/30 border-y border-gray-100 dark:border-slate-800">
-           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {allocations.map(item => (
-                <div key={item.label} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col items-center text-center group hover:-translate-y-1 transition-all">
-                   <div className="w-16 h-16 bg-gray-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 transition-transform">
-                      {item.icon}
-                   </div>
-                   <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tighter mb-1">{item.percent}%</p>
-                   <p className={`text-[10px] font-black uppercase tracking-widest mb-4 ${item.label === 'Contributors' ? 'text-dare-teal' : (item.label === 'Maintenance' ? 'text-dare-gold' : (item.label === 'Development' ? 'text-dare-purple' : 'text-gray-500'))}`}>{item.label}</p>
-                   <p className="text-[10px] font-bold text-gray-400 leading-relaxed italic">"{item.desc}"</p>
-                   <div className="mt-6 w-full h-1 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full transition-all duration-1000" style={{ width: `${item.percent}%`, backgroundColor: item.color === 'dare-teal' ? '#53CDBA' : (item.color === 'dare-gold' ? '#CCB953' : (item.color === 'dare-purple' ? '#B953CC' : '#1e293b')) }}></div>
-                   </div>
-                </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 animate-fadeIn">
+              {activeAmounts.map(amt => (
+                <button 
+                  key={amt}
+                  onClick={() => setSelectedAmount(amt)}
+                  className={`py-8 rounded-[2.5rem] border-4 font-black transition-all ${selectedAmount === amt ? (donorType === 'individual' ? 'border-dare-teal bg-dare-teal text-slate-950' : 'border-dare-purple bg-dare-purple text-white') + ' shadow-2xl scale-105' : 'bg-slate-900 border-white/5 text-gray-400 hover:border-white/20'}`}
+                >
+                  <span className="text-xs mr-1 opacity-60">$</span>
+                  <span className="text-2xl">{amt >= 1000 ? (amt/1000) + 'k' : amt}</span>
+                </button>
               ))}
-           </div>
-        </div>
+              <button 
+                onClick={() => setSelectedAmount('custom')}
+                className={`py-8 rounded-[2.5rem] border-4 font-black text-lg transition-all ${selectedAmount === 'custom' ? 'border-dare-gold bg-dare-gold text-slate-950 shadow-2xl scale-105' : 'bg-slate-900 border-white/5 text-gray-400'}`}
+              >
+                Custom
+              </button>
+            </div>
 
-        <div className="p-8 md:p-16">
-          <div className="grid md:grid-cols-2 gap-16">
-            <div className="space-y-8 text-left">
-              <div className="space-y-2">
-                <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                  <span className="text-dare-teal">🛡️</span> Direct Channels
-                </h3>
-                <p className="text-sm font-medium text-gray-500">Alternatively, use our verified direct accounts for manual transfers.</p>
+            {donorType === 'corporate' && (
+              <div className="animate-fadeIn">
+                <input 
+                  type="text" 
+                  value={orgName}
+                  onChange={e => setOrgName(e.target.value)}
+                  placeholder="Official Organization / Institution Name"
+                  className="w-full p-6 bg-slate-900 text-white rounded-[2.5rem] font-black text-lg border-4 border-white/5 focus:border-dare-purple outline-none transition-all shadow-inner uppercase tracking-widest"
+                />
               </div>
-              <div className="space-y-6">
-                {accounts.map(acc => (
-                  <div key={acc.type} className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl border border-gray-100 dark:border-slate-700 hover:scale-[1.01] transition-all">
-                    <div className="text-4xl bg-white dark:bg-slate-700 w-16 h-16 flex items-center justify-center rounded-2xl shadow-sm">
-                      {acc.icon}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-black text-dare-teal uppercase tracking-widest mb-1">{acc.type}</p>
-                      <p className="font-black text-gray-900 dark:text-white leading-none mb-2 truncate">{acc.name}</p>
-                      <p className="text-gray-500 dark:text-gray-400 font-mono text-xs break-all opacity-80">{acc.account}</p>
-                    </div>
-                    <button onClick={() => { navigator.clipboard.writeText(acc.account); alert('Copied to Clipboard'); }} className="p-3 bg-dare-teal/10 text-dare-teal rounded-xl hover:bg-dare-teal hover:text-white transition-all shadow-sm shrink-0">
-                      📋
-                    </button>
-                  </div>
-                ))}
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-10 bg-slate-900 rounded-[3.5rem] border-4 border-white/5 shadow-xl space-y-6">
+              <h3 className="text-xl font-black text-white uppercase tracking-tighter">Universal Support</h3>
+              <p className="text-sm text-gray-400 font-bold leading-relaxed italic">
+                "Our infrastructure integrates with all global banking networks and e-wallet providers to ensure frictionless mastery support for every nation."
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <span className="px-4 py-2 bg-slate-950 rounded-xl text-[10px] font-black text-dare-teal uppercase border border-dare-teal/20">All Currencies</span>
+                <span className="px-4 py-2 bg-slate-950 rounded-xl text-[10px] font-black text-dare-gold uppercase border border-dare-gold/20">All Banks</span>
+                <span className="px-4 py-2 bg-slate-950 rounded-xl text-[10px] font-black text-dare-purple uppercase border border-dare-purple/20">All Wallets</span>
               </div>
             </div>
 
-            <div className="space-y-10 text-left">
-              <h3 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-                <span className="text-dare-gold">🧩</span> Mastery Vision
-              </h3>
-              <div className="p-10 bg-slate-950 rounded-[3rem] text-white relative overflow-hidden shadow-2xl border border-white/5 group">
-                <div className="absolute inset-0 bg-gradient-to-br from-dare-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-                <p className="relative z-10 text-lg font-bold italic leading-relaxed text-slate-400">
-                  "By supporting darewast, you are directly fueling the global contributors who architect our specialized modules. 40% of every dollar goes to the scholars and professionals, while the rest maintains the world's first 24/7 universal education grid."
-                </p>
-                <div className="mt-10 flex items-center gap-4 relative z-10">
-                   <div className="w-12 h-12 bg-dare-gold rounded-xl flex items-center justify-center text-slate-900 text-2xl font-black shadow-xl shadow-dare-gold/20">d</div>
-                   <div>
-                      <p className="text-white font-black text-[11px] uppercase tracking-widest leading-none">darewast Foundation</p>
-                      <p className="text-dare-gold font-black text-[8px] uppercase tracking-[0.2em] mt-1">Universal Academic Equity</p>
-                   </div>
-                </div>
-              </div>
-              <p className="text-center text-gray-400 dark:text-gray-500 font-bold text-[10px] uppercase tracking-widest italic">
-                All contributions are archived for infrastructure audits.
+            <div className="p-10 bg-slate-950 rounded-[3.5rem] border-4 border-white/5 shadow-xl flex flex-col justify-center text-center space-y-4">
+              <div className="w-16 h-16 bg-dare-teal/10 text-dare-teal rounded-2xl flex items-center justify-center text-3xl mx-auto shadow-inner border border-dare-teal/20">🤝</div>
+              <h4 className="text-lg font-black text-white uppercase">Sovereign Foundation</h4>
+              <p className="text-sm text-gray-500 leading-relaxed italic">
+                "darewast Foundation is an independent non-profit entity. All contributions fund direct content synthesis and contributor stipends."
               </p>
             </div>
           </div>
+        </div>
 
-          <div className="mt-20 p-10 bg-gray-50 dark:bg-slate-800/50 rounded-[3.5rem] relative overflow-hidden border border-gray-100 dark:border-slate-800">
-            <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl">💡</div>
-            <div className="relative z-10 text-left">
-              <h4 className="text-dare-purple font-black uppercase text-[10px] tracking-[0.3em] mb-4">Message from the Architect</h4>
-              <p className="text-gray-500 dark:text-gray-400 text-base font-medium leading-relaxed italic">
-                "darewast is architected to spread knowledge across over 20 subjects in 14 languages. 100% of these funds are strictly allocated as stated above to ensure that this hub, the AI tutors, and our global examination provider remain available 24/7 to every human with a mastery ambition."
-              </p>
-              <div className="mt-8 flex items-center gap-4">
-                 <div className="w-10 h-10 rounded-xl bg-dare-purple text-white flex items-center justify-center font-black shadow-lg shadow-dare-purple/20 text-xs">AW</div>
-                 <div>
-                    <p className="text-gray-900 dark:text-white font-black text-[11px] uppercase tracking-widest leading-none">A. Widhi</p>
-                    <p className="text-dare-purple font-black text-[8px] uppercase tracking-[0.2em] mt-1">Founder & Site Architect</p>
-                 </div>
+        {/* Right Sticky Summary Sidebar */}
+        <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit">
+          <div className="bg-slate-900 rounded-[3.5rem] p-10 border-4 border-white/10 shadow-2xl space-y-10">
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.4em] text-center">Protocol Summary</h3>
+              <div className="text-center">
+                <p className="text-7xl font-black text-white tracking-tighter mb-2">{currentAmountDisplay}</p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-950 rounded-xl border border-white/10">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: currency.color }}></span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">{currency.name}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="relative group">
+                <select 
+                  value={currency.code}
+                  onChange={(e) => setCurrency(CURRENCIES.find(c => c.code === e.target.value) || CURRENCIES[0])}
+                  className="w-full bg-slate-950 text-white p-5 rounded-[2rem] font-black text-xs uppercase outline-none appearance-none cursor-pointer border-4 border-white/5 focus:border-dare-teal transition-all text-center"
+                >
+                  {CURRENCIES.map(c => <option key={c.code} value={c.code} className="bg-slate-950">{c.code} ({c.symbol})</option>)}
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">▼</div>
+              </div>
+
+              {selectedAmount === 'custom' && (
+                <div className="animate-fadeIn">
+                  <input 
+                    type="number" 
+                    value={customValue}
+                    onChange={e => setCustomValue(e.target.value)}
+                    placeholder="ENTER AMOUNT"
+                    className="w-full p-6 bg-slate-950 text-white rounded-[2rem] font-black text-3xl text-center outline-none border-4 border-dare-gold focus:shadow-xl transition-all"
+                  />
+                </div>
+              )}
+            </div>
+
+            <button 
+              onClick={handleDonateAction}
+              disabled={isProcessing || (selectedAmount === 'custom' && !customValue)}
+              className="w-full py-8 bg-white text-slate-950 rounded-[2.5rem] font-black text-2xl shadow-2xl hover:scale-[1.03] active:scale-95 transition-all flex items-center justify-center gap-4 group disabled:opacity-30"
+            >
+              {isProcessing ? (
+                <div className="w-8 h-8 border-4 border-slate-400 border-t-slate-950 rounded-full animate-spin"></div>
+              ) : (
+                <>Authorize {donorType === 'corporate' ? 'Institutional' : 'Sovereign'} Grant <span className="group-hover:translate-x-2 transition-transform">→</span></>
+              )}
+            </button>
+
+            <div className="pt-8 border-t border-white/10 text-center space-y-4">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Global Secure Payment Gateway</p>
+              <div className="flex justify-center gap-6 opacity-40 grayscale group-hover:grayscale-0 transition-all">
+                <span className="text-4xl">💳</span>
+                <span className="text-4xl">🏦</span>
+                <span className="text-4xl">📱</span>
               </div>
             </div>
           </div>

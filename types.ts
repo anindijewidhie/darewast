@@ -4,11 +4,55 @@ export type Language =
   | 'Japanese' | 'Korean' | 'Arabic' | 'Spanish' | 'French' 
   | 'Portuguese' | 'Russian' | 'Hindi' | 'Bengali' | 'Urdu';
 
-export type SubjectCategory = 'Literacy' | 'Numeracy' | 'Science' | 'Humanities' | 'Tech' | 'Music' | 'Ethics' | 'Vocational' | 'Arts' | 'Sports' | 'Custom';
+export type SubjectCategory = 
+  | 'Literacy' 
+  | 'Numeracy' 
+  | 'Natural Science' 
+  | 'Social Science' 
+  | 'Moral and Ethics'
+  | 'Religion'
+  | 'Computer Science' 
+  | 'Music' 
+  | 'Dance'
+  | 'Design'
+  | 'Craft'
+  | 'Mind Sports' 
+  | 'Custom';
 
-export type CurriculumEra = 'Modern' | 'Legacy' | 'Classical';
+export type CurriculumEra = 
+  | 'Ancient' 
+  | 'Medieval' 
+  | 'Renaissance' 
+  | 'Enlightenment' 
+  | 'Industrial' 
+  | 'Modern' 
+  | 'Contemporary' 
+  | 'Future' 
+  | string;
 
-export type LearningMethod = 'Kumon-style' | 'Montessori-inspired' | 'Waldorf-aligned' | 'Traditional-Rote' | 'Inquiry-based' | 'Practical-Vocational';
+export type LearningMethod = 
+  | 'darewast-Unified' 
+  | 'Kumon-style' 
+  | 'Sakamoto-Method' 
+  | 'Eye-Level-aligned' 
+  | 'Socratic-Inquiry'
+  | 'Scholastic-Method'
+  | 'Montessori-inspired' 
+  | 'Waldorf-aligned' 
+  | 'Traditional-Rote' 
+  | 'Project-Based-Learning'
+  | 'Phenomenon-Based'
+  | string;
+
+export type CurriculumStyle = 
+  | 'darewast-Universal'
+  | 'US-Common-Core'
+  | 'UK-National-Curriculum'
+  | 'IB-Continuum'
+  | 'Japan-Monbusho'
+  | 'Singapore-MOE'
+  | 'Finland-National'
+  | string;
 
 export type LearningStyle = 'Unified' | 'Visual' | 'Auditory' | 'Reading' | 'Kinesthetic';
 
@@ -33,7 +77,7 @@ export type EducationTrack =
   | 'DistanceUniversity'
   | 'VocationalSchool' 
   | 'VocationalUniversity'
-  | 'DistanceVocationalSchool'
+  | 'DistanceVocationalSchool' 
   | 'DistanceVocationalUniversity';
 
 export type DistanceSchoolType = 
@@ -41,12 +85,13 @@ export type DistanceSchoolType =
 
 export type InstitutionStatus = 'regular' | 'closed' | 'problematic' | 'independent';
 
-export interface EssayGradingResult {
-  clarity: number; // 0-100
-  coherence: number; // 0-100
-  relevance: number; // 0-100
-  feedback: string;
-  passed: boolean;
+export type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
+
+export type AuthorType = 'Professional' | 'Contributor';
+
+export interface MasterySchedule {
+  type: 'academic' | 'dedicated' | 'unstoppable' | 'custom';
+  days: string[];
 }
 
 export interface TransitionProgram {
@@ -55,25 +100,62 @@ export interface TransitionProgram {
   targetTypes: DistanceSchoolType[];
   yearsRemaining: number;
   enrolledDate: string;
+  sourceMethod: 'Kumon' | 'Sakamoto' | 'Eye Level';
+  legacyGrade: string;
 }
 
-export interface CreditRecord {
-  subjectId: string;
-  subjectName: string;
-  level: MasteryLevel;
-  creditsUS: number;
-  creditsECTS: number;
-  verificationId: string;
-  completionDate: string;
+export interface EssayGradingResult {
+  clarity: number;
+  coherence: number;
+  relevance: number;
+  feedback: string;
+  passed: boolean;
+}
+
+export interface MediaItem {
+  id: string;
+  type: 'video' | 'audio' | 'image' | 'document';
+  title: string;
+  uri?: string;
+}
+
+export interface PaymentPreferences {
+  method: 'bank' | 'wallet';
+  bankName?: string;
+  accountNumber?: string;
+  accountHolder?: string;
+  walletProvider?: string;
+  walletNumber?: string;
+}
+
+export interface ProfessionalCredentials {
+  title: string;
+  institution: string;
+  degree: string;
+  yearsOfExperience: number;
+  verificationStatus: 'pending' | 'verified' | 'rejected';
+  evidenceUploaded: boolean;
+  evidenceType: 'degree' | 'report_card';
+  portfolioUrl?: string;
+}
+
+export interface ProjectPrompt {
+  title: string;
+  objective: string;
+  requirements: string[];
+  guidelines: string;
 }
 
 export interface AccessibilitySettings {
   dyslexicFont: boolean;
   highContrast: boolean;
   reducedMotion: boolean;
-  textScale: number; // 1 to 1.5
+  textScale: number;
   screenReaderHints: boolean;
   iddSupport: boolean;
+  focusMode: boolean;
+  voiceNavigation: boolean;
+  colorBlindMode: ColorBlindMode;
 }
 
 export interface Subject {
@@ -100,72 +182,10 @@ export interface Subject {
   };
 }
 
-export interface MediaItem {
-  id: string;
-  type: 'ebook' | 'blog' | 'podcast' | 'video' | 'song' | 'work' | 'danceMove' | 'simulation';
-  title: string;
-  isCompleted: boolean;
-}
-
-export interface TimelinePoint {
-  title: string;
-  detail: string;
-  icon: string;
-}
-
-export interface PronunciationEntry {
-  word: string;
-  phonetic: string;
-  guide: string;
-}
-
-export interface MultiModalAdaptation {
-  visualMapDescription: string;
-  auditoryScript: string;
-  kinestheticActivity: string;
-  readingDeepDive: string;
-}
-
-export interface LessonContent {
-  title: string;
-  subTopic?: string;
-  explanation: string;
-  pronunciationGuide?: PronunciationEntry[];
-  timelinePoints?: TimelinePoint[];
-  examples: string[];
-  adaptations: MultiModalAdaptation;
-  exercises: {
-    question: string;
-    options?: string[];
-    correctAnswer: string;
-    explanation: string;
-    hint?: string;
-    isEssay?: boolean;
-  }[];
-  level: MasteryLevel;
-  lessonNumber: number;
-  isExam?: boolean;
-  isRelearn?: boolean;
-  isTransition?: boolean;
-  relearnStage?: EducationalStage;
-  eraNote?: string;
-  methodApplied?: LearningMethod | string;
-  isHybrid?: boolean;
-  hybridSubjects?: string[];
-  groundingSources?: { title: string; uri: string }[];
-  mediaResources?: MediaItem[];
-}
-
-export interface ProjectPrompt {
-  title: string;
-  objective: string;
-  requirements: string[];
-  guidelines: string;
-}
-
 export interface SubjectProgress {
   level: MasteryLevel;
-  lessonNumber: number; // 1 to 12
+  lessonNumber: number;
+  isPlaced: boolean;
   lastScore?: { correct: number; total: number; skillPoints?: number; gradeTier?: string };
   specializations?: string[];
   secondaryLanguage?: Language;
@@ -175,21 +195,13 @@ export interface SubjectProgress {
   examPrepLesson?: number;
   completedExams?: string[];
   isFastTrack?: boolean;
-  fastTrackDuration?: number; // In minutes
+  fastTrackDuration?: number;
   totalMinutesSpent?: number;
+  dailyMinutesSpent?: number; // New: tracking daily quota per subject
   hintsUsed?: number;
   relearnActive?: boolean;
   relearnStage?: EducationalStage;
-  mediaProgress?: {
-    completedEbooks: string[];
-    completedBlogs: string[];
-    completedPodcasts: string[];
-    completedVideos: string[];
-    completedSongs: string[];
-    completedWorks: string[];
-    completedDanceMoves: string[];
-    completedSimulations: string[];
-  };
+  completedMedia?: string[];
 }
 
 export interface UserProgress {
@@ -210,6 +222,7 @@ export type View =
   | 'auth' | 'donation' | 'lesson' | 'profile' | 'placement-test' 
   | 'subject-placement' | 'subject-assessment'
   | 'relearn-placement'
+  | 'diagnostic-gate'
   | 'contributor' | 'grade-converter' | 'mastery-exam' | 'exam-prep' 
   | 'guardian-report' | 'accessibility' | 'lesson-combination' 
   | 'method-combination' | 'leaderboard' | 'track-selection'
@@ -221,60 +234,8 @@ export type View =
   | 'transition-hub'
   | 'credit-transfer'
   | 'transfer-portal'
-  | 'level-completion-hub';
-
-export interface ScheduledSession {
-  id: string;
-  subjectId: string;
-  subjectName: string;
-  date: string;
-  time: string;
-  duration: number; // minutes
-}
-
-export interface StudySchedule {
-  time: string;
-  duration: number;
-}
-
-export interface UserBadge {
-  id: string;
-  earnedDate: string;
-}
-
-export interface GuardianInfo {
-  name?: string;
-  email?: string;
-  phone?: string;
-  isLinked: boolean;
-  lastReportSent?: string;
-}
-
-export interface ProfessionalCredentials {
-  title: string;
-  institution: string;
-  degree: string;
-  yearsOfExperience: number;
-  verificationStatus: 'unverified' | 'pending' | 'verified';
-  evidenceUploaded: boolean;
-  evidenceType: 'degree' | 'report_card';
-  portfolioUrl?: string;
-}
-
-export interface PaymentPreferences {
-  withdrawalMethod: 'bank' | 'wallet';
-  bankName?: string;
-  accountNumber?: string;
-  accountHolder?: string;
-  walletProvider?: string;
-  walletNumber?: string;
-}
-
-export interface MasterySchedule {
-  type: 'preset' | 'custom';
-  presetId?: 'M-F' | 'M-S' | 'M-Sun';
-  activeDays: number[]; // 0: Sun, 1: Mon, ..., 6: Sat
-}
+  | 'level-completion-hub'
+  | 'handwriting-hub';
 
 export interface User {
   name: string;
@@ -285,41 +246,43 @@ export interface User {
   birthDate: string;
   age: number;
   isMinor: boolean;
+  stage?: EducationalStage; 
   dailyGoal: number;
-  timeSpentToday: number;
-  studyHistory: Record<string, number>; // YYYY-MM-DD: minutes
+  timeSpentToday: number; // in minutes (total across all subjects)
+  studyHistory: Record<string, number>;
   contributions: number;
   streak: number;
   xp: number;
   level: number;
   rank: string;
-  badges: UserBadge[];
+  badges: any[];
   points: number;
   contributorRole?: ContributorRole;
-  professionalCredentials?: ProfessionalCredentials;
-  weeklyStipend?: number;
-  paymentPreferences?: PaymentPreferences;
   masterySchedule?: MasterySchedule;
   preferredLearningStyle?: LearningStyle;
+  professionalCredentials?: ProfessionalCredentials;
   academicDNA?: {
     era: CurriculumEra;
     method: LearningMethod;
+    curriculumStyle?: CurriculumStyle;
     hybridMethods?: [LearningMethod, LearningMethod];
   };
-  guardian?: GuardianInfo;
   accessibility?: AccessibilitySettings;
   culturalBackground?: string;
   track?: EducationTrack;
   distanceSchoolType?: DistanceSchoolType;
-  degreeDuration?: number; // 1, 2, 3, or 4
+  degreeDuration?: number;
   institutionStatus?: InstitutionStatus;
-  previousInstitution?: string;
-  isTransferStudent?: boolean;
   transitionProgram?: TransitionProgram;
-  creditRecords?: CreditRecord[];
+  creditRecords?: any[];
   studentNumber?: string;
   institutionName?: string;
-  scheduledSessions?: ScheduledSession[];
+  weeklyStipend?: number;
+  guardian?: {
+    name: string;
+    email?: string;
+    phone?: string;
+  };
 }
 
 export interface Certificate {
@@ -327,10 +290,54 @@ export interface Certificate {
   level: MasteryLevel | string;
   date: string;
   userName: string;
-  subTopic?: string;
-  equivalency?: string;
   verificationId: string;
   programType: 'regular' | 'fast-track' | 'relearn' | 'transition';
-  score: number; // 0-100 (Skill Points)
+  score: number;
   gradeDescription: string;
 }
+
+export interface CreativeSession {
+  type: 'notation' | 'choreography' | 'blueprint' | 'craft-guide';
+  title: string;
+  data: string; 
+  interactionPrompt: string;
+  steps: { label: string; details: string; value?: string }[];
+}
+
+export interface LessonContent {
+  title: string;
+  explanation: string;
+  timelineSteps?: { title: string; detail: string }[];
+  adaptations: {
+    visualMapDescription: string;
+    auditoryScript: string;
+    kinestheticActivity: string;
+    readingDeepDive: string;
+  };
+  examples: string[];
+  exercises: {
+    question: string;
+    options?: string[];
+    correctAnswer: string;
+    explanation: string;
+    hint?: string;
+  }[];
+  level: MasteryLevel;
+  lessonNumber: number;
+  eraNote?: string;
+  groundingSources?: { title: string; uri: string }[];
+  mediaResources?: MediaItem[];
+  isRelearn?: boolean;
+  isTransition?: boolean;
+  relearnStage?: EducationalStage;
+  phoneticMap?: Record<string, string>;
+  creativeSession?: CreativeSession;
+  challengeLevel?: 'Scaffolded' | 'Adaptive' | 'High Rigor' | 'Expert';
+  authorType: AuthorType;
+}
+
+export type CurriculumCluster = 
+  | 'Academic (Global)' 
+  | 'Methods (Kumon/EyeLevel)' 
+  | 'Arts (ABRSM/Suzuki)' 
+  | 'Vocational (Career)';

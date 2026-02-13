@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Language } from '../types';
 import { translations } from '../translations';
 import { SUBJECTS } from '../constants';
@@ -13,270 +14,146 @@ interface Props {
   onContribute: () => void;
 }
 
-const AppleIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 384 512" fill="currentColor">
-    <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-  </svg>
-);
-
-const PlayStoreIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 512 512" fill="currentColor">
-    <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
-  </svg>
-);
-
-const AppGalleryIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 512 512" fill="currentColor">
-    <path d="M256 0c141.4 0 256 114.6 256 256s-114.6 256-256 256S0 397.4 0 256 114.6 0 256 0zm0 100c-86.2 0-156 69.8-156 156s69.8 156 156 156 156-69.8 156-156-69.8-156-156-156zm-24 212l-56-56 28-28 28 28 84-84 28 28-112 112z"/>
-  </svg>
-);
-
 const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpenConverter, onDashboard, onDonate, onContribute }) => {
-  const [verifyId, setVerifyId] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
-  
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const handleVerify = async () => {
-    if (!verifyId.trim()) return;
-    setIsVerifying(true);
-    setVerificationResult(null);
-    await new Promise(r => setTimeout(r, 1500));
-    setIsVerifying(false);
-    
-    if (verifyId.startsWith('DARE-CERT-')) {
-      setVerificationResult({
-        valid: true,
-        name: "Validated Scholar",
-        subject: "Applied Sciences",
-        level: "N (High School)",
-        date: "Oct 2025"
-      });
-    } else {
-      setVerificationResult({ valid: false });
-    }
-  };
+  const features = [
+    { id: 'fusion', icon: '⚛️', title: 'Fusion Lab', desc: 'Synthesize interdisciplinary logic nodes.', action: onJoin, color: 'bg-dare-teal', text: 'text-slate-950' },
+    { id: 'exam', icon: '🏛️', title: 'Exam Hall', desc: 'Universal 24/7 certification registry.', action: onPlacementTest, color: 'bg-dare-gold', text: 'text-slate-950' },
+    { id: 'restore', icon: '🩹', title: 'Relearn Lab', desc: 'Repair foundational academic gaps.', action: onJoin, color: 'bg-dare-purple', text: 'text-white' },
+    { id: 'ink', icon: '🖋️', title: 'Neural Ink', desc: 'Digital handwriting & motor logic.', action: onJoin, color: 'bg-slate-900', text: 'text-white' },
+    { id: 'bridge', icon: '🌉', title: 'Transition Hub', desc: 'Upgrade from Kumon/Sakamoto/EyeLevel.', action: onJoin, color: 'bg-emerald-600', text: 'text-white' },
+    { id: 'units', icon: '📜', title: 'Credit Transfer', desc: 'Map mastery to US/ECTS credits.', action: onOpenConverter, color: 'bg-blue-600', text: 'text-white' },
+  ];
 
-  const coreDisciplines = [
-    { name: 'Literacy', icon: '📖', color: '#53CDBA', desc: 'Reading, writing, and linguistic analysis across languages.' },
-    { name: 'Numeracy', icon: '🔢', color: '#CCB953', desc: 'Mastering numbers, logic, and computational thinking.' },
-    { name: 'Science', icon: '⚛️', color: '#4D96FF', desc: 'Exploring physics, chemistry, biology, and astronomy.' },
-    { name: 'Humanities', icon: '📜', color: '#FF9F43', desc: 'Chronological study of civilizations and social geography.' },
-    { name: 'Ethics', icon: '⚖️', color: '#10AC84', desc: 'Navigating right and wrong through philosophical inquiry.' },
-    { name: 'Tech', icon: '💻', color: '#B953CC', desc: 'Digital architecture, kernels, and interface management.' },
-    { name: 'Arts', icon: '🎨', color: '#B953CC', desc: 'Visual communication and aesthetic styles from Bauhaus to Digital.' },
-    { name: 'Music', icon: '🎼', color: '#F368E0', desc: 'Decoding the science of sound, harmony, and composition.' },
-    { name: 'Sports', icon: '🧠', color: '#4D96FF', desc: 'Strategic mastery and high-performance cognitive execution.' }
+  const platforms = [
+    { id: 'web', name: 'Web Browser', icon: '🌐', desc: 'Universal Web Access', link: '#' },
+    { id: 'android', name: 'Android App', icon: '🤖', desc: 'Google Play Store', link: '#' },
+    { id: 'ios', name: 'iOS App', icon: '🍎', desc: 'Apple App Store', link: '#' },
+    { id: 'harmony', name: 'HarmonyOS', icon: '⭕', desc: 'Huawei AppGallery', link: '#' },
   ];
 
   return (
     <div className="animate-fadeIn pb-32">
-      {/* 1. Cinematic Hero Section */}
-      <section className="relative py-12 md:py-32 lg:py-56 overflow-hidden bg-white dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto text-center relative z-10 px-4 md:px-6">
-          <div className="flex flex-col items-center mb-8 md:mb-12">
-            <div className="inline-block px-4 py-1.5 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-4 shadow-lg shadow-emerald-500/20">
-              {t('yearRoundEnrollment')}
+      <section className="relative pt-24 pb-40 lg:pt-48 lg:pb-64 overflow-hidden bg-slate-950">
+        <div className="absolute inset-0 pattern-grid-lg opacity-20 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto text-center relative z-10 px-6">
+          <div className="flex flex-col items-center mb-10">
+            <div className="inline-flex items-center gap-3 px-6 py-2 bg-dare-purple text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-8 shadow-2xl border-2 border-white/20">
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+              The Definitive Learning App
             </div>
-            <p className="text-dare-teal text-[10px] md:text-sm font-black uppercase tracking-[0.4em] md:tracking-[0.6em] animate-fadeIn">
-              {t('hallSubtitle')}
-            </p>
           </div>
-          
-          <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] font-black text-gray-900 dark:text-white mb-8 md:mb-10 leading-[0.95] md:leading-[0.8] tracking-tighter">
-            Universal Mastery For <span className="text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">Everyone</span>
+          <h1 className="text-6xl sm:text-7xl md:text-9xl font-black text-white mb-10 leading-[0.85] tracking-tighter uppercase">
+            Universal <br /> 
+            <span className="inline-block py-4 text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">
+              Mastery
+            </span>
           </h1>
-          
-          <p className="text-xl md:text-3xl lg:text-4xl text-gray-500 dark:text-gray-400 mb-6 leading-relaxed max-w-5xl mx-auto font-medium px-4">
-            {t('heroSubtitle')}
+          <p className="text-xl md:text-3xl text-slate-400 mb-16 leading-relaxed max-w-4xl mx-auto font-medium italic">
+            "Designed to replace standard lessons and complement school studies with a proprietary method and universal exam system."
           </p>
-          <p className="text-sm md:text-lg font-black text-dare-gold uppercase tracking-[0.3em] mb-12 md:mb-16 italic">
-            " {t('mondayStartNote')} "
-          </p>
-          
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 max-w-5xl mx-auto">
-            <button 
-              onClick={onPlacementTest}
-              className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-gold text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-gold/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-yellow-700/30"
-            >
-              <span className="text-[9px] md:text-[11px] uppercase tracking-widest opacity-80">Initial Logic Check</span>
-              <span className="relative z-10 flex items-center gap-2">🎯 {t('placementTest')}</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-4xl mx-auto mb-24">
+            <button onClick={onJoin} className="group w-full sm:flex-1 h-24 bg-dare-teal text-slate-950 rounded-[2.5rem] font-black text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-4 relative border-4 border-white/30">
+              <span className="flex flex-col items-start text-left">
+                <span className="text-[10px] uppercase tracking-widest opacity-60">Synthesis</span>
+                <span>Lesson Mode</span>
+              </span>
+              <span className="text-3xl">📖</span>
             </button>
-
-            <button 
-              onClick={onJoin}
-              className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-teal text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-teal/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-teal-700/30"
-            >
-              <span className="text-[9px] md:text-[11px] uppercase tracking-widest opacity-80">Retention Diagnostic</span>
-              <span className="relative z-10 flex items-center gap-2">📊 {t('assessmentTitle')}</span>
-            </button>
-
-            <button 
-              onClick={onJoin}
-              className="group w-full md:flex-1 px-6 py-6 md:px-8 md:py-7 bg-dare-purple text-white rounded-[2rem] md:rounded-[2.5rem] font-black text-xl md:text-2xl shadow-2xl shadow-dare-purple/20 hover:scale-105 active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border-b-4 border-purple-800/30"
-            >
-              <span className="text-[9px] md:text-[11px] uppercase tracking-widest opacity-80">Full Academy Access</span>
-              <span className="relative z-10 flex items-center gap-2">📝 {t('enrollmentTitle')}</span>
+            <button onClick={onPlacementTest} className="group w-full sm:flex-1 h-24 bg-dare-gold text-slate-950 rounded-[2.5rem] font-black text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-4 border-4 border-white/30">
+              <span className="flex flex-col items-start text-left">
+                <span className="text-[10px] uppercase tracking-widest opacity-60">Validation</span>
+                <span>Exam Mode</span>
+              </span>
+              <span className="text-3xl">🏛️</span>
             </button>
           </div>
         </div>
+      </section>
 
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-10">
-           {SUBJECTS.slice(0, 15).map((sub, i) => (
-             <div key={sub.id} className="absolute animate-float" style={{
-               top: `${(i * 10) % 90}%`,
-               left: `${(i * 17) % 95}%`,
-               fontSize: `${2 + Math.random() * 3}rem`,
-               animationDelay: `${i * 0.5}s`,
-               animationDuration: `${20 + Math.random() * 20}s`
-             }} aria-hidden="true">{sub.icon}</div>
-           ))}
+      <section className="py-32 bg-slate-900 border-y border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-24">
+             <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase">Mastery Ecosystem</h2>
+             <p className="text-dare-gold font-black uppercase tracking-[0.4em] text-xs mt-4">Solid Academic Architecture</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map(feat => (
+              <button key={feat.id} onClick={feat.action} className={`p-10 ${feat.color} rounded-[3.5rem] border-4 border-white/20 transition-all text-left flex flex-col justify-between group shadow-2xl hover:-translate-y-3`}>
+                <div>
+                  <div className="w-20 h-20 bg-slate-950 text-white rounded-[1.8rem] flex items-center justify-center text-4xl mb-10 shadow-inner group-hover:scale-110 transition-all border border-white/10">{feat.icon}</div>
+                  <h4 className={`text-3xl font-black ${feat.text} mb-3 uppercase tracking-tighter`}>{feat.title}</h4>
+                  <p className={`text-sm ${feat.text} opacity-80 font-bold leading-relaxed italic`}>"{feat.desc}"</p>
+                </div>
+                <div className={`mt-12 pt-8 border-t border-black/10 flex justify-between items-center ${feat.text}`}>
+                   <span className="text-[10px] font-black uppercase tracking-[0.3em]">Access Node</span>
+                   <span className="text-2xl">→</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Breadth Section */}
-      <section className="py-20 md:py-24 bg-gray-50 dark:bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-           <div className="mb-12 md:mb-16">
-              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.6em] mb-4">Official Academic Classifications</h2>
-              <div className="w-16 h-1 bg-dare-teal mx-auto rounded-full"></div>
-           </div>
-           
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {coreDisciplines.map((discipline) => (
-                <div 
-                  key={discipline.name} 
-                  className={`p-8 md:p-10 bg-white dark:bg-slate-900 rounded-[3rem] md:rounded-[3.5rem] shadow-xl border border-gray-100 dark:border-slate-800 flex flex-col items-center gap-4 md:gap-6 hover:-translate-y-2 transition-all duration-500 group relative overflow-hidden`}
-                >
-                  <div className="absolute top-0 left-0 w-full h-1.5 opacity-40" style={{ backgroundColor: discipline.color }}></div>
-                  <div 
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-4xl md:text-5xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500"
-                    style={{ backgroundColor: `${discipline.color}15` }}
-                  >
-                    <span className="drop-shadow-md">{discipline.icon}</span>
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="font-black text-lg md:text-xl dark:text-white tracking-tight">{discipline.name}</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium leading-relaxed px-4">
-                      {discipline.desc}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              
-              <div className="p-8 md:p-10 bg-slate-900 rounded-[3rem] md:rounded-[3.5rem] shadow-2xl flex flex-col items-center justify-center gap-4 text-white">
-                 <span className="text-3xl md:text-4xl">🚀</span>
-                 <h3 className="font-black text-xl md:text-2xl tracking-tighter">Unlimited Synthesis</h3>
-                 <p className="text-slate-400 text-[10px] md:text-xs font-bold uppercase tracking-widest">Across All Global Curricula</p>
+      {/* Universal Access Section */}
+      <section className="py-32 bg-slate-950 border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+             <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-4">Universal Access</h2>
+             <p className="text-dare-teal font-black uppercase tracking-[0.4em] text-xs">Master your world on any device, anywhere, 24/7.</p>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {platforms.map((platform) => (
+              <a 
+                key={platform.id} 
+                href={platform.link}
+                className="p-8 bg-slate-900 border-4 border-white/5 rounded-[3rem] text-center group hover:border-dare-teal transition-all shadow-xl block"
+              >
+                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-500">{platform.icon}</div>
+                <h4 className="text-xl font-black text-white mb-1 uppercase tracking-tight">{platform.name}</h4>
+                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{platform.desc}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-32 bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-5xl md:text-7xl font-black text-white tracking-tighter mb-20 text-center uppercase">Subject Registry</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+            {SUBJECTS.map((sub) => (
+              <div key={sub.id} className="p-10 bg-dare-teal text-slate-950 rounded-[3.5rem] shadow-2xl border-4 border-white/20 hover:scale-105 transition-all cursor-pointer text-center group">
+                <div className="w-20 h-20 bg-slate-950 rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-inner mx-auto group-hover:rotate-12 transition-all">{sub.icon}</div>
+                <h4 className="text-2xl font-black mb-1 uppercase tracking-tighter leading-none">{sub.name}</h4>
+                <p className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em]">{sub.category}</p>
               </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Trust & Verification Section */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 py-24 md:py-32">
-         <div className="bg-slate-900 rounded-[3rem] md:rounded-[5rem] p-8 md:p-32 text-center text-white relative overflow-hidden shadow-2xl border border-white/5">
-            <div className="absolute -top-10 -right-10 p-20 opacity-5 text-[8rem] md:text-[18rem] font-black rotate-12 tracking-tighter pointer-events-none">DARE</div>
-            <div className="relative z-10 space-y-12 md:space-y-16">
-               <div className="space-y-6 md:space-y-8">
-                  <h2 className="text-[10px] md:text-xs font-black text-dare-gold uppercase tracking-[0.5em] md:tracking-[0.8em] mb-4">Institutional Credibility</h2>
-                  <h3 className="text-3xl md:text-7xl font-black tracking-tighter leading-tight max-w-5xl mx-auto">
-                    {t('recognizedBy')}
-                  </h3>
-                  <p className="text-slate-400 text-lg md:text-2xl max-w-4xl mx-auto font-medium leading-relaxed">
-                    darewast certificates are universally anchored. Enter an ID below to validate institutional mastery instantly.
-                  </p>
-               </div>
-
-               <div className="max-w-2xl mx-auto">
-                 <div className="flex flex-col sm:flex-row gap-3 bg-white/5 p-2.5 rounded-[2.5rem] md:rounded-[3rem] border border-white/10 backdrop-blur-md">
-                    <input 
-                      type="text"
-                      placeholder="DARE-CERT-XXXX"
-                      value={verifyId}
-                      onChange={e => setVerifyId(e.target.value)}
-                      className="flex-1 px-6 md:px-8 py-4 md:py-5 bg-transparent border-none outline-none font-bold text-lg md:text-xl text-white placeholder:text-white/20"
-                    />
-                    <button 
-                      onClick={handleVerify}
-                      disabled={isVerifying || !verifyId.trim()}
-                      className="px-8 md:px-12 py-4 md:py-5 bg-dare-gold text-slate-900 rounded-[1.8rem] md:rounded-[2.5rem] font-black text-base md:text-lg shadow-xl shadow-dare-gold/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                    >
-                      {isVerifying ? 'Searching Registry...' : 'Verify ID'}
-                    </button>
-                 </div>
-                 {verificationResult && (
-                   <div className="mt-8 p-8 md:p-10 bg-white/5 rounded-[2.5rem] md:rounded-[3rem] border border-white/10 animate-fadeIn text-left flex flex-col sm:flex-row items-center gap-6 md:gap-8">
-                      {verificationResult.valid ? (
-                        <>
-                          <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-500 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl shadow-xl shadow-emerald-500/20">✓</div>
-                          <div className="text-center sm:text-left">
-                            <p className="text-[9px] md:text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em] mb-1">Authentic Credential</p>
-                            <h4 className="text-xl md:text-2xl font-black">{verificationResult.name}</h4>
-                            <p className="text-slate-400 font-bold text-sm md:text-base">{verificationResult.subject} • Mastery Level {verificationResult.level}</p>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-500 rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl text-white shadow-xl shadow-rose-500/20">✕</div>
-                          <p className="font-bold text-rose-400 text-lg md:text-xl leading-relaxed text-center sm:text-left">Credential ID not found in the darewast global mastery database.</p>
-                        </>
-                      )}
-                   </div>
-                 )}
-               </div>
-            </div>
-         </div>
-      </section>
-
-      {/* App Download Section */}
-      <section className="max-w-7xl mx-auto px-4 md:px-6 py-24 text-center">
-        <div className="bg-gradient-to-br from-dare-teal via-dare-purple to-dare-gold p-12 md:p-32 rounded-[3.5rem] md:rounded-[5rem] text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-white/5 opacity-10 pattern-grid-lg"></div>
-          <div className="relative z-10">
-            <h2 className="text-4xl md:text-[6rem] font-black mb-8 md:mb-10 tracking-tighter leading-none">{t('downloadApp')}</h2>
-            <p className="text-white/80 text-lg md:text-3xl mb-12 md:mb-20 max-w-3xl mx-auto font-medium leading-relaxed px-4">
-              {t('mobileAccess')}
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 md:gap-10">
-              <a href="#" className="flex items-center gap-4 md:gap-5 px-6 md:px-10 py-4 md:py-6 bg-black rounded-[1.8rem] md:rounded-[2.5rem] font-black text-base md:text-lg shadow-2xl hover:scale-105 transition-all group border border-white/10">
-                <AppleIcon />
-                <div className="text-left leading-none">
-                  <p className="text-[8px] md:text-[10px] uppercase font-black opacity-60 mb-1 md:mb-2">Available on</p>
-                  <p className="text-xl md:text-2xl font-black tracking-tight">{t('appStore')}</p>
-                </div>
-              </a>
-
-              <a href="#" className="flex items-center gap-4 md:gap-5 px-6 md:px-10 py-4 md:py-6 bg-black rounded-[1.8rem] md:rounded-[2.5rem] font-black text-base md:text-lg shadow-2xl hover:scale-105 transition-all group border border-white/10">
-                <PlayStoreIcon />
-                <div className="text-left leading-none">
-                  <p className="text-[8px] md:text-[10px] uppercase font-black opacity-60 mb-1 md:mb-2">Available on</p>
-                  <p className="text-xl md:text-2xl font-black tracking-tight">{t('googlePlay')}</p>
-                </div>
-              </a>
-
-              <a href="#" className="flex items-center gap-4 md:gap-5 px-6 md:px-10 py-4 md:py-6 bg-[#C7000B] rounded-[1.8rem] md:rounded-[2.5rem] font-black text-base md:text-lg shadow-2xl hover:scale-105 transition-all group border border-white/10">
-                <AppGalleryIcon />
-                <div className="text-left leading-none">
-                  <p className="text-[8px] md:text-[10px] uppercase font-black opacity-80 mb-1 md:mb-2">Available on</p>
-                  <p className="text-xl md:text-2xl font-black tracking-tight">{t('appGallery')}</p>
-                </div>
-              </a>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Footer & Mission */}
-      <footer className="mt-20 md:mt-40 text-center py-20 md:py-24 border-t border-gray-100 dark:border-slate-800">
-         <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-50 dark:bg-slate-900 rounded-[1.8rem] md:rounded-[2rem] flex items-center justify-center text-3xl md:text-4xl mx-auto mb-8 md:mb-10 shadow-inner">👑</div>
-         <p className="text-[10px] md:text-[12px] font-black uppercase tracking-[0.4em] md:tracking-[0.8em] text-gray-400 mb-4 md:mb-6">{t('founderFull')}</p>
-         <p className="text-base md:text-lg font-bold text-gray-300 dark:text-gray-700 italic max-w-2xl mx-auto px-6 leading-relaxed">
-           "{t('missionStatement')}"
-         </p>
-      </footer>
+      {/* Support Section */}
+      <section className="py-32 bg-slate-900 border-y border-white/5">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="bg-dare-gold p-12 md:p-20 rounded-[5rem] text-center border-4 border-white/30 shadow-2xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-12 opacity-10 text-9xl font-black uppercase rotate-12">FOUNDATION</div>
+             <div className="relative z-10 space-y-10">
+                <h2 className="text-5xl md:text-7xl font-black text-slate-950 tracking-tighter leading-none uppercase">Support the Mission</h2>
+                <p className="text-slate-900 text-xl md:text-2xl font-bold italic leading-relaxed max-w-2xl mx-auto">
+                  "darewast is 100% donation-funded. Help us keep the 24/7 academic grid free from commercial barriers and open to all scholars."
+                </p>
+                <button 
+                  onClick={onDonate}
+                  className="px-16 py-8 bg-slate-950 text-white rounded-[3rem] font-black text-3xl shadow-2xl hover:scale-105 active:scale-95 transition-all uppercase tracking-tighter group border-4 border-white/10"
+                >
+                  Donate to Foundation <span className="inline-block group-hover:translate-x-4 transition-transform">💎</span>
+                </button>
+             </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

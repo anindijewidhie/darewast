@@ -17,7 +17,6 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
-  // Added onOpenSpecialization to the Props interface
   onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
@@ -26,7 +25,6 @@ interface Props {
 const SchoolDashboardView: React.FC<Props> = ({ 
   user, progress, language, onStartLesson, onStartPrep, onUpdateUser, onUpdateProgress, onTrackChange, onBackToStandard,
   onOpenPlacement, onOpenAssessment, 
-  // Destructured onOpenSpecialization from props
   onOpenSpecialization,
   dynamicSubjects, onCreateSubject
 }) => {
@@ -35,7 +33,10 @@ const SchoolDashboardView: React.FC<Props> = ({
   const [isCreating, setIsCreating] = useState(false);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities', 'Arts', 'Sports'];
+  // Fix: Updated categories to include 'Moral and Ethics' instead of 'Ethics' to match type definition
+  const categories: (SubjectCategory | 'All')[] = [
+    'All', 'Literacy', 'Numeracy', 'Natural Science', 'Social Science', 'Music', 'Religion', 'Moral and Ethics'
+  ];
 
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 
@@ -95,9 +96,9 @@ const SchoolDashboardView: React.FC<Props> = ({
         <div className="lg:col-span-8 space-y-10">
            <div className="flex items-center justify-between">
               <h2 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Academic Modules</h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-dare-gold border-dare-gold text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
+                  <button key={cat} onClick={() => setSelectedCategory(cat)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${selectedCategory === cat ? 'bg-dare-gold border-dare-gold text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
                     {cat}
                   </button>
                 ))}
@@ -105,13 +106,13 @@ const SchoolDashboardView: React.FC<Props> = ({
            </div>
 
            <div className="grid sm:grid-cols-2 gap-6">
+              {/* Fix: Add isPlaced fallback property */}
               {filteredSubjects.map(sub => (
                 <SubjectCard 
                     key={sub.id} 
                     subject={sub} 
-                    progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
+                    progress={progress[sub.id] || { level: 'A', lessonNumber: 1, isPlaced: false }} 
                     onClick={() => onStartLesson(sub)} 
-                    // Use onOpenSpecialization prop instead of empty function
                     onOpenSpecialization={() => onOpenSpecialization(sub)} 
                     onPlacementTest={() => onOpenPlacement(sub)}
                     onLevelAssessment={() => onOpenAssessment(sub)}

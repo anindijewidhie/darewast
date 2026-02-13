@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, AccessibilitySettings, Language } from '../types';
+import { User, AccessibilitySettings, Language, ColorBlindMode } from '../types';
 import { translations } from '../translations';
 
 interface Props {
@@ -19,7 +19,10 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
     reducedMotion: false,
     textScale: 1,
     screenReaderHints: true,
-    iddSupport: false
+    iddSupport: false,
+    focusMode: false,
+    voiceNavigation: false,
+    colorBlindMode: 'none'
   };
 
   const updateSetting = (key: keyof AccessibilitySettings, value: any) => {
@@ -30,6 +33,29 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
       }
     });
   };
+
+  const colorModes: { id: ColorBlindMode; label: string }[] = [
+    { id: 'none', label: 'None' },
+    { id: 'protanopia', label: 'Protanopia (Red-Blind)' },
+    { id: 'deuteranopia', label: 'Deuteranopia (Green-Blind)' },
+    { id: 'tritanopia', label: 'Tritanopia (Blue-Blind)' }
+  ];
+
+  const Toggle = ({ active, onClick, label, desc }: { active: boolean; onClick: () => void; label: string; desc: string }) => (
+    <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4 border-2 border-transparent hover:border-dare-teal/20 transition-all">
+      <div>
+        <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{label}</h3>
+        <p className="text-sm text-gray-500 font-medium italic">{desc}</p>
+      </div>
+      <button 
+        onClick={onClick}
+        className={`w-14 h-8 rounded-full transition-all relative ${active ? 'bg-dare-teal' : 'bg-gray-300 dark:bg-slate-700'}`}
+        aria-pressed={active}
+      >
+        <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md ${active ? 'left-7' : 'left-1'}`}></div>
+      </button>
+    </section>
+  );
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-fadeIn">
@@ -42,64 +68,58 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
         
         <header className="mb-12">
           <h2 className="text-4xl font-black text-gray-900 dark:text-white mb-2">{t('accessibilityTitle')}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-lg">{t('accessibilitySubtitle')}</p>
+          <p className="text-gray-500 dark:text-gray-400 text-lg">Universal features for visual, auditory, motor, and cognitive support.</p>
         </header>
 
-        <div className="space-y-10">
-          <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4">
-            <div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{t('dyslexicFont')}</h3>
-              <p className="text-sm text-gray-500 font-medium italic">Uses Lexend, a high-readability typeface.</p>
-            </div>
-            <button 
-              onClick={() => updateSetting('dyslexicFont', !currentSettings.dyslexicFont)}
-              className={`w-14 h-8 rounded-full transition-all relative ${currentSettings.dyslexicFont ? 'bg-dare-teal' : 'bg-gray-300 dark:bg-slate-700'}`}
-              aria-pressed={currentSettings.dyslexicFont}
-            >
-              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md ${currentSettings.dyslexicFont ? 'left-7' : 'left-1'}`}></div>
-            </button>
-          </section>
+        <div className="space-y-6">
+          <Toggle 
+            active={currentSettings.iddSupport} 
+            onClick={() => updateSetting('iddSupport', !currentSettings.iddSupport)} 
+            label="Intellectual & Developmental Support" 
+            desc="Forces Supported Rigor (<50 skill points) logic for hyper-incremental concepts." 
+          />
 
-          <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4">
-            <div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">Intellectual & Developmental Support</h3>
-              <p className="text-sm text-gray-500 font-medium italic">Adapts lessons with literal language, visual support, and hyper-incremental steps.</p>
-            </div>
-            <button 
-              onClick={() => updateSetting('iddSupport', !currentSettings.iddSupport)}
-              className={`w-14 h-8 rounded-full transition-all relative ${currentSettings.iddSupport ? 'bg-dare-teal' : 'bg-gray-300 dark:bg-slate-700'}`}
-              aria-pressed={currentSettings.iddSupport}
-            >
-              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md ${currentSettings.iddSupport ? 'left-7' : 'left-1'}`}></div>
-            </button>
-          </section>
+          <Toggle 
+            active={currentSettings.focusMode} 
+            onClick={() => updateSetting('focusMode', !currentSettings.focusMode)} 
+            label="Focus Mode (ADHD Support)" 
+            desc="Hides sidebars and non-essential UI to minimize distractions." 
+          />
 
-          <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4">
-            <div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{t('highContrast')}</h3>
-              <p className="text-sm text-gray-500 font-medium italic">Pure black and white interface for maximum clarity.</p>
-            </div>
-            <button 
-              onClick={() => updateSetting('highContrast', !currentSettings.highContrast)}
-              className={`w-14 h-8 rounded-full transition-all relative ${currentSettings.highContrast ? 'bg-dare-teal' : 'bg-gray-300 dark:bg-slate-700'}`}
-              aria-pressed={currentSettings.highContrast}
-            >
-              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md ${currentSettings.highContrast ? 'left-7' : 'left-1'}`}></div>
-            </button>
-          </section>
+          <Toggle 
+            active={currentSettings.voiceNavigation} 
+            onClick={() => updateSetting('voiceNavigation', !currentSettings.voiceNavigation)} 
+            label="Voice Navigation (Motor Support)" 
+            desc="Control the learning grid using vocal commands via Gemini Live." 
+          />
 
-          <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4">
-            <div>
-              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{t('reducedMotion')}</h3>
-              <p className="text-sm text-gray-500 font-medium italic">Disables decorative animations and transitions.</p>
-            </div>
-            <button 
-              onClick={() => updateSetting('reducedMotion', !currentSettings.reducedMotion)}
-              className={`w-14 h-8 rounded-full transition-all relative ${currentSettings.reducedMotion ? 'bg-dare-teal' : 'bg-gray-300 dark:bg-slate-700'}`}
-              aria-pressed={currentSettings.reducedMotion}
-            >
-              <div className={`absolute top-1 w-6 h-6 rounded-full bg-white transition-all shadow-md ${currentSettings.reducedMotion ? 'left-7' : 'left-1'}`}></div>
-            </button>
+          <Toggle 
+            active={currentSettings.dyslexicFont} 
+            onClick={() => updateSetting('dyslexicFont', !currentSettings.dyslexicFont)} 
+            label={t('dyslexicFont')} 
+            desc="Uses Lexend, a high-readability typeface designed for dyslexia." 
+          />
+
+          <Toggle 
+            active={currentSettings.highContrast} 
+            onClick={() => updateSetting('highContrast', !currentSettings.highContrast)} 
+            label={t('highContrast')} 
+            desc="Pure black/white contrast with bold interactive targets." 
+          />
+
+          <section className="p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl space-y-4">
+             <h3 className="text-xl font-black text-gray-900 dark:text-white">Color Blindness Filters</h3>
+             <div className="grid grid-cols-2 gap-2">
+                {colorModes.map(mode => (
+                  <button 
+                    key={mode.id}
+                    onClick={() => updateSetting('colorBlindMode', mode.id)}
+                    className={`py-3 px-4 rounded-xl text-xs font-black uppercase transition-all ${currentSettings.colorBlindMode === mode.id ? 'bg-dare-teal text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-gray-400 border border-gray-100 dark:border-slate-700'}`}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+             </div>
           </section>
 
           <section className="p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl">
@@ -117,19 +137,10 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
               className="w-full h-3 bg-gray-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-dare-teal"
               aria-label="Adjust font size multiplier"
             />
-            <div className="flex justify-between mt-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              <span>Standard (100%)</span>
-              <span>Extra Large (150%)</span>
-            </div>
           </section>
           
-          <div className="pt-6 border-t border-gray-100 dark:border-slate-800 text-center">
-            <button 
-              onClick={onBack}
-              className="px-10 py-4 bg-dare-teal text-white rounded-2xl font-black text-lg shadow-xl shadow-dare-teal/20 hover:scale-[1.02] transition-all"
-            >
-              Apply Settings
-            </button>
+          <div className="pt-6 text-center">
+            <button onClick={onBack} className="px-10 py-4 bg-dare-teal text-white rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] transition-all">Apply Mastery Settings</button>
           </div>
         </div>
       </div>

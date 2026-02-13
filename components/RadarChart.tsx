@@ -8,7 +8,7 @@ interface RadarChartProps {
   subjects: Subject[];
 }
 
-export const RadarChart: React.FC<RadarChartProps> = ({ progress, subjects }) => {
+export const RadarChart: React.FC<RadarChartProps> = React.memo(({ progress, subjects }) => {
   const size = 300;
   const center = size / 2;
   const radius = size * 0.4;
@@ -38,15 +38,15 @@ export const RadarChart: React.FC<RadarChartProps> = ({ progress, subjects }) =>
   }, [progress, subjects, center, radius, angleStep, pIndex, maxIndex]);
 
   const gridLevels = [0.2, 0.4, 0.6, 0.8, 1];
-  const polygonPath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
+  const polygonPath = useMemo(() => points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z', [points]);
 
   // Path for the Level P threshold
-  const pThresholdPoints = subjects.map((_, i) => {
+  const pThresholdPoints = useMemo(() => subjects.map((_, i) => {
     const angle = i * angleStep - Math.PI / 2;
     const x = center + radius * pThresholdValue * Math.cos(angle);
     const y = center + radius * pThresholdValue * Math.sin(angle);
     return `${x},${y}`;
-  }).join(' ');
+  }).join(' '), [subjects, angleStep, center, radius, pThresholdValue]);
 
   return (
     <div className="relative w-full max-w-[400px] mx-auto">
@@ -178,4 +178,4 @@ export const RadarChart: React.FC<RadarChartProps> = ({ progress, subjects }) =>
       </div>
     </div>
   );
-};
+});

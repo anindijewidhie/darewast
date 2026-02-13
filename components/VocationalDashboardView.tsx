@@ -18,7 +18,6 @@ interface Props {
   onBackToStandard: () => void;
   onOpenPlacement: (sub: Subject) => void;
   onOpenAssessment: (sub: Subject) => void;
-  // Added onOpenSpecialization to the Props interface
   onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
@@ -27,7 +26,6 @@ interface Props {
 const VocationalDashboardView: React.FC<Props> = ({ 
   track, user, progress, language, onStartLesson, onStartPrep, onTrackChange,
   onOpenPlacement, onOpenAssessment,
-  // Destructured onOpenSpecialization from props
   onOpenSpecialization,
   dynamicSubjects, onCreateSubject
 }) => {
@@ -43,9 +41,11 @@ const VocationalDashboardView: React.FC<Props> = ({
   const icon = isUni ? '🛠️' : '🔧';
   const label = `${isDistance ? 'Distance ' : ''}Vocational ${isUni ? 'University' : 'School'}`;
 
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Design', 'Craft', 'Computer Science', 'Natural Science', 'Music', 'Mind Sports'];
+
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
   const filteredSubjects = useMemo(() => {
-    return allAvailableSubjects.filter(sub => selectedCategory === 'All' || sub.category === selectedCategory || sub.category === 'Vocational' || sub.category === 'Arts' || sub.category === 'Sports');
+    return allAvailableSubjects.filter(sub => selectedCategory === 'All' || sub.category === selectedCategory);
   }, [selectedCategory, dynamicSubjects]);
 
   const handleCreate = async () => {
@@ -69,13 +69,13 @@ const VocationalDashboardView: React.FC<Props> = ({
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex-1 space-y-4 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 rounded-full text-xs font-black uppercase tracking-widest border border-white/40">
-               {icon} darewast for {label}
+               {icon} {label} Path
             </div>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
               Practical Mastery Hub
             </h1>
             <p className="text-white/80 text-xl font-medium max-w-2xl leading-relaxed">
-              Real-world skills, industry standards, and technical certification. Our {label.toLowerCase()} is open 24/7 for career-focused scholars.
+              Flexible applied mastery tracks. Unlike Academic Universities, we offer 1, 2, 3, or 4-year cycles focused on industry-ready technical proficiency.
             </p>
             <div className="pt-4 flex gap-3 justify-center md:justify-start">
                <button onClick={() => onTrackChange('Standard')} className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all border border-white/20">
@@ -92,10 +92,10 @@ const VocationalDashboardView: React.FC<Props> = ({
       <div className="grid lg:grid-cols-12 gap-10">
         <div className="lg:col-span-8 space-y-10">
            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-black dark:text-white tracking-tighter uppercase">Workshop Modules</h2>
-              <div className="flex gap-2">
-                 {['All', 'Vocational', 'Arts', 'Sports', 'Tech', 'Science'].map(cat => (
-                   <button key={cat} onClick={() => setSelectedCategory(cat as any)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${selectedCategory === cat ? `bg-${themeColor}-600 border-${themeColor}-600 text-white` : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
+              <h2 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Workshop Modules</h2>
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                 {categories.map(cat => (
+                   <button key={cat} onClick={() => setSelectedCategory(cat as any)} className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 whitespace-nowrap ${selectedCategory === cat ? `bg-${themeColor}-600 border-${themeColor}-600 text-white` : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
                      {cat}
                    </button>
                  ))}
@@ -107,9 +107,8 @@ const VocationalDashboardView: React.FC<Props> = ({
                 <SubjectCard 
                   key={sub.id} 
                   subject={sub} 
-                  progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }} 
+                  progress={progress[sub.id] || { level: 'A', lessonNumber: 1, isPlaced: false }} 
                   onClick={() => onStartLesson(sub)} 
-                  // Use onOpenSpecialization prop instead of empty function
                   onOpenSpecialization={() => onOpenSpecialization(sub)} 
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
@@ -121,23 +120,34 @@ const VocationalDashboardView: React.FC<Props> = ({
 
         <div className="lg:col-span-4">
            <div className="bg-white dark:bg-slate-900 p-8 rounded-[3.5rem] border border-gray-100 dark:border-slate-800 shadow-xl space-y-6">
-              <h3 className="text-lg font-black uppercase tracking-tight dark:text-white">Practical Specialization</h3>
-              <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl">
-                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Skill to Master</p>
-                 <input 
-                    type="text" 
-                    placeholder="e.g. Industrial Automation"
-                    value={query}
-                    onChange={e => setQuery(e.target.value)}
-                    className="w-full p-3 mb-3 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-700 rounded-xl font-bold outline-none"
-                 />
-                 <button 
-                    onClick={handleCreate}
-                    disabled={isCreating || !query.trim()}
-                    className={`w-full py-4 bg-${themeColor}-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-${themeColor}-600/20`}
-                 >
-                    {isCreating ? 'Synthesizing Path...' : 'Generate module'}
-                 </button>
+              <h3 className="text-lg font-black uppercase tracking-tight dark:text-white">Applied Program Details</h3>
+              <div className="space-y-4">
+                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Entry Requirement</p>
+                    <p className={`text-lg font-black text-${themeColor}-600 uppercase`}>Level P-S Benchmark</p>
+                    <p className="text-[9px] font-bold text-gray-500 uppercase mt-1">Lower than Academic Research Tracks</p>
+                 </div>
+                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Flexibility Note</p>
+                    <p className="text-xs font-bold text-gray-600 dark:text-gray-300 leading-relaxed">Vocational University programs support specialized cycles of 1, 2, 3, or 4 years.</p>
+                 </div>
+                 <div className="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Custom Skill Path</p>
+                    <input 
+                        type="text" 
+                        placeholder="e.g. Mechatronics"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        className="w-full p-3 mb-3 bg-white dark:bg-slate-950 border border-gray-100 dark:border-slate-700 rounded-xl font-bold outline-none"
+                    />
+                    <button 
+                        onClick={handleCreate}
+                        disabled={isCreating || !query.trim()}
+                        className={`w-full py-4 bg-${themeColor}-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-${themeColor}-600/20`}
+                    >
+                        {isCreating ? 'Synthesizing Path...' : 'Initialize Program'}
+                    </button>
+                 </div>
               </div>
            </div>
         </div>

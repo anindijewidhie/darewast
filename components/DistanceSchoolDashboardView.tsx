@@ -34,7 +34,8 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
   const schoolType: DistanceSchoolType = user.distanceSchoolType || '6-3-3';
   const schoolMap = DISTANCE_SCHOOL_MAPS[schoolType];
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Science', 'Humanities'];
+  // Fix: Changed 'Science' to 'Natural Science' and 'Humanities' to 'Social Science'
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Literacy', 'Numeracy', 'Natural Science', 'Social Science'];
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 
   const filteredSubjects = useMemo(() => {
@@ -79,7 +80,7 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
               <h2 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Cohort Modules</h2>
               <div className="flex gap-2">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setSelectedCategory(cat as any)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all ${selectedCategory === cat ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
+                  <button key={cat} onClick={() => setSelectedCategory(cat as any)} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border-2 transition-all whitespace-nowrap ${selectedCategory === cat ? 'bg-amber-600 border-amber-600 text-white' : 'border-gray-100 dark:border-slate-800 text-gray-400'}`}>
                     {cat}
                   </button>
                 ))}
@@ -88,7 +89,8 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
 
            <div className="grid sm:grid-cols-2 gap-6">
               {filteredSubjects.map(sub => {
-                const subProg = progress[sub.id] || { level: 'A', lessonNumber: 1 };
+                // Fix: Add isPlaced fallback property
+                const subProg = progress[sub.id] || { level: 'A', lessonNumber: 1, isPlaced: false };
                 const gradeLabel = getInstitutionalGrade(schoolType, subProg.level);
                 return (
                   <div key={sub.id} className="relative group">

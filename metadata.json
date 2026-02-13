@@ -1,6 +1,6 @@
 {
   "name": "darewast",
-  "description": "A comprehensive multi-disciplinary learning platform implementing the Kumon method across subjects from literacy to programming and music theory, available in 14 languages.",
+  "description": "A universal learning platform powered by the darewast Unified Method—a high-performance synthesis of Kumon, Sakamoto, and Eye Level methodologies. Featuring interactive, culturally sensitive lessons and unlimited adaptive materials.",
   "requestFramePermissions": [
     "camera",
     "microphone"

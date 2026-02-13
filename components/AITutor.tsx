@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
 import { Language, User } from '../types';
@@ -23,7 +24,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
 
   const t = (key: string) => translations[language]?.[key] || translations['English'][key] || key;
 
-  // Manual base64 decode (required by coding guidelines)
   const decode = (base64: string) => {
     const binaryString = atob(base64);
     const len = binaryString.length;
@@ -34,7 +34,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     return bytes;
   };
 
-  // Manual base64 encode (required by coding guidelines)
   const encode = (bytes: Uint8Array) => {
     let binary = '';
     const len = bytes.byteLength;
@@ -44,7 +43,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     return btoa(binary);
   };
 
-  // Manual PCM decoding for Gemini Live API
   const decodeAudioData = async (
     data: Uint8Array,
     ctx: AudioContext,
@@ -54,7 +52,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     const dataInt16 = new Int16Array(data.buffer);
     const frameCount = dataInt16.length / numChannels;
     const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
     for (let channel = 0; channel < numChannels; channel++) {
       const channelData = buffer.getChannelData(channel);
       for (let i = 0; i < frameCount; i++) {
@@ -79,7 +76,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
   const startSession = async () => {
     setIsConnecting(true);
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    
     const outputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
     const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     audioContextRef.current = outputCtx;
@@ -94,7 +90,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
             setIsConnecting(false);
             const source = inputCtx.createMediaStreamSource(stream);
             const scriptProcessor = inputCtx.createScriptProcessor(4096, 1, 1);
-            
             scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
               const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
               const pcmBlob = createBlob(inputData);
@@ -102,7 +97,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
                 session.sendRealtimeInput({ media: pcmBlob });
               });
             };
-            
             source.connect(scriptProcessor);
             scriptProcessor.connect(inputCtx.destination);
           },
@@ -110,36 +104,24 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
             if (message.serverContent?.outputTranscription) {
               setTranscript(prev => [...prev.slice(-4), message.serverContent!.outputTranscription!.text]);
             }
-
             const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
             if (base64Audio && audioContextRef.current) {
               setIsSpeaking(true);
-              const audioBuffer = await decodeAudioData(
-                decode(base64Audio),
-                audioContextRef.current,
-                24000,
-                1
-              );
-              
+              const audioBuffer = await decodeAudioData(decode(base64Audio), audioContextRef.current, 24000, 1);
               const source = audioContextRef.current.createBufferSource();
               source.buffer = audioBuffer;
               source.connect(audioContextRef.current.destination);
-              
               nextStartTimeRef.current = Math.max(nextStartTimeRef.current, audioContextRef.current.currentTime);
               source.start(nextStartTimeRef.current);
               nextStartTimeRef.current += audioBuffer.duration;
-              
               source.onended = () => {
                 sourcesRef.current.delete(source);
                 if (sourcesRef.current.size === 0) setIsSpeaking(false);
               };
               sourcesRef.current.add(source);
             }
-
             if (message.serverContent?.interrupted) {
-              for (const source of sourcesRef.current) {
-                source.stop();
-              }
+              for (const source of sourcesRef.current) source.stop();
               sourcesRef.current.clear();
               nextStartTimeRef.current = 0;
             }
@@ -152,10 +134,8 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
           speechConfig: {
             voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
           },
-          systemInstruction: `You are darewast AITutor, architected by A. Widhi.
-          Subject Context: ${context}. Language: ${language}.
-          User: ${user.name}, Age ${user.age}.
-          Instructions: Be encouraging, incremental, and clear. Help them master the current concept. Respond in ${language}.`,
+          systemInstruction: `You are darewast AITutor. Subject: ${context}. Language: ${language}. User: ${user.name}. 
+          ${user.accessibility?.iddSupport ? 'IDD SUPPORT ACTIVE: Use literal language, speak clearly at 0.8x speed, use highly incremental steps.' : 'Be encouraging and clear.'}`,
           outputAudioTranscription: {},
         },
       });
@@ -167,9 +147,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
   };
 
   useEffect(() => {
-    return () => {
-      audioContextRef.current?.close();
-    };
+    return () => { audioContextRef.current?.close(); };
   }, []);
 
   return (
@@ -185,15 +163,11 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
               <h3 className="font-black text-2xl tracking-tighter mb-1">darewast Live Tutor</h3>
               <div className="flex items-center gap-2">
                  <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-400'}`}></div>
-                 <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">{isActive ? t('universalLinkActive') : t('disconnected')}</p>
+                 <p className="text-[9px] font-black uppercase tracking-[0.3em] opacity-80">{isActive ? 'Universal Link Active' : 'Disconnected'}</p>
               </div>
             </div>
           </div>
-          <button 
-            onClick={onClose} 
-            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center transition-all relative z-10 text-2xl"
-            aria-label="Close Tutor"
-          >✕</button>
+          <button onClick={onClose} className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/30 flex items-center justify-center transition-all relative z-10 text-2xl">✕</button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
@@ -201,36 +175,21 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
             <div className="text-center space-y-10 py-12 animate-fadeIn">
               <div className="w-32 h-32 bg-dare-teal/10 text-dare-teal mx-auto rounded-[3rem] flex items-center justify-center text-6xl shadow-inner animate-float">📚</div>
               <div className="max-w-xs mx-auto">
-                <h4 className="text-3xl font-black mb-4 dark:text-white tracking-tight">{t('vocalMasteryLink')}</h4>
-                <p className="text-gray-500 font-medium leading-relaxed">{t('vocalMasteryDesc')}</p>
+                <h4 className="text-3xl font-black mb-4 dark:text-white tracking-tight">Vocal Mastery Link</h4>
+                <p className="text-gray-500 font-medium leading-relaxed">Real-time guidance node for adaptive understanding. Optimized for all learning requirements.</p>
               </div>
-              <button 
-                onClick={startSession}
-                className="px-14 py-7 bg-dare-teal text-white rounded-[2.5rem] font-black text-xl shadow-2xl shadow-dare-teal/30 hover:scale-105 active:scale-95 transition-all"
-              >
-                {t('initializeLink')}
-              </button>
+              <button onClick={startSession} className="px-14 py-7 bg-dare-teal text-white rounded-[2.5rem] font-black text-xl shadow-2xl shadow-dare-teal/30 hover:scale-105 active:scale-95 transition-all">Initialize Mastery Link</button>
             </div>
           ) : isConnecting ? (
             <div className="flex flex-col items-center justify-center py-32 space-y-10 animate-fadeIn">
-              <div className="relative">
-                <div className="w-24 h-24 border-[8px] border-dare-purple/20 border-t-dare-purple rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center text-3xl">📡</div>
-              </div>
-              <p className="font-black text-dare-purple uppercase tracking-[0.5em] text-[10px] animate-pulse">{t('detecting')}</p>
+              <div className="relative"><div className="w-24 h-24 border-[8px] border-dare-purple/20 border-t-dare-purple rounded-full animate-spin"></div><div className="absolute inset-0 flex items-center justify-center text-3xl">📡</div></div>
+              <p className="font-black text-dare-purple uppercase tracking-[0.5em] text-[10px] animate-pulse">Detecting Academic Nodes...</p>
             </div>
           ) : (
             <div className="space-y-10 animate-fadeIn">
               <div className="flex justify-center h-24 items-center gap-2">
                 {[1,2,3,4,5,6,7,8,9,10,11,12].map(i => (
-                  <div 
-                    key={i} 
-                    className={`w-1.5 bg-dare-teal rounded-full transition-all duration-300 ${isSpeaking ? 'animate-bounce' : 'h-2 opacity-20'}`}
-                    style={{ 
-                      height: isSpeaking ? `${40 + Math.random() * 60}%` : '10px', 
-                      animationDelay: `${i * 0.05}s` 
-                    }}
-                  />
+                  <div key={i} className={`w-1.5 bg-dare-teal rounded-full transition-all duration-300 ${isSpeaking ? 'animate-bounce' : 'h-2 opacity-20'}`} style={{ height: isSpeaking ? `${40 + Math.random() * 60}%` : '10px', animationDelay: `${i * 0.05}s` }} />
                 ))}
               </div>
               <div className="space-y-6">
@@ -246,12 +205,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
 
         {isActive && (
           <div className="p-10 bg-gray-50 dark:bg-slate-800 border-t border-gray-100 dark:border-slate-800">
-            <button 
-              onClick={onClose}
-              className="w-full py-6 bg-rose-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl shadow-rose-500/30 hover:bg-rose-600 transition-all active:scale-95"
-            >
-              {t('terminateMasteryLink')}
-            </button>
+            <button onClick={onClose} className="w-full py-6 bg-rose-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl">Terminate Mastery Link</button>
           </div>
         )}
       </div>

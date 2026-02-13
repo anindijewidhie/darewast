@@ -117,7 +117,11 @@ const ExamPrepView: React.FC<Props> = ({ user, subject, language, onBack, onComp
       <div className="bg-white dark:bg-slate-900 rounded-[3.5rem] p-12 border border-gray-100 dark:border-slate-800 shadow-2xl overflow-hidden relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-dare-purple to-pink-500"></div>
         <h2 className="text-5xl font-black mb-6 tracking-tighter">Universal Exam Prep 🎯</h2>
-        <p className="text-gray-500 text-xl mb-12 leading-relaxed max-w-2xl font-medium">The darewast Exam engine covers all worldwide curricula. Preparation periods: <span className="text-dare-purple font-black">12 weeks</span> for Foundation path, <span className="text-dare-purple font-black">24 weeks</span> for Advanced path.</p>
+        <p className="text-gray-500 text-xl mb-12 leading-relaxed max-w-2xl font-medium">
+          The darewast Exam engine covers all worldwide curricula. Preparation periods: 
+          <span className="text-dare-purple font-black ml-1">{t('fastTrackAPDuration')}</span> for Foundation path, 
+          <span className="text-dare-purple font-black ml-1">{t('fastTrackQTDuration')}</span> for Advanced path.
+        </p>
         <div className="grid sm:grid-cols-2 gap-6">
           {boards.map(board => (
             <button key={board.name} onClick={() => handleStartPrep(board.name)} className="p-8 rounded-[2.5rem] text-left border-2 border-gray-50 dark:border-slate-800 hover:border-dare-purple hover:bg-dare-purple/5 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl transition-all group">

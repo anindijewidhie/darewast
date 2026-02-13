@@ -35,7 +35,8 @@ const UniversityDashboardView: React.FC<Props> = ({
   const [isCreating, setIsCreating] = useState(false);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Science', 'Tech', 'Humanities', 'Arts', 'Sports', 'Ethics'];
+  // Fix: Updated categories list to include 'Moral and Ethics' instead of 'Ethics' to match type definition
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Natural Science', 'Computer Science', 'Social Science', 'Music', 'Mind Sports', 'Moral and Ethics'];
 
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 
@@ -112,11 +113,12 @@ const UniversityDashboardView: React.FC<Props> = ({
            </div>
 
            <div className="grid sm:grid-cols-2 gap-8">
+              {/* Fix: Add isPlaced fallback property */}
               {filteredSubjects.map(sub => (
                 <SubjectCard 
                   key={sub.id}
                   subject={sub}
-                  progress={progress[sub.id] || { level: 'A', lessonNumber: 1 }}
+                  progress={progress[sub.id] || { level: 'A', lessonNumber: 1, isPlaced: false }}
                   onClick={() => onStartLesson(sub)}
                   // Use onOpenSpecialization prop instead of empty function
                   onOpenSpecialization={() => onOpenSpecialization(sub)}

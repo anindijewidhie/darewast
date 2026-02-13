@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { User, Language, EducationTrack, DistanceSchoolType, LearningStyle } from '../types';
+import React, { useState, useEffect } from 'react';
+import { User, Language, EducationTrack, DistanceSchoolType, LearningStyle, EducationalStage } from '../types';
 import { translations } from '../translations';
 
 interface Props {
@@ -28,6 +28,14 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
+  const isAcademicUni = track === 'University' || track === 'DistanceUniversity';
+
+  useEffect(() => {
+    if (isAcademicUni) {
+      setDegreeDuration(4);
+    }
+  }, [track, isAcademicUni]);
+
   const calculateAge = (bDay: string) => {
     if (!bDay) return 18;
     const birth = new Date(bDay);
@@ -37,11 +45,18 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
     return age;
   };
 
+  const getStageFromTrack = (track: EducationTrack, age: number): EducationalStage => {
+    if (track.includes('University') || age >= 18) return 'University';
+    if (age < 6) return 'Preschool';
+    if (age < 12) return 'Primary';
+    if (age < 15) return 'Middle';
+    return 'High';
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     const age = calculateAge(birthDate);
 
-    // University track restriction
     if ((track.includes('University') || track.includes('Uni')) && age < 18) {
       alert(t('under18Restriction'));
       return;
@@ -57,7 +72,8 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
       birthDate: birthDate || "2000-01-01",
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username || 'seed'}`,
       age: age,
-      isMinor: age < 13,
+      isMinor: age < 18,
+      stage: getStageFromTrack(track, age),
       dailyGoal: 30,
       timeSpentToday: 0,
       contributions: 0,
@@ -80,9 +96,9 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setIsSubmitting(false);
+    await new Promise(r => setTimeout(r, 1000));
     setResetSent(true);
+    setIsSubmitting(false);
   };
 
   const tracks: { id: EducationTrack; label: string; cat: 'Indie' | 'Academic' | 'Vocational' }[] = [
@@ -97,189 +113,93 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
     { id: 'DistanceVocationalUniversity', label: 'Distance Voc-Uni', cat: 'Vocational' },
   ];
 
-  const distanceTypes: DistanceSchoolType[] = ['6-3-3', '4-4-4', '8-4', '7-4', '4-3-4', '8-3', '4-4-3', '5-5', '7-3'];
-  const degreeDurations = [1, 2, 3, 4];
-  const learningStyles: { id: LearningStyle; icon: string }[] = [
-    { id: 'Unified', icon: '🌀' },
-    { id: 'Visual', icon: '👁️' },
-    { id: 'Auditory', icon: '👂' },
-    { id: 'Reading', icon: '📖' },
-    { id: 'Kinesthetic', icon: '🛠️' }
-  ];
-
   return (
-    <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-950 flex animate-fadeIn overflow-y-auto">
+    <div className="fixed inset-0 z-[100] bg-slate-950 flex animate-fadeIn overflow-y-auto">
       <div className="grid lg:grid-cols-2 w-full min-h-screen">
-        <div className="hidden lg:flex flex-col justify-center p-12 bg-dare-teal text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-20 opacity-10 text-9xl font-black">DARE</div>
-          <div className="relative z-10">
-            <h2 className="text-6xl font-black mb-6">Master <br/>Every Skill.</h2>
-            <p className="text-xl opacity-90 max-w-md">Specialized branches covering academic, distance, and vocational mastery 24/7.</p>
+        <div className="hidden lg:flex flex-col justify-center p-20 bg-dare-teal text-slate-950 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-24 opacity-10 text-[15rem] font-black">DARE</div>
+          <div className="relative z-10 space-y-10">
+            <h2 className="text-8xl font-black leading-[0.8] tracking-tighter uppercase">Master <br/>Every <br/>Logic Node.</h2>
+            <p className="text-2xl font-bold max-w-md italic opacity-80 leading-relaxed">"A comprehensive 24/7 academic grid designed for universal sovereignty."</p>
+            <div className="p-8 bg-slate-950 text-white rounded-[3rem] border-4 border-white/20 shadow-2xl">
+               <p className="text-base font-black leading-relaxed">
+                 Safe Haven Mode enabled. High-rigor institutional tracks and vocational practical mastery fully supported.
+               </p>
+            </div>
           </div>
-          <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-slate-950 opacity-10 rounded-full blur-[120px]"></div>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-8 relative">
-          <button onClick={onBack} className="absolute top-8 right-8 text-gray-400 hover:text-dare-teal transition-colors font-black text-xl">✕</button>
+        <div className="flex flex-col items-center justify-center p-12 relative bg-slate-950">
+          <button onClick={onBack} className="absolute top-10 right-10 text-slate-600 hover:text-white transition-all font-black text-3xl">✕</button>
 
-          <div className="w-full max-w-md animate-fadeIn">
+          <div className="w-full max-w-lg bg-dare-gold p-14 rounded-[4.5rem] shadow-2xl border-[6px] border-white/30 animate-fadeIn text-slate-950">
             {view === 'forgot-password' ? (
-              <div className="space-y-8">
+              <div className="space-y-10">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-dare-purple/10 text-dare-purple rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6 shadow-sm">🔐</div>
-                  <h2 className="text-4xl font-black dark:text-white mb-2">{t('resetPassword')}</h2>
-                  <p className="text-gray-500 font-medium">Enter your email and we'll send you a recovery link.</p>
+                  <div className="w-24 h-24 bg-slate-950 text-white rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-2xl border-2 border-white/20">🔐</div>
+                  <h2 className="text-5xl font-black tracking-tighter uppercase mb-2">{t('resetPassword')}</h2>
+                  <p className="text-slate-950 opacity-60 font-black uppercase text-[10px] tracking-widest">Mastery Recovery Protocol</p>
                 </div>
 
                 {resetSent ? (
-                  <div className="p-8 bg-emerald-50 dark:bg-emerald-900/10 rounded-[2rem] border border-emerald-100 dark:border-emerald-800 text-center animate-fadeIn">
-                    <p className="text-emerald-600 dark:text-emerald-400 font-black text-lg mb-2">Check your inbox!</p>
-                    <p className="text-emerald-500/80 text-sm font-bold leading-relaxed">{t('resetLinkSent')}</p>
+                  <div className="p-10 bg-slate-950 text-white rounded-[3rem] border-4 border-white/20 text-center animate-fadeIn shadow-2xl">
+                    <p className="text-2xl font-black mb-4 uppercase tracking-tighter leading-none">Transmission <br/>Successful</p>
+                    <p className="text-sm font-bold opacity-70 leading-relaxed mb-10">{t('resetLinkSent')}</p>
                     <button 
                       onClick={() => { setView('sign-in'); setResetSent(false); }}
-                      className="mt-6 px-8 py-3 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20"
+                      className="w-full py-5 bg-dare-teal text-slate-950 rounded-2xl font-black text-xs uppercase tracking-[0.3em] shadow-xl"
                     >
-                      Back to Sign In
+                      Back to Entrance
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <form onSubmit={handleForgotPassword} className="space-y-8">
                     <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-2">{t('emailAddress')}</label>
+                      <label className="block text-[11px] font-black uppercase tracking-[0.4em] ml-6 mb-3">{t('emailAddress')}</label>
                       <input 
                         type="email" 
                         value={email} 
                         onChange={e => setEmail(e.target.value)} 
-                        placeholder="name@institution.edu" 
-                        className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-purple rounded-2xl outline-none dark:text-white font-bold transition-all" 
+                        className="w-full p-5 bg-slate-950 text-white rounded-3xl outline-none font-black text-lg border-4 border-transparent focus:border-white transition-all shadow-inner placeholder-slate-700" 
                         required 
                       />
                     </div>
-                    
-                    <button 
-                      disabled={isSubmitting} 
-                      className="w-full py-5 bg-dare-purple text-white rounded-2xl font-black text-xl hover:shadow-xl hover:shadow-dare-purple/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                      {isSubmitting ? <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : t('sendResetLink')}
-                    </button>
-                    
-                    <button 
-                      type="button"
-                      onClick={() => setView('sign-in')}
-                      className="w-full py-4 text-gray-400 font-black uppercase text-xs tracking-widest hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-                    >
-                      {t('cancelReturn')}
-                    </button>
+                    <button className="w-full py-6 bg-slate-950 text-white rounded-[2rem] font-black text-xl uppercase tracking-widest hover:scale-[1.02] transition-all shadow-2xl shadow-slate-950/40">{t('sendResetLink')}</button>
                   </form>
                 )}
               </div>
             ) : (
               <>
-                <div className="mb-10 text-center">
-                  <h2 className="text-4xl font-black dark:text-white mb-2">{view === 'sign-up' ? t('joinDarewast') : t('welcomeBack')}</h2>
-                  <p className="text-gray-500 uppercase text-[10px] font-black tracking-widest">Unified Academic Hub</p>
+                <div className="mb-12 text-center">
+                  <h2 className="text-5xl font-black tracking-tighter leading-none uppercase mb-2">{view === 'sign-up' ? t('joinDarewast') : t('welcomeBack')}</h2>
+                  <p className="text-slate-950 opacity-60 font-black uppercase text-[10px] tracking-[0.4em]">Unified Academic Entrance</p>
                 </div>
 
-                {view === 'sign-up' && (
-                  <div className="mb-8 space-y-6">
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Educational Path</p>
-                      <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                        {tracks.map(t => (
-                          <button 
-                            key={t.id}
-                            type="button"
-                            onClick={() => setTrack(t.id)}
-                            className={`py-2 px-1 rounded-xl text-[8px] font-black uppercase transition-all ${track === t.id ? 'bg-white dark:bg-slate-800 text-dare-teal shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
-                          >
-                            {t.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">{t('preferredLearningStyle')}</p>
-                      <div className="grid grid-cols-5 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                        {learningStyles.map(ls => (
-                          <button 
-                            key={ls.id}
-                            type="button"
-                            onClick={() => setPreferredLearningStyle(ls.id)}
-                            title={t(ls.id.toLowerCase())}
-                            className={`py-3 rounded-xl text-xl transition-all ${preferredLearningStyle === ls.id ? 'bg-white dark:bg-slate-800 text-dare-teal shadow-sm scale-110' : 'text-gray-400 grayscale hover:grayscale-0'}`}
-                          >
-                            {ls.icon}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {track === 'DistanceSchool' && (
-                      <div className="mt-4 animate-fadeIn">
-                         <p className="text-[10px] font-black text-gray-400 uppercase mb-3 text-center">Distance Structure</p>
-                         <div className="grid grid-cols-3 gap-2 bg-gray-50 dark:bg-slate-900 p-2 rounded-2xl">
-                           {distanceTypes.map(dt => (
-                             <button 
-                              key={dt}
-                              type="button"
-                              onClick={() => setDistanceType(dt)}
-                              className={`py-2 px-1 rounded-xl text-[10px] font-black transition-all ${distanceType === dt ? 'bg-dare-gold text-white shadow-sm scale-[1.02]' : 'text-gray-400 hover:text-gray-500'}`}
-                             >
-                              Type {dt}
-                             </button>
-                           ))}
-                         </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <form onSubmit={handleAuth} className="space-y-4">
+                <form onSubmit={handleAuth} className="space-y-6">
                   {view === 'sign-up' && (
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('fullName')}</label>
-                      <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" spellCheck={true} className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
+                    <div className="bg-slate-950/10 p-2 rounded-[2.5rem] grid grid-cols-3 gap-2 mb-6 border-2 border-slate-950/10">
+                      {tracks.slice(0, 3).map(t => (
+                        <button key={t.id} type="button" onClick={() => setTrack(t.id)} className={`py-3 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all ${track === t.id ? 'bg-slate-950 text-white shadow-xl' : 'text-slate-800 hover:bg-white/20'}`}>{t.label}</button>
+                      ))}
                     </div>
                   )}
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('username')}</label>
-                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="Username" className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('birthDate')}</label>
-                    <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('emailAddress')}</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 mb-1">{t('password')}</label>
-                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full p-4 bg-gray-50 dark:bg-slate-900 border-2 border-transparent focus:border-dare-teal rounded-2xl outline-none dark:text-white font-bold transition-all" required />
+                  
+                  <div className="space-y-4">
+                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="SCHOLAR_ID" className="w-full p-5 bg-slate-950 text-white rounded-3xl outline-none font-black text-lg border-4 border-transparent focus:border-white transition-all shadow-inner placeholder-slate-700 uppercase" required />
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="EMAIL_TRANSMISSION" className="w-full p-5 bg-slate-950 text-white rounded-3xl outline-none font-black text-lg border-4 border-transparent focus:border-white transition-all shadow-inner placeholder-slate-700 uppercase" required />
+                    <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="PASS_CODE" className="w-full p-5 bg-slate-950 text-white rounded-3xl outline-none font-black text-lg border-4 border-transparent focus:border-white transition-all shadow-inner placeholder-slate-700 uppercase" required />
                   </div>
                   
-                  {view === 'sign-in' && (
-                    <div className="flex justify-end px-2">
-                      <button 
-                        type="button"
-                        onClick={() => setView('forgot-password')}
-                        className="text-xs font-black text-dare-teal uppercase tracking-widest hover:underline"
-                      >
-                        {t('forgotPassword')}
-                      </button>
-                    </div>
-                  )}
-
-                  <button disabled={isSubmitting} className="w-full py-5 bg-dare-teal text-white rounded-2xl font-black text-xl hover:shadow-xl hover:shadow-dare-teal/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50">
-                    {isSubmitting ? <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : (view === 'sign-up' ? t('signUp') : t('signIn'))}
+                  <button className="w-full py-8 bg-slate-950 text-white rounded-[2.5rem] font-black text-2xl uppercase tracking-[0.2em] hover:scale-[1.03] transition-all shadow-2xl shadow-slate-950/50 mt-4">
+                    {view === 'sign-up' ? 'Initialize' : 'Authorize'}
                   </button>
                 </form>
 
-                <p className="text-center text-sm font-bold text-gray-500 mt-8">
-                  {view === 'sign-up' ? t('alreadyAccount') : t('noAccount')}{' '}
-                  <button onClick={() => setView(view === 'sign-up' ? 'sign-in' : 'sign-up')} className="text-dare-teal font-black hover:underline">
-                    {view === 'sign-up' ? t('signIn') : t('signUp')}
+                <p className="text-center text-sm font-black text-slate-800 mt-10 uppercase tracking-widest">
+                  {view === 'sign-up' ? 'Authorized?' : 'New Node?'}{' '}
+                  <button onClick={() => setView(view === 'sign-up' ? 'sign-in' : 'sign-up')} className="text-slate-950 font-black hover:underline underline-offset-4 decoration-4">
+                    {view === 'sign-up' ? 'Sign In' : 'Sign Up'}
                   </button>
                 </p>
               </>
