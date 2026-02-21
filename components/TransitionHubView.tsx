@@ -14,7 +14,7 @@ interface Props {
 
 interface TransitionProtocol {
   outgrowthGrades: string[];
-  sourceMethod: 'Kumon' | 'Sakamoto' | 'Eye Level';
+  sourceMethod: 'Kumon' | 'Sakamoto' | 'Eye Level' | 'Wink Smart Learning';
   label: string;
   compatibleTypes: DistanceSchoolType[];
   color: string;
@@ -49,6 +49,15 @@ const EXTERNAL_PROTOCOLS: TransitionProtocol[] = [
     icon: '👁️',
     outgrowthGrades: ['Grade 6', 'Grade 9'],
     outgrowthDesc: "For Eye Level alumni. Extends critical reasoning paths into professional ethics and complex scientific inquiry."
+  },
+  { 
+    sourceMethod: 'Wink Smart Learning', 
+    label: "Wink Smart Learning Transition", 
+    compatibleTypes: ['6-3-3', '4-4-4', '8-4'], 
+    color: '#ec4899', 
+    icon: '✨',
+    outgrowthGrades: ['Age 6', 'Age 7'],
+    outgrowthDesc: "For Wink Smart Learning graduates aged 6-7. Bridges early childhood sensory-play mastery into formal school-age academic rigor."
   }
 ];
 

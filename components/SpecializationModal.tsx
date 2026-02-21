@@ -8,14 +8,14 @@ interface Props {
   subject: Subject;
   language: Language;
   initialSelected: string[];
-  initialSecondaryLanguage?: Language;
+  initialAdditionalLanguages?: Language[];
   onClose: () => void;
-  onSave: (specializations: string[], secondaryLanguage?: Language) => void;
+  onSave: (specializations: string[], additionalLanguages?: Language[]) => void;
 }
 
-const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelected, initialSecondaryLanguage, onClose, onSave }) => {
+const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelected, initialAdditionalLanguages, onClose, onSave }) => {
   const [selected, setSelected] = useState<string[]>(initialSelected);
-  const [songLanguage, setSongLanguage] = useState<Language>(initialSecondaryLanguage || language);
+  const [additionalLangs, setAdditionalLangs] = useState<Language[]>(initialAdditionalLanguages || []);
   const [customTopic, setCustomTopic] = useState('');
   
   const t = (key: string) => translations[language]?.[key] || translations['English']?.[key] || key;
@@ -38,7 +38,16 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
   };
 
   const isVocal = subject.id === 'music-vocal';
+  const isLiteracy = subject.category === 'Literacy';
   const displayOptions = subject.suggestedSubTopics || [];
+
+  const toggleLanguage = (lang: Language) => {
+    if (additionalLangs.includes(lang)) {
+      setAdditionalLangs(additionalLangs.filter(l => l !== lang));
+    } else {
+      setAdditionalLangs([...additionalLangs, lang]);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-slate-950/60 backdrop-blur-xl animate-fadeIn">
@@ -52,15 +61,20 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
         </div>
 
         <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar">
-          {isVocal && (
+          {(isVocal || isLiteracy) && (
             <section className="animate-fadeIn">
-               <h4 className="text-[10px] font-black text-dare-teal uppercase tracking-[0.3em] mb-4">Target Language (Vocal Focus)</h4>
+               <h4 className="text-[10px] font-black text-dare-teal uppercase tracking-[0.3em] mb-4">
+                 {isLiteracy ? 'Multilingual Mastery Mode' : 'Target Language (Vocal Focus)'}
+               </h4>
+               <p className="text-[10px] font-bold text-gray-400 mb-4 italic">
+                 {isLiteracy ? 'Select additional languages to synthesize a multilingual learning environment.' : 'Select a target language for vocal exercises.'}
+               </p>
                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                  {LANGUAGES.map(lang => (
                    <button 
                     key={lang}
-                    onClick={() => setSongLanguage(lang)}
-                    className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition-all ${songLanguage === lang ? 'bg-dare-teal border-dare-teal text-white shadow-md' : 'bg-gray-50 dark:bg-slate-800 border-transparent text-gray-500 hover:border-dare-teal/40'}`}
+                    onClick={() => toggleLanguage(lang)}
+                    className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition-all ${additionalLangs.includes(lang) ? 'bg-dare-teal border-dare-teal text-white shadow-md' : 'bg-gray-50 dark:bg-slate-800 border-transparent text-gray-500 hover:border-dare-teal/40'}`}
                    >
                      {lang}
                    </button>
@@ -143,7 +157,7 @@ const SpecializationModal: React.FC<Props> = ({ subject, language, initialSelect
             Cancel
           </button>
           <button 
-            onClick={() => onSave(selected, isVocal ? songLanguage : undefined)}
+            onClick={() => onSave(selected, additionalLangs)}
             className="flex-1 py-4 bg-dare-teal text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-dare-teal/20 hover:scale-[1.02] active:scale-95 transition-all"
           >
             Update DNA Synthesis

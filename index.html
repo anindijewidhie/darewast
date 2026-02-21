@@ -16,7 +16,14 @@
                 teal: '#53CDBA',
                 gold: '#CCB953',
                 purple: '#B953CC',
+                ink: '#020617',
+                paper: '#FDFCFB',
               }
+            },
+            fontFamily: {
+              sans: ['Lexend', 'sans-serif'],
+              display: ['Lexend', 'sans-serif'],
+              mono: ['Lexend', 'monospace'],
             },
             animation: {
               'spin-slow': 'spin 20s linear infinite',
@@ -24,6 +31,7 @@
               'gradient-x': 'gradient-x 5s ease infinite',
               'confetti': 'confetti 3s ease-out forwards',
               'scale-in': 'scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'float': 'float 6s ease-in-out infinite',
             },
             keyframes: {
               'gradient-x': {
@@ -37,6 +45,10 @@
               'scale-in': {
                 '0%': { transform: 'scale(0.8)', opacity: '0' },
                 '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              'float': {
+                '0%, 100%': { transform: 'translateY(0) rotate(0deg)' },
+                '50%': { transform: 'translateY(-20px) rotate(1deg)' },
               }
             }
           }
@@ -45,42 +57,47 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Lexend:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; background-color: #020617; }
-        .font-accessible { font-family: 'Lexend', sans-serif !important; }
+        body { font-family: 'Lexend', sans-serif; -webkit-font-smoothing: antialiased; }
         
+        .dark {
+          --bg-primary: #020617;
+          --text-primary: #FFFFFF;
+          --card-bg: rgba(255, 255, 255, 0.05);
+          --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        .light {
+          --bg-primary: #FDFCFB;
+          --text-primary: #020617;
+          --card-bg: rgba(255, 255, 255, 0.8);
+          --card-border: rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-card {
+          background: var(--card-bg);
+          backdrop-filter: blur(12px);
+          border: 1px solid var(--card-border);
+        }
+
         .animate-fadeIn {
-          animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(30px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
-        .animate-float {
-          animation: float 8s ease-in-out infinite;
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-25px) rotate(2deg); }
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(83, 205, 186, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(83, 205, 186, 0.4); }
 
-        /* Solid Container Styling */
-        .solid-box {
-          background-color: var(--box-bg, #CCB953);
-          border: 4px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Custom Scrollbar for Learning Hub */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(83, 205, 186, 0.4); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(83, 205, 186, 0.6); }
-
-        .pattern-grid-lg {
-          background-image: linear-gradient(rgba(255,255,255,.03) 2px, transparent 2px), linear-gradient(90deg, rgba(255,255,255,.03) 2px, transparent 2px);
-          background-size: 50px 50px;
+        .pattern-grid {
+          background-image: radial-gradient(currentColor 1px, transparent 1px);
+          background-size: 40px 40px;
         }
     </style>
 <script type="importmap">
@@ -94,8 +111,10 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-slate-950 text-slate-100 transition-all duration-700 overflow-x-hidden selection:bg-dare-teal/30">
+<body class="bg-slate-950 text-white transition-all duration-700 overflow-x-hidden selection:bg-dare-teal/30">
     <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>

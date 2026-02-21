@@ -230,31 +230,37 @@ const AppInternal: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-500`} style={{ fontSize: user?.accessibility?.textScale ? `${user.accessibility.textScale}rem` : '1rem' }}>
+    <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-white' : 'bg-[#FDFCFB] text-slate-900'} transition-colors duration-700 selection:bg-dare-teal/30`} style={{ fontSize: user?.accessibility?.textScale ? `${user.accessibility.textScale}rem` : '1rem' }}>
       {!user?.accessibility?.focusMode && (
-        <nav className="px-2 py-3 md:px-8 md:py-6 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-white/10">
-          <div className="flex items-center gap-1.5 md:gap-4 cursor-pointer group" onClick={() => navigate(user ? '/dashboard' : '/')}>
-            <div className="w-8 h-8 md:w-12 md:h-12 bg-dare-teal rounded-xl md:rounded-2xl flex items-center justify-center text-white font-black text-base md:text-2xl group-hover:rotate-12 transition-transform shadow-lg shadow-dare-teal/20">d</div>
-            <span className="text-lg md:text-3xl font-black tracking-tighter">darewast</span>
+        <nav className="px-4 py-4 md:px-12 md:py-8 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5">
+          <div className="flex items-center gap-2 md:gap-4 cursor-pointer group" onClick={() => navigate(user ? '/dashboard' : '/')}>
+            <div className="w-10 h-10 md:w-14 md:h-14 bg-dare-teal rounded-2xl flex items-center justify-center text-slate-950 font-black text-xl md:text-3xl group-hover:rotate-12 transition-all shadow-xl shadow-dare-teal/20 border-2 border-white/30">d</div>
+            <span className="text-xl md:text-4xl font-black tracking-tighter font-display text-slate-900 dark:text-white">darewast</span>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-4">
-            <div className="hidden lg:flex items-center gap-2 mr-2 border-r border-white/10 pr-4">
+            <div className="hidden lg:flex items-center gap-2 mr-2 border-r border-black/5 dark:border-white/10 pr-4">
                {user && (
-                 <button onClick={() => navigate('/dashboard')} className={`px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${location.pathname === '/dashboard' ? 'bg-dare-teal text-white' : 'text-dare-teal'}`}>Dashboard</button>
+                 <button onClick={() => navigate('/dashboard')} className={`px-5 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${location.pathname === '/dashboard' ? 'bg-dare-teal text-slate-950 shadow-xl border-2 border-white/20' : 'text-dare-teal hover:bg-dare-teal/10'}`}>Dashboard</button>
                )}
-               <button onClick={() => navigate('/donate')} className="px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest text-dare-gold">Donate</button>
-               <button onClick={() => navigate('/contribute')} className="px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest text-dare-purple">Contribute</button>
+               <button onClick={() => navigate('/donate')} className="px-5 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest text-dare-gold hover:bg-dare-gold/10 transition-all">Donate</button>
+               <button onClick={() => navigate('/contribute')} className="px-5 py-2.5 rounded-2xl font-black text-[10px] uppercase tracking-widest text-dare-purple hover:bg-dare-purple/10 transition-all">Contribute</button>
             </div>
 
-            <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 md:p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-sm md:text-xl">{darkMode ? '☀️' : '🌙'}</button>
+            <button 
+              onClick={() => setDarkMode(!darkMode)} 
+              className="p-3 md:p-4 rounded-2xl bg-white/20 dark:bg-white/5 border border-black/5 dark:border-white/10 hover:scale-110 transition-all text-lg md:text-2xl shadow-inner"
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {darkMode ? '☀️' : '🌙'}
+            </button>
             <LanguageSelector selected={selectedLang} onSelect={setSelectedLang} />
             {user ? (
-              <button onClick={() => navigate('/profile')} className="w-8 h-8 md:w-12 md:h-12 rounded-xl md:rounded-2xl overflow-hidden border-2 border-dare-teal shadow-xl">
-                <img src={user.avatar} alt="User" />
+              <button onClick={() => navigate('/profile')} className="w-10 h-10 md:w-14 md:h-14 rounded-2xl overflow-hidden border-2 border-dare-teal shadow-2xl hover:scale-105 transition-transform">
+                <img src={user.avatar} alt="User" className="w-full h-full object-cover" />
               </button>
             ) : (
-              <button onClick={() => navigate('/auth')} className="px-3 py-2 md:px-8 md:py-3 bg-dare-teal text-white rounded-xl md:rounded-2xl font-black text-[8px] md:text-xs uppercase tracking-widest">Sign In</button>
+              <button onClick={() => navigate('/auth')} className="px-6 py-3 md:px-10 md:py-4 bg-dare-teal text-slate-950 rounded-2xl font-black text-[10px] md:text-sm uppercase tracking-widest shadow-2xl border-2 border-white/30 hover:scale-105 active:scale-95 transition-all">Sign In</button>
             )}
           </div>
         </nav>
@@ -276,12 +282,12 @@ const AppInternal: React.FC = () => {
           ) : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/dashboard'); }} onBack={() => navigate('/')} />} />
           <Route path="/guardian-report" element={user ? <GuardianReportView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} onSent={() => navigate('/dashboard')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/guardian-report'); }} onBack={() => navigate('/')} />} />
           <Route path="/lesson" element={user ? <LessonView subject={activeSubject!} language={selectedLang} level={progress[activeSubject!.id].level} lessonNumber={progress[activeSubject!.id].lessonNumber} user={user} progress={progress} initialLesson={activeLesson} onComplete={handleLessonComplete} onBack={() => navigate('/dashboard')} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/lesson'); }} onBack={() => navigate('/')} />} />
-          <Route path="/profile" element={user ? <ProfileView user={user} progress={progress} language={selectedLang} onLogout={() => { setUser(null); navigate('/'); }} onBack={() => navigate('/dashboard')} onUpdateGoal={g => handleUpdateUser({ dailyGoal: g })} onUpdateUser={handleUpdateUser} onOpenConverter={() => navigate('/grade-converter')} onOpenGuardianReport={() => navigate('/guardian-report')} onOpenAccessibility={() => navigate('/accessibility')} onOpenMethodCombination={() => navigate('/method-combination')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/profile'); }} onBack={() => navigate('/')} />} />
+          <Route path="/profile" element={user ? <ProfileView user={user} progress={progress} language={selectedLang} darkMode={darkMode} onToggleDarkMode={() => setDarkMode(!darkMode)} onLogout={() => { setUser(null); navigate('/'); }} onBack={() => navigate('/dashboard')} onUpdateGoal={g => handleUpdateUser({ dailyGoal: g })} onUpdateUser={handleUpdateUser} onOpenConverter={() => navigate('/grade-converter')} onOpenGuardianReport={() => navigate('/guardian-report')} onOpenAccessibility={() => navigate('/accessibility')} onOpenMethodCombination={() => navigate('/method-combination')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/profile'); }} onBack={() => navigate('/')} />} />
           <Route path="/accessibility" element={user ? <AccessibilityView user={user} language={selectedLang} onBack={() => navigate('/profile')} onUpdate={handleUpdateUser} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/accessibility'); }} onBack={() => navigate('/')} />} />
           <Route path="/placement" element={<PlacementTestView language={selectedLang} user={user} onComplete={(p) => { Object.keys(p).forEach(id => handleUpdateProgress(id, p[id])); navigate('/dashboard'); }} onCancel={() => navigate('/dashboard')} />} />
           <Route path="/grade-converter" element={<GradeConverterView language={selectedLang} onBack={() => navigate('/dashboard')} onApply={(lvl) => { navigate('/dashboard'); }} />} />
           <Route path="/exam-hall" element={user ? (checkUsageLimit('general') ? <ExamHallView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} onStartExam={sub => { setActiveSubject(sub); navigate('/mastery-exam'); }} onStartPrep={() => {}} /> : <DashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} />) : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
-          <Route path="/mastery-exam" element={user && activeSubject ? <MasteryExamView subject={activeSubject} language={selectedLang} level={progress[activeSubject.id].level} user={user} onComplete={handleExamComplete} onBack={() => navigate('/exam-hall')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
+          <Route path="/mastery-exam" element={user && activeSubject ? <MasteryExamView subject={activeSubject} language={selectedLang} level={progress[activeSubject.id].level} user={user} progress={progress} onComplete={handleExamComplete} onBack={() => navigate('/exam-hall')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
           <Route path="/handwriting-hub" element={user ? <HandwritingHubView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onUpdateUser={handleUpdateUser} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/handwriting-hub'); }} onBack={() => navigate('/')} />} />
           <Route path="/lesson-combination" element={user ? <LessonCombinationView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onLaunch={(l) => { setActiveLesson(l); navigate('/lesson'); }} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/lesson-combination'); }} onBack={() => navigate('/')} />} />
           <Route path="/method-combination" element={user ? <MethodCombinationView user={user} language={selectedLang} onBack={() => navigate('/profile')} onApply={(m) => { handleUpdateUser({ academicDNA: { ...user.academicDNA!, hybridMethods: m } }); navigate('/profile'); }} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/method-combination'); }} onBack={() => navigate('/')} />} />

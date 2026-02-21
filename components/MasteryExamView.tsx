@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Subject, Language, LessonContent, User, MasteryLevel } from '../types';
+import { Subject, Language, LessonContent, User, MasteryLevel, UserProgress } from '../types';
 import { generateMasteryExam } from '../services/geminiService';
 import { translations } from '../translations';
 
@@ -9,11 +9,12 @@ interface Props {
   language: Language;
   level: MasteryLevel;
   user: User;
+  progress: UserProgress | null;
   onComplete: (score: number, total: number) => void;
   onBack: () => void;
 }
 
-const MasteryExamView: React.FC<Props> = ({ subject, language, level, user, onComplete, onBack }) => {
+const MasteryExamView: React.FC<Props> = ({ subject, language, level, user, progress, onComplete, onBack }) => {
   const [exam, setExam] = useState<LessonContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [prepVerified, setPrepVerified] = useState(false);
@@ -28,7 +29,7 @@ const MasteryExamView: React.FC<Props> = ({ subject, language, level, user, onCo
   useEffect(() => {
     const fetchExam = async () => {
       try {
-        const content = await generateMasteryExam(subject, language, level, user);
+        const content = await generateMasteryExam(subject, language, level, user, progress);
         setExam(content);
         setLoading(false);
         initCamera();
@@ -116,7 +117,7 @@ const MasteryExamView: React.FC<Props> = ({ subject, language, level, user, onCo
          </div>
          <div className="bg-slate-900 p-8 rounded-[3rem] shadow-2xl text-center text-white">
             <p className="text-[10px] font-black text-dare-gold uppercase tracking-[0.4em] mb-4">Official Timer</p>
-            <div className={`text-7xl font-mono font-black ${timeLeft < 300 ? 'text-rose-500 animate-pulse' : ''}`}>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</div>
+            <div className={`text-7xl font-sans font-black ${timeLeft < 300 ? 'text-rose-500 animate-pulse' : ''}`}>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</div>
          </div>
          <div className="p-8 bg-dare-gold text-slate-950 rounded-[3rem] shadow-xl"><p className="text-[9px] font-black uppercase tracking-widest mb-1">Rigor Target: 60+ SP</p><p className="text-xs font-bold leading-relaxed">High-stakes career readiness requires maintaining focus and logic under strict temporal constraints.</p></div>
       </aside>

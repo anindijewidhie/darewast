@@ -9,6 +9,8 @@ interface Props {
   user: User;
   progress: UserProgress;
   language: Language;
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
   onLogout: () => void;
   onBack: () => void;
   onUpdateGoal: (goal: number) => void;
@@ -26,7 +28,7 @@ const StreakMastery: React.FC<{ streak: number }> = ({ streak }) => {
     <div className="mt-8 pt-8 border-t border-black/10 animate-fadeIn">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-4">
-           <div className="w-14 h-14 bg-black/10 rounded-2xl flex items-center justify-center text-3xl shadow-inner relative group">
+           <div className="w-14 h-14 bg-white/20 dark:bg-black/20 rounded-2xl flex items-center justify-center text-3xl shadow-inner relative group">
               <span className="animate-bounce">🔥</span>
            </div>
            <div className="text-left text-slate-900">
@@ -44,7 +46,7 @@ const StreakMastery: React.FC<{ streak: number }> = ({ streak }) => {
         {[...Array(7)].map((_, i) => {
           const isActive = weekDay > i;
           return (
-            <div key={i} className={`h-6 rounded-xl transition-all duration-700 border-2 ${isActive ? 'bg-white border-white shadow-lg' : 'bg-black/5 border-transparent opacity-20'}`}></div>
+            <div key={i} className={`h-6 rounded-xl transition-all duration-700 border-2 ${isActive ? 'bg-white border-white shadow-lg' : 'bg-white/10 dark:bg-white/5 border-transparent opacity-20'}`}></div>
           );
         })}
       </div>
@@ -52,7 +54,7 @@ const StreakMastery: React.FC<{ streak: number }> = ({ streak }) => {
   );
 };
 
-const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBack, onUpdateGoal, onUpdateUser, onOpenConverter, onOpenGuardianReport, onOpenAccessibility, onOpenMethodCombination }) => {
+const ProfileView: React.FC<Props> = ({ user, progress, language, darkMode, onToggleDarkMode, onLogout, onBack, onUpdateGoal, onUpdateUser, onOpenConverter, onOpenGuardianReport, onOpenAccessibility, onOpenMethodCombination }) => {
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
   const eras = ['Ancient', 'Medieval', 'Renaissance', 'Enlightenment', 'Industrial', 'Modern', 'Contemporary', 'Future'];
   
@@ -114,6 +116,16 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, onLogout, onBa
                         </button>
                      ))}
                    </div>
+                </section>
+
+                <section>
+                   <label className="text-[11px] font-black text-slate-950/60 uppercase tracking-widest block mb-6">Appearance</label>
+                   <button 
+                     onClick={onToggleDarkMode}
+                     className={`w-full py-4 rounded-2xl text-xs font-black uppercase transition-all border-4 flex items-center justify-center gap-3 ${darkMode ? 'border-white bg-slate-950 text-white shadow-2xl' : 'border-white/20 bg-white/10 text-slate-900 hover:bg-white/30'}`}
+                   >
+                     <span>{darkMode ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</span>
+                   </button>
                 </section>
 
                 <section>

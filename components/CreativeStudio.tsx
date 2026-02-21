@@ -48,7 +48,7 @@ const CreativeStudio: React.FC<Props> = ({ session, language }) => {
                       <span className={`text-${accent}`}>BPM: 120</span>
                    </div>
                    <div className="flex flex-col items-center gap-6 py-10">
-                      <p className="text-4xl font-mono font-black tracking-[0.2em] text-center dark:text-white leading-relaxed select-all bg-gray-50 dark:bg-slate-800 p-8 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-700">
+                      <p className="text-4xl font-sans font-black tracking-[0.2em] text-center dark:text-white leading-relaxed select-all bg-gray-50 dark:bg-slate-800 p-8 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-700">
                          {session.data}
                       </p>
                       <button className={`px-10 py-4 bg-${accent} text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-${accent}/30 hover:scale-105 active:scale-95 transition-all`}>

@@ -87,6 +87,8 @@ export type InstitutionStatus = 'regular' | 'closed' | 'problematic' | 'independ
 
 export type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
 
+export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
+
 export type AuthorType = 'Professional' | 'Contributor';
 
 export interface MasterySchedule {
@@ -100,7 +102,7 @@ export interface TransitionProgram {
   targetTypes: DistanceSchoolType[];
   yearsRemaining: number;
   enrolledDate: string;
-  sourceMethod: 'Kumon' | 'Sakamoto' | 'Eye Level';
+  sourceMethod: 'Kumon' | 'Sakamoto' | 'Eye Level' | 'Wink Smart Learning';
   legacyGrade: string;
 }
 
@@ -188,7 +190,7 @@ export interface SubjectProgress {
   isPlaced: boolean;
   lastScore?: { correct: number; total: number; skillPoints?: number; gradeTier?: string };
   specializations?: string[];
-  secondaryLanguage?: Language;
+  additionalLanguages?: Language[];
   currentTheme?: string;
   track?: EducationTrack;
   examPrepActive?: boolean;
@@ -202,6 +204,7 @@ export interface SubjectProgress {
   relearnActive?: boolean;
   relearnStage?: EducationalStage;
   completedMedia?: string[];
+  difficulty?: DifficultyLevel;
 }
 
 export interface UserProgress {
@@ -333,6 +336,7 @@ export interface LessonContent {
   phoneticMap?: Record<string, string>;
   creativeSession?: CreativeSession;
   challengeLevel?: 'Scaffolded' | 'Adaptive' | 'High Rigor' | 'Expert';
+  difficulty?: DifficultyLevel;
   authorType: AuthorType;
 }
 

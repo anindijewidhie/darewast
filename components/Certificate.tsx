@@ -80,8 +80,8 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
             <div className={`w-20 h-1 mx-auto rounded-full bg-${primaryColor}/30 print:w-32`}></div>
           </div>
 
-          <p className="text-gray-400 dark:text-gray-500 italic mb-2 font-serif text-lg print:text-2xl print:text-gray-600">This official master credential is awarded to</p>
-          <h3 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-10 tracking-tight font-serif uppercase print:text-6xl print:mb-14">{certificate.userName}</h3>
+          <p className="text-gray-400 dark:text-gray-500 italic mb-2 font-sans text-lg print:text-2xl print:text-gray-600">This official master credential is awarded to</p>
+          <h3 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-10 tracking-tight font-sans uppercase print:text-6xl print:mb-14">{certificate.userName}</h3>
           
           <div className="mb-10 grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">
              {/* General Level Path */}

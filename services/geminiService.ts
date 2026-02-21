@@ -139,6 +139,7 @@ export const generateLesson = async (
     const activeEra: CurriculumEra = user?.academicDNA?.era || 'Modern';
     const culturalBg = user?.culturalBackground || 'Global';
     const iddSupport = user?.accessibility?.iddSupport || false;
+    const additionalLangs = progress?.[subject.id]?.additionalLanguages || [];
     
     // Core Performance Metric: Skill Points (0-100)
     const lastPerf = progress?.[subject.id]?.lastScore;
@@ -147,18 +148,19 @@ export const generateLesson = async (
     const isCreative = ['Music', 'Dance', 'Design', 'Craft'].includes(subject.category);
 
     // ZONE OF PROXIMAL DEVELOPMENT (ZPD) LOGIC
+    const preferredDifficulty = progress?.[subject.id]?.difficulty || 'Medium';
     let challengeDirective = "";
     let challengeLabel: 'Scaffolded' | 'Adaptive' | 'High Rigor' | 'Expert' = "Adaptive";
     
     if (iddSupport) {
       challengeDirective = "STRICT RIGOR REDUCTION: User requires IDD support. Use hyper-literal language, avoid metaphors, and provide 3-step visual scaffolding for every exercise. Focus on functional achievement.";
       challengeLabel = "Scaffolded";
-    } else if (skillPoints >= 90) {
-      challengeDirective = "ELITE CALIBRATION (ZPD Upper Bound): High performance detected. Increase complexity via multi-variable logic puzzles, interdisciplinary synthesis, and reduced scaffolding. Exercises must require 'High Rigor' deduction rather than recall.";
+    } else if (preferredDifficulty === 'Hard' || skillPoints >= 90) {
+      challengeDirective = `ELITE CALIBRATION (ZPD Upper Bound): ${preferredDifficulty === 'Hard' ? 'User explicitly requested HARD difficulty.' : 'High performance detected.'} Increase complexity via multi-variable logic puzzles, interdisciplinary synthesis, and reduced scaffolding. Exercises must require 'High Rigor' deduction rather than recall.`;
       challengeLabel = "High Rigor";
       if (skillPoints >= 98) challengeLabel = "Expert";
-    } else if (skillPoints <= 45) {
-      challengeDirective = "REMEDIATION CALIBRATION (ZPD Lower Bound): Recent struggle detected. Maintain academic integrity but increase 'Kumon-style' incremental steps. Use relatable daily life metaphors and heavy linguistic scaffolding to ensure achievability.";
+    } else if (preferredDifficulty === 'Easy' || skillPoints <= 45) {
+      challengeDirective = `REMEDIATION CALIBRATION (ZPD Lower Bound): ${preferredDifficulty === 'Easy' ? 'User explicitly requested EASY difficulty.' : 'Recent struggle detected.'} Maintain academic integrity but increase 'Kumon-style' incremental steps. Use relatable daily life metaphors and heavy linguistic scaffolding to ensure achievability.`;
       challengeLabel = "Scaffolded";
     } else {
       challengeDirective = "STANDARD ADAPTIVE CALIBRATION: Balance challenge and achievable logic nodes. Use standard 'Sakamoto' modeling techniques.";
@@ -181,6 +183,9 @@ export const generateLesson = async (
       
       STRICT REQUIREMENT: All exercises must remain "CHALLENGING YET ACHIEVABLE". If the user is struggling, increase scaffolding (hints). If the user is excelling, increase logical depth.
       
+      MULTILINGUAL MODE:
+      ${additionalLangs.length > 0 ? `The user has enabled Multilingual Mode. Integrate the following additional languages into the lesson content (e.g., provide translations for key terms, bilingual exercises, or comparative linguistic analysis): ${additionalLangs.join(', ')}.` : 'Standard single-language mode.'}
+
       INTERACTIVITY: Return as a "DIGITAL INTERACTIVE TEXTBOOK" with branching logic nodes.
       Era: ${activeEra}. Language: ${language}.
     `;
@@ -465,11 +470,12 @@ export const evaluatePerformance = async (subject: Subject, description: string,
   });
 };
 
-export const generateMasteryExam = async (s: Subject, l: Language, lvl: MasteryLevel, u: User): Promise<any> => {
+export const generateMasteryExam = async (s: Subject, l: Language, lvl: MasteryLevel, u: User, p?: UserProgress | null): Promise<any> => {
   return withRetry(async () => {
+    const difficulty = p?.[s.id]?.difficulty || 'Medium';
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `Generate Official darewast Mastery Trinity Exam (Kumon Speed, Sakamoto Logic, Eye Level Critical Thinking) for ${s.name} Level ${lvl}. Language: ${l}. Questions derived from Interactive Digital Textbook logic chapters.`,
+      contents: `Generate Official darewast Mastery Trinity Exam (Kumon Speed, Sakamoto Logic, Eye Level Critical Thinking) for ${s.name} Level ${lvl}. Difficulty Level: ${difficulty}. Language: ${l}. Questions derived from Interactive Digital Textbook logic chapters.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
