@@ -78,22 +78,22 @@ const DashboardView: React.FC<Props> = ({
     <div className="animate-fadeIn max-w-7xl mx-auto px-4 pb-32 relative">
       <div className="absolute inset-0 pattern-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none"></div>
       
-      <header className="py-12 md:py-24 flex flex-col lg:flex-row justify-between items-center gap-12 border-b border-black/5 dark:border-white/10 mb-20 relative z-10">
+      <header className="py-8 md:py-24 flex flex-col lg:flex-row justify-between items-center gap-8 md:gap-12 border-b border-black/5 dark:border-white/10 mb-12 md:mb-20 relative z-10">
         <div className="space-y-4 text-center lg:text-left">
-          <div className="flex flex-col sm:flex-row items-center gap-5">
-             <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-none uppercase font-display">Dasbor</h1>
+          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
+             <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-none uppercase font-display">Dasbor</h1>
              {user.isMinor && (
-               <div className="px-5 py-2 bg-rose-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-lg shadow-rose-600/20">
+               <div className="px-4 py-1.5 bg-rose-600 text-white rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-lg shadow-rose-600/20">
                  Minor Mode Active
                </div>
              )}
           </div>
-          <p className="text-dare-teal font-black uppercase tracking-[0.5em] text-[10px] md:text-xs">
+          <p className="text-dare-teal font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-[9px] sm:text-[10px] md:text-xs">
             Academic DNA Registry • {user.name} • <span className="text-dare-gold">{user.rank} LVL {user.level}</span>
           </p>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 md:gap-6 w-full lg:w-auto">
           {[
             { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'bg-dare-teal', label: 'Fusion' },
             { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'bg-dare-gold', label: 'Hall' },
@@ -104,10 +104,10 @@ const DashboardView: React.FC<Props> = ({
             <button 
               key={tool.id} 
               onClick={tool.action} 
-              className="flex flex-col items-center gap-3 p-6 md:p-8 rounded-[3rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
+              className="flex flex-col items-center gap-2 md:gap-3 p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
             >
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-3xl md:text-4xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
-              <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-dare-teal transition-colors">{tool.label}</span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-xl sm:text-3xl md:text-4xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
+              <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-dare-teal transition-colors">{tool.label}</span>
             </button>
           ))}
         </div>
@@ -135,52 +135,52 @@ const DashboardView: React.FC<Props> = ({
       <div className="grid lg:grid-cols-12 gap-16 items-start relative z-10">
         <div className="lg:col-span-8 space-y-16">
           {/* Daily Usage Monitor */}
-          <div className="p-12 bg-dare-teal text-slate-950 rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-10 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-12 opacity-10 text-[12rem] font-black group-hover:scale-110 transition-transform duration-1000">QUOTA</div>
-             <div className="flex justify-between items-end relative z-10">
+          <div className="p-8 sm:p-12 bg-dare-teal text-slate-950 rounded-[3rem] sm:rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-8 sm:space-y-10 relative overflow-hidden group">
+             <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 text-[8rem] sm:text-[12rem] font-black group-hover:scale-110 transition-transform duration-1000">QUOTA</div>
+             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0 relative z-10">
                 <div className="space-y-2">
-                  <h3 className="text-xs font-black uppercase tracking-[0.5em] opacity-60">Mastery Health Node</h3>
-                  <p className="text-sm font-black uppercase tracking-widest">{user.stage} Protocol: {quotaLimit} Min / Subject</p>
+                  <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] opacity-60">Mastery Health Node</h3>
+                  <p className="text-[11px] sm:text-sm font-black uppercase tracking-widest">{user.stage} Protocol: {quotaLimit} Min / Subject</p>
                 </div>
-                <div className="text-right">
-                  <p className={`text-6xl md:text-8xl font-black tracking-tighter ${usagePercent > 90 ? 'text-rose-700 animate-pulse' : ''}`}>
-                    {Math.floor(highestUsage)} <span className="text-2xl opacity-50">/ {quotaLimit}</span>
+                <div className="text-left sm:text-right">
+                  <p className={`text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter ${usagePercent > 90 ? 'text-rose-700 animate-pulse' : ''}`}>
+                    {Math.floor(highestUsage)} <span className="text-xl sm:text-2xl opacity-50">/ {quotaLimit}</span>
                   </p>
-                  <p className="text-[10px] font-black uppercase opacity-60 tracking-widest">FOCUSED: {subjectName}</p>
+                  <p className="text-[9px] sm:text-[10px] font-black uppercase opacity-60 tracking-widest">FOCUSED: {subjectName}</p>
                 </div>
              </div>
-             <div className="h-8 w-full bg-slate-950/10 rounded-full overflow-hidden shadow-inner relative z-10 p-1.5 border border-white/20">
+             <div className="h-6 sm:h-8 w-full bg-slate-950/10 rounded-full overflow-hidden shadow-inner relative z-10 p-1 sm:p-1.5 border border-white/20">
                 <div className={`h-full rounded-full transition-all duration-1000 shadow-lg ${usagePercent > 90 ? 'bg-rose-600' : 'bg-slate-950'}`} style={{ width: `${usagePercent}%` }}></div>
              </div>
-             <div className="flex justify-between items-center relative z-10">
-                <p className="text-xs font-black uppercase opacity-60 italic tracking-wide">"Cognitive balance verified via Trinity metrics."</p>
+             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 relative z-10">
+                <p className="text-[10px] sm:text-xs font-black uppercase opacity-60 italic tracking-wide">"Cognitive balance verified via Trinity metrics."</p>
                 {user.isMinor && (
-                  <button onClick={onOpenGuardianReport} className="px-8 py-3 bg-slate-950/20 backdrop-blur-md text-slate-950 hover:bg-slate-950 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl border border-white/20">Parent Portal</button>
+                  <button onClick={onOpenGuardianReport} className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-slate-950/20 backdrop-blur-md text-slate-950 hover:bg-slate-950 hover:text-white rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shadow-xl border border-white/20">Parent Portal</button>
                 )}
              </div>
           </div>
 
           {/* Main Grid Header */}
-          <div className="bg-dare-gold p-12 rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-10">
-             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tighter font-display">Academic Grid Analysis</h2>
+          <div className="bg-dare-gold p-8 sm:p-12 rounded-[3rem] sm:rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-8 sm:space-y-10">
+             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-8">
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-950 uppercase tracking-tighter font-display">Academic Grid Analysis</h2>
                 <div className="relative group max-w-sm w-full">
                   <input 
                     type="text" 
                     placeholder="Search logic nodes..." 
                     value={searchQuery} 
                     onChange={(e) => setSearchQuery(e.target.value)} 
-                    className="w-full pl-14 pr-8 py-5 bg-white/20 backdrop-blur-md text-slate-950 rounded-3xl outline-none font-black text-xl placeholder-slate-700 transition-all border-2 border-white/30 focus:border-white shadow-2xl" 
+                    className="w-full pl-12 sm:pl-14 pr-6 sm:pr-8 py-4 sm:py-5 bg-white/20 backdrop-blur-md text-slate-950 rounded-2xl sm:rounded-3xl outline-none font-black text-lg sm:text-xl placeholder-slate-700 transition-all border-2 border-white/30 focus:border-white shadow-2xl" 
                   />
-                  <div className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl opacity-60">🔍</div>
+                  <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-xl sm:text-2xl opacity-60">🔍</div>
                 </div>
              </div>
-             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+             <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-4 no-scrollbar">
                 {categories.map(cat => (
                   <button 
                     key={cat} 
                     onClick={() => setSelectedCategory(cat)} 
-                    className={`px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shrink-0 border-2 ${selectedCategory === cat ? 'bg-slate-950 text-white border-slate-950 shadow-2xl scale-105' : 'bg-white/20 border-white/30 text-slate-900 hover:bg-slate-950 hover:text-white backdrop-blur-sm'}`}
+                    className={`px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all shrink-0 border-2 ${selectedCategory === cat ? 'bg-slate-950 text-white border-slate-950 shadow-2xl scale-105' : 'bg-white/20 border-white/30 text-slate-900 hover:bg-slate-950 hover:text-white backdrop-blur-sm'}`}
                   >
                     {cat}
                   </button>

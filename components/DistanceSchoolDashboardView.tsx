@@ -23,7 +23,7 @@ interface Props {
 }
 
 const DistanceSchoolDashboardView: React.FC<Props> = ({ 
-  user, progress, language, onStartLesson, onStartPrep, onTrackChange,
+  user, progress, language, onStartLesson, onStartPrep, onTrackChange, onUpdateProgress,
   onOpenPlacement, onOpenAssessment,
   onOpenSpecialization,
   dynamicSubjects
@@ -105,6 +105,7 @@ const DistanceSchoolDashboardView: React.FC<Props> = ({
                       onPlacementTest={() => onOpenPlacement(sub)}
                       onLevelAssessment={() => onOpenAssessment(sub)}
                       onExamPrep={() => onStartPrep(sub)}
+                      onUpdateDifficulty={(d) => onUpdateProgress(sub.id, { difficulty: d })}
                     />
                   </div>
                 );

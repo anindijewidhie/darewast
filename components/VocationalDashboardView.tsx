@@ -24,7 +24,7 @@ interface Props {
 }
 
 const VocationalDashboardView: React.FC<Props> = ({ 
-  track, user, progress, language, onStartLesson, onStartPrep, onTrackChange,
+  track, user, progress, language, onStartLesson, onStartPrep, onTrackChange, onUpdateProgress,
   onOpenPlacement, onOpenAssessment,
   onOpenSpecialization,
   dynamicSubjects, onCreateSubject
@@ -113,6 +113,7 @@ const VocationalDashboardView: React.FC<Props> = ({
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
                   onExamPrep={() => onStartPrep(sub)}
+                  onUpdateDifficulty={(d) => onUpdateProgress(sub.id, { difficulty: d })}
                 />
               ))}
            </div>

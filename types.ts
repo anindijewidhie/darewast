@@ -166,6 +166,7 @@ export interface Subject {
   category: SubjectCategory;
   icon: string;
   description: string;
+  explanation: string;
   suggestedSubTopics?: string[];
   availableSpecializations?: string[];
   equivalencies?: Record<MasteryLevel | string, string>;

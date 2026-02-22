@@ -117,6 +117,7 @@ const SchoolDashboardView: React.FC<Props> = ({
                     onPlacementTest={() => onOpenPlacement(sub)}
                     onLevelAssessment={() => onOpenAssessment(sub)}
                     onExamPrep={() => onStartPrep(sub)}
+                    onUpdateDifficulty={(d) => onUpdateProgress(sub.id, { difficulty: d })}
                 />
               ))}
            </div>

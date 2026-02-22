@@ -37,60 +37,60 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
     <div className="animate-fadeIn pb-32 relative">
       <div className="absolute inset-0 pattern-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none"></div>
       
-      <section className="relative pt-24 pb-40 lg:pt-48 lg:pb-64 overflow-hidden">
-        <div className="max-w-7xl mx-auto text-center relative z-10 px-6">
-          <div className="flex flex-col items-center mb-10">
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-dare-purple text-white rounded-full text-[10px] font-black uppercase tracking-[0.4em] mb-8 shadow-2xl border-2 border-white/20">
+      <section className="relative pt-20 pb-32 lg:pt-40 lg:pb-48 overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center relative z-10 px-4 sm:px-6">
+          <div className="flex flex-col items-center mb-8 sm:mb-10">
+            <div className="inline-flex items-center gap-3 px-4 sm:px-6 py-2 bg-dare-purple text-white rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em] mb-6 sm:mb-8 shadow-2xl border-2 border-white/20">
               <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
               The Definitive Learning App
             </div>
           </div>
-          <h1 className="text-6xl sm:text-7xl md:text-[10rem] font-black mb-10 leading-[0.8] tracking-tighter uppercase font-display text-slate-900 dark:text-white">
-            Universal <br /> 
-            <span className="inline-block py-4 text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black mb-8 sm:mb-10 leading-[0.9] sm:leading-[0.8] tracking-tighter uppercase font-display text-slate-900 dark:text-white">
+            Universal <br className="hidden sm:block" /> 
+            <span className="inline-block py-2 sm:py-4 text-transparent bg-clip-text bg-gradient-to-r from-dare-teal via-dare-gold to-dare-purple animate-gradient-x">
               Mastery
             </span>
           </h1>
-          <p className="text-xl md:text-3xl text-slate-500 dark:text-slate-400 mb-16 leading-relaxed max-w-4xl mx-auto font-medium italic">
+          <p className="text-lg sm:text-xl md:text-3xl text-slate-500 dark:text-slate-400 mb-12 sm:mb-16 leading-relaxed max-w-4xl mx-auto font-medium italic px-4">
             "Designed to replace standard lessons and complement school studies with a proprietary method and universal exam system."
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 max-w-4xl mx-auto mb-24">
-            <button onClick={onJoin} className="group w-full sm:flex-1 h-24 bg-dare-teal text-slate-950 rounded-[3rem] font-black text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-4 relative border-4 border-white/30">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 max-w-4xl mx-auto mb-16 sm:mb-24 px-4">
+            <button onClick={onJoin} className="group w-full sm:flex-1 h-20 sm:h-24 bg-dare-teal text-slate-950 rounded-[2.5rem] sm:rounded-[3rem] font-black text-xl sm:text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3 sm:gap-4 relative border-4 border-white/30">
               <span className="flex flex-col items-start text-left">
-                <span className="text-[10px] uppercase tracking-widest opacity-60">Synthesis</span>
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-widest opacity-60">Synthesis</span>
                 <span>Lesson Mode</span>
               </span>
-              <span className="text-3xl">📖</span>
+              <span className="text-2xl sm:text-3xl">📖</span>
             </button>
-            <button onClick={onPlacementTest} className="group w-full sm:flex-1 h-24 bg-dare-gold text-slate-950 rounded-[3rem] font-black text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-4 border-4 border-white/30">
+            <button onClick={onPlacementTest} className="group w-full sm:flex-1 h-20 sm:h-24 bg-dare-gold text-slate-950 rounded-[2.5rem] sm:rounded-[3rem] font-black text-xl sm:text-2xl shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3 sm:gap-4 border-4 border-white/30">
               <span className="flex flex-col items-start text-left">
-                <span className="text-[10px] uppercase tracking-widest opacity-60">Validation</span>
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-widest opacity-60">Validation</span>
                 <span>Exam Mode</span>
               </span>
-              <span className="text-3xl">🏛️</span>
+              <span className="text-2xl sm:text-3xl">🏛️</span>
             </button>
           </div>
         </div>
       </section>
 
-      <section className="py-32 relative">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-24">
-             <h2 className="text-5xl md:text-8xl font-black tracking-tighter uppercase font-display text-slate-900 dark:text-white">Mastery Ecosystem</h2>
-             <p className="text-dare-gold font-black uppercase tracking-[0.5em] text-xs mt-4">Solid Academic Architecture</p>
+      <section className="py-20 sm:py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16 sm:mb-24">
+             <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase font-display text-slate-900 dark:text-white">Mastery Ecosystem</h2>
+             <p className="text-dare-gold font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-[10px] sm:text-xs mt-4">Solid Academic Architecture</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
             {features.map(feat => (
-              <button key={feat.id} onClick={feat.action} className={`p-12 ${feat.color} rounded-[4rem] border-4 border-white/30 transition-all text-left flex flex-col justify-between group shadow-2xl hover:-translate-y-3 relative overflow-hidden`}>
+              <button key={feat.id} onClick={feat.action} className={`p-8 sm:p-12 ${feat.color} rounded-[3rem] sm:rounded-[4rem] border-4 border-white/30 transition-all text-left flex flex-col justify-between group shadow-2xl hover:-translate-y-3 relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
                 <div className="relative z-10">
-                  <div className="w-20 h-20 bg-slate-950/20 backdrop-blur-md text-slate-950 dark:text-white rounded-[2rem] flex items-center justify-center text-4xl mb-12 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all border border-white/20">{feat.icon}</div>
-                  <h4 className={`text-4xl font-black ${feat.text} mb-4 uppercase tracking-tighter font-display`}>{feat.title}</h4>
-                  <p className={`text-base ${feat.text} opacity-90 font-bold leading-relaxed italic`}>"{feat.desc}"</p>
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-950/20 backdrop-blur-md text-slate-950 dark:text-white rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center text-3xl sm:text-4xl mb-8 sm:mb-12 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all border border-white/20">{feat.icon}</div>
+                  <h4 className={`text-3xl sm:text-4xl font-black ${feat.text} mb-4 uppercase tracking-tighter font-display`}>{feat.title}</h4>
+                  <p className={`text-sm sm:text-base ${feat.text} opacity-90 font-bold leading-relaxed italic`}>"{feat.desc}"</p>
                 </div>
-                <div className={`mt-16 pt-8 border-t-2 border-black/10 flex justify-between items-center ${feat.text} relative z-10`}>
-                   <span className="text-[10px] font-black uppercase tracking-[0.4em]">Access Node</span>
-                   <span className="text-3xl group-hover:translate-x-2 transition-transform">→</span>
+                <div className={`mt-12 sm:mt-16 pt-6 sm:pt-8 border-t-2 border-black/10 flex justify-between items-center ${feat.text} relative z-10`}>
+                   <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] sm:tracking-[0.4em]">Access Node</span>
+                   <span className="text-2xl sm:text-3xl group-hover:translate-x-2 transition-transform">→</span>
                 </div>
               </button>
             ))}

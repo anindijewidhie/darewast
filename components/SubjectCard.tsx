@@ -19,6 +19,7 @@ const SubjectCard: React.FC<Props> = ({
   onLevelAssessment, onExamPrep, onUpdateDifficulty 
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [showExplanation, setShowExplanation] = useState(false);
   const { level, lessonNumber, isFastTrack, difficulty = 'Medium' } = progress;
 
   const themeConfig = React.useMemo(() => {
@@ -57,9 +58,14 @@ const SubjectCard: React.FC<Props> = ({
         </div>
 
         <div className="flex flex-col items-end gap-3">
-           <span className={`px-6 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest border-2 transition-all ${isHovered ? `bg-slate-950 text-white border-slate-950 shadow-2xl` : `bg-white/20 text-slate-950 border-white/30 backdrop-blur-sm`}`}>
-              LVL {level}
-           </span>
+           <div className="flex flex-col items-end gap-1">
+             <span className={`px-6 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest border-2 transition-all ${isHovered ? `bg-slate-950 text-white border-slate-950 shadow-2xl` : `bg-white/20 text-slate-950 border-white/30 backdrop-blur-sm`}`}>
+                LVL {level}
+             </span>
+             <span className={`text-[8px] font-black uppercase tracking-tighter opacity-60 ${themeConfig.text}`}>
+                {LEVEL_METADATA[level].equivalency}
+             </span>
+           </div>
            {progress.additionalLanguages && progress.additionalLanguages.length > 0 && (
              <div className="px-3 py-1 bg-dare-purple text-white rounded-full text-[8px] font-black uppercase tracking-widest border border-white/20 animate-pulse shadow-lg shadow-dare-purple/20">
                Multilingual Mode
@@ -84,7 +90,17 @@ const SubjectCard: React.FC<Props> = ({
       
       <div className="flex-1 space-y-4 relative z-10 mb-10">
         <h3 className={`text-4xl font-black ${themeConfig.text} tracking-tighter leading-none uppercase font-display`}>{subject.name}</h3>
-        <p className={`text-base ${themeConfig.text} opacity-90 font-bold leading-relaxed line-clamp-3 italic`}>"{subject.description}"</p>
+        <div className="space-y-4">
+          <p className={`text-base ${themeConfig.text} opacity-90 font-bold leading-relaxed italic`}>
+            "{showExplanation ? subject.explanation : subject.description}"
+          </p>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setShowExplanation(!showExplanation); }}
+            className={`text-[10px] font-black uppercase tracking-widest underline underline-offset-4 ${themeConfig.text} opacity-60 hover:opacity-100 transition-opacity`}
+          >
+            {showExplanation ? 'Show Less' : 'Read Full Explanation'}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4 relative z-10 mb-10">

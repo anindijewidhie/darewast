@@ -181,7 +181,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
     : learningStyle === 'Reading' ? lesson?.adaptations.readingDeepDive : lesson?.explanation;
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-6 animate-fadeIn grid lg:grid-cols-12 gap-12 relative">
+    <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 animate-fadeIn grid lg:grid-cols-12 gap-8 md:gap-12 relative">
       <div className="absolute inset-0 pattern-grid opacity-[0.02] dark:opacity-[0.04] pointer-events-none"></div>
       
       {isCelebrating && (
@@ -231,22 +231,22 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
       </aside>
 
       <main className="lg:col-span-9 space-y-20 relative z-10">
-        <header className="bg-slate-900 p-12 md:p-24 rounded-[5rem] text-white shadow-2xl relative overflow-hidden border-4 border-white/10 group">
-           <div className="absolute top-0 right-0 p-12 opacity-10 text-[20rem] rotate-12 group-hover:scale-110 transition-transform duration-1000">{subject.icon}</div>
-           <div className="relative z-10 space-y-16">
-              <div className="flex flex-wrap gap-4">
+        <header className="bg-slate-900 p-8 sm:p-12 md:p-24 rounded-[3rem] sm:rounded-[5rem] text-white shadow-2xl relative overflow-hidden border-4 border-white/10 group">
+           <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 text-[10rem] sm:text-[20rem] rotate-12 group-hover:scale-110 transition-transform duration-1000">{subject.icon}</div>
+           <div className="relative z-10 space-y-10 sm:space-y-16">
+              <div className="flex flex-wrap gap-3 sm:gap-4">
                  {['Unified', 'Visual', 'Auditory', 'Reading', 'Kinesthetic'].map(s => (
-                   <button key={s} onClick={() => setLearningStyle(s as any)} className={`px-8 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${learningStyle === s ? 'bg-dare-teal text-slate-950 shadow-2xl scale-110' : 'bg-slate-950/50 backdrop-blur-md text-slate-500 border-2 border-white/10 hover:border-white/30'}`}>{s}</button>
+                   <button key={s} onClick={() => setLearningStyle(s as any)} className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${learningStyle === s ? 'bg-dare-teal text-slate-950 shadow-2xl scale-110' : 'bg-slate-950/50 backdrop-blur-md text-slate-500 border-2 border-white/10 hover:border-white/30'}`}>{s}</button>
                  ))}
               </div>
-              <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter leading-[0.8] uppercase font-display">{lesson?.title}</h1>
+              <h1 className="text-4xl sm:text-7xl md:text-[10rem] font-black tracking-tighter leading-[1] sm:leading-[0.8] uppercase font-display">{lesson?.title}</h1>
            </div>
         </header>
 
-        <section className="bg-dare-purple p-12 md:p-24 rounded-[5.5rem] shadow-2xl border-[8px] border-white/20 relative overflow-hidden group">
-           <div className="absolute top-0 right-0 p-16 opacity-10 text-[15rem] font-black text-white group-hover:rotate-6 transition-transform duration-1000">LOGIC</div>
-           <h3 className="text-xs font-black text-white uppercase tracking-[0.7em] mb-20 opacity-60">{t('concept')}</h3>
-           <div className="text-5xl md:text-7xl font-black text-white leading-[1.1] italic mb-24 tracking-tighter font-display">"{renderExplanationWithPronunciation(currentAdaptation || '')}"</div>
+        <section className="bg-dare-purple p-8 sm:p-12 md:p-24 rounded-[3rem] sm:rounded-[5.5rem] shadow-2xl border-[6px] sm:border-[8px] border-white/20 relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-12 sm:p-16 opacity-10 text-[10rem] sm:text-[15rem] font-black text-white group-hover:rotate-6 transition-transform duration-1000">LOGIC</div>
+           <h3 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-[0.5em] sm:tracking-[0.7em] mb-12 sm:mb-20 opacity-60">{t('concept')}</h3>
+           <div className="text-3xl sm:text-5xl md:text-7xl font-black text-white leading-[1.2] sm:leading-[1.1] italic mb-16 sm:mb-24 tracking-tighter font-display">"{renderExplanationWithPronunciation(currentAdaptation || '')}"</div>
            
            {lesson?.timelineSteps && (
              <div className="space-y-12 pt-24 border-t-4 border-white/10">

@@ -341,7 +341,7 @@ export const generateLessonQuiz = async (
 export const generateCustomSubject = async (q: string, t: EducationTrack, l: Language) => {
   return withRetry(async () => {
     const prompt = `Define darewast subject: "${q}". Follow trinity method: Kumon/Sakamoto/EyeLevel mix. 
-    icon, name, category, description, subtopics. Language: ${l}. Emphasize that resources are Interactive Digital Textbooks.`;
+    icon, name, category, description, explanation, subtopics. Language: ${l}. Emphasize that resources are Interactive Digital Textbooks.`;
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: prompt,
@@ -354,6 +354,7 @@ export const generateCustomSubject = async (q: string, t: EducationTrack, l: Lan
             name: { type: Type.STRING },
             category: { type: Type.STRING },
             description: { type: Type.STRING },
+            explanation: { type: Type.STRING },
             subtopics: { type: Type.ARRAY, items: { type: Type.STRING } }
           }
         }

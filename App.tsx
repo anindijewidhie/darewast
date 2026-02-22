@@ -116,6 +116,7 @@ const AppInternal: React.FC = () => {
         category: (res.category as SubjectCategory) || 'Custom',
         icon: res.icon || '📚',
         description: res.description || '',
+        explanation: res.explanation || res.description || '',
         suggestedSubTopics: res.subtopics || [],
         isUserGenerated: true,
         targetCurriculum: curriculum,
@@ -266,7 +267,7 @@ const AppInternal: React.FC = () => {
         </nav>
       )}
 
-      <main className="p-3 md:p-8">
+      <main className="px-4 py-6 md:px-8 md:py-12 max-w-7xl mx-auto w-full">
         <Routes>
           <Route path="/" element={<LandingView language={selectedLang} onJoin={() => navigate('/auth')} onPlacementTest={() => navigate('/placement')} onOpenConverter={() => navigate('/grade-converter')} onDashboard={() => navigate('/dashboard')} onDonate={() => navigate('/donate')} onContribute={() => navigate('/contribute')} />} />
           <Route path="/auth" element={<AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/dashboard'); }} onBack={() => navigate(user ? '/dashboard' : '/')} />} />
