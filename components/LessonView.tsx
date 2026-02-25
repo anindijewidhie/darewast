@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Subject, Language, LessonContent, User, MasteryLevel, UserProgress, SubjectProgress, LearningStyle, MediaItem } from '../types';
-import { generateLesson, recognizeHandwriting } from '../services/geminiService';
+import { generateLesson, recognizeHandwriting, generateVisualAid } from '../services/geminiService';
 import { translations } from '../translations';
 import AITutor from './AITutor';
+import ExerciseRenderer from './ExerciseRenderer';
 import HandwritingCanvas from './HandwritingCanvas';
 import CreativeStudio from './CreativeStudio';
 
@@ -49,15 +50,16 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
   const [lesson, setLesson] = useState<LessonContent | null>(initialLesson || null);
   const [loading, setLoading] = useState(!initialLesson);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [checkedIndices, setCheckedIndices] = useState<Set<number>>(new Set());
   const [visibleHints, setVisibleHints] = useState<Set<number>>(new Set());
   const [isTutorOpen, setIsTutorOpen] = useState(false);
   const [learningStyle, setLearningStyle] = useState<LearningStyle>(user.preferredLearningStyle || 'Unified');
+  const [visualAidUrl, setVisualAidUrl] = useState<string | null>(null);
+  const [loadingVisual, setLoadingVisual] = useState(false);
   const [activeTimelineStep, setActiveTimelineStep] = useState<number | null>(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [analyzingIndex, setAnalyzingIndex] = useState<number | null>(null);
   const [isCelebrating, setIsCelebrating] = useState(false);
+  const [showVisualAid, setShowVisualAid] = useState(true);
 
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
@@ -98,10 +100,30 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
     }
   }, [lesson, loading, subject, language, level, activeLesson, user, progress]);
 
-  const handleCheckAnswer = (idx: number, ans: string) => {
-    setUserAnswers(prev => ({ ...prev, [idx]: ans }));
-    const correct = ans.toLowerCase().trim() === lesson?.exercises[idx].correctAnswer.toLowerCase().trim();
-    if (correct) setCheckedIndices(prev => new Set(prev).add(idx));
+  useEffect(() => {
+    if (lesson?.adaptations.visualMapDescription && !visualAidUrl && !loadingVisual) {
+      const fetchVisual = async () => {
+        setLoadingVisual(true);
+        try {
+          const url = await generateVisualAid(lesson.adaptations.visualMapDescription);
+          setVisualAidUrl(url);
+        } catch (err) {
+          console.error("Visual synthesis failed", err);
+        } finally {
+          setLoadingVisual(false);
+        }
+      };
+      fetchVisual();
+    }
+  }, [lesson, visualAidUrl, loadingVisual]);
+
+  const handleStyleChange = (style: LearningStyle) => {
+    setLearningStyle(style);
+    onUpdateUser({ preferredLearningStyle: style });
+  };
+
+  const handleCheckAnswer = (idx: number) => {
+    setCheckedIndices(prev => new Set(prev).add(idx));
   };
 
   const handleToggleHint = (idx: number) => {
@@ -208,6 +230,13 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
       <aside className="lg:col-span-3 space-y-10 lg:sticky lg:top-32 h-fit relative z-10">
         <button onClick={onBack} className="w-full py-7 bg-dare-gold text-slate-950 font-black uppercase text-xs tracking-[0.3em] rounded-[2.5rem] border-4 border-white/30 hover:bg-slate-950 hover:text-white transition-all shadow-2xl">← Return Dashboard</button>
         
+        <button 
+          onClick={() => setIsTutorOpen(true)} 
+          className="w-full py-7 bg-dare-teal text-slate-950 font-black uppercase text-xs tracking-[0.3em] rounded-[2.5rem] border-4 border-white/30 hover:bg-slate-950 hover:text-white transition-all shadow-2xl flex items-center justify-center gap-4"
+        >
+          <span>🧠</span> Summon AI Tutor
+        </button>
+        
         <div className="bg-dare-teal p-10 rounded-[4.5rem] shadow-2xl border-4 border-white/20 relative overflow-hidden group">
            <div className="absolute top-0 right-0 p-8 opacity-10 text-8xl font-black group-hover:rotate-12 transition-transform duration-1000">META</div>
            <p className="text-[11px] font-black text-slate-950 uppercase tracking-[0.5em] mb-10 relative z-10">Metadata Path</p>
@@ -236,7 +265,7 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
            <div className="relative z-10 space-y-10 sm:space-y-16">
               <div className="flex flex-wrap gap-3 sm:gap-4">
                  {['Unified', 'Visual', 'Auditory', 'Reading', 'Kinesthetic'].map(s => (
-                   <button key={s} onClick={() => setLearningStyle(s as any)} className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${learningStyle === s ? 'bg-dare-teal text-slate-950 shadow-2xl scale-110' : 'bg-slate-950/50 backdrop-blur-md text-slate-500 border-2 border-white/10 hover:border-white/30'}`}>{s}</button>
+                   <button key={s} onClick={() => handleStyleChange(s as any)} className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${learningStyle === s ? 'bg-dare-teal text-slate-950 shadow-2xl scale-110' : 'bg-slate-950/50 backdrop-blur-md text-slate-500 border-2 border-white/10 hover:border-white/30'}`}>{s}</button>
                  ))}
               </div>
               <h1 className="text-4xl sm:text-7xl md:text-[10rem] font-black tracking-tighter leading-[1] sm:leading-[0.8] uppercase font-display">{lesson?.title}</h1>
@@ -247,6 +276,48 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
            <div className="absolute top-0 right-0 p-12 sm:p-16 opacity-10 text-[10rem] sm:text-[15rem] font-black text-white group-hover:rotate-6 transition-transform duration-1000">LOGIC</div>
            <h3 className="text-[10px] sm:text-xs font-black text-white uppercase tracking-[0.5em] sm:tracking-[0.7em] mb-12 sm:mb-20 opacity-60">{t('concept')}</h3>
            <div className="text-3xl sm:text-5xl md:text-7xl font-black text-white leading-[1.2] sm:leading-[1.1] italic mb-16 sm:mb-24 tracking-tighter font-display">"{renderExplanationWithPronunciation(currentAdaptation || '')}"</div>
+           
+           {learningStyle === 'Visual' && (
+             <div className="mb-24 space-y-8">
+               <div className="flex justify-between items-center mb-6">
+                 <h4 className="text-xs font-black text-white uppercase tracking-[0.4em] opacity-60">Visual Synthesis</h4>
+                 <button 
+                   onClick={() => setShowVisualAid(!showVisualAid)}
+                   className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all shadow-lg flex items-center gap-2"
+                 >
+                   <span>{showVisualAid ? '👁️' : '🕶️'}</span>
+                   {showVisualAid ? 'Hide Visual Aid' : 'Show Visual Aid'}
+                 </button>
+               </div>
+
+               {showVisualAid && (
+                 <div className="bg-slate-950/40 rounded-[3rem] overflow-hidden border-4 border-white/10 shadow-2xl relative group animate-fadeIn">
+                   {loadingVisual ? (
+                     <div className="aspect-video flex items-center justify-center bg-slate-900 animate-pulse">
+                       <div className="text-center space-y-4">
+                         <div className="w-16 h-16 border-4 border-dare-teal/20 border-t-dare-teal rounded-full animate-spin mx-auto"></div>
+                         <p className="text-[10px] font-black uppercase tracking-widest text-dare-teal">Synthesizing Visual Node...</p>
+                       </div>
+                     </div>
+                   ) : visualAidUrl ? (
+                     <img 
+                       src={visualAidUrl} 
+                       alt="Visual Aid" 
+                       className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-1000"
+                       referrerPolicy="no-referrer"
+                     />
+                   ) : (
+                     <div className="aspect-video flex items-center justify-center bg-slate-900">
+                       <p className="text-white/40 font-black uppercase tracking-widest text-xs">Visual synthesis unavailable</p>
+                     </div>
+                   )}
+                   <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-slate-950 to-transparent">
+                     <p className="text-white text-sm font-bold italic opacity-80">"{lesson?.adaptations.visualMapDescription}"</p>
+                   </div>
+                 </div>
+               )}
+             </div>
+           )}
            
            {lesson?.timelineSteps && (
              <div className="space-y-12 pt-24 border-t-4 border-white/10">
@@ -266,43 +337,17 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
         <section className="space-y-20 relative z-10">
            <h3 className="text-xs font-black text-slate-500 uppercase tracking-[0.8em] text-center">{t('exercises')}</h3>
            {lesson?.exercises.map((ex, i) => (
-             <div key={i} className={`p-16 md:p-24 rounded-[5.5rem] bg-white/5 dark:bg-slate-900/50 backdrop-blur-md border-[6px] border-black/5 dark:border-white/5 transition-all ${checkedIndices.has(i) ? 'border-dare-teal dark:border-dare-teal shadow-[0_40px_80px_rgba(83,205,186,0.2)] bg-white dark:bg-slate-950' : 'shadow-2xl'}`}>
-               <div className="flex justify-between items-start mb-20">
-                 <span className="text-[10rem] font-black text-black/5 dark:text-white/5 leading-none font-display">{(i+1).toString().padStart(2, '0')}</span>
-                 <button onClick={() => handleToggleHint(i)} className={`text-[11px] font-black uppercase px-10 py-4 rounded-2xl transition-all flex items-center gap-4 ${visibleHints.has(i) ? 'bg-dare-gold text-slate-950 shadow-2xl scale-110' : 'bg-black/5 dark:bg-slate-800 text-slate-600 dark:text-white border border-black/5 dark:border-white/10'}`}>
-                    <span>{visibleHints.has(i) ? 'Dismiss' : 'Neural Hint'}</span>
-                    <span className="text-2xl">💡</span>
-                 </button>
-               </div>
-               <h4 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-24 leading-[1.1] tracking-tighter uppercase font-display">{renderExplanationWithPronunciation(ex.question)}</h4>
-               
-               {visibleHints.has(i) && (
-                 <div className="mb-24 p-14 bg-dare-gold text-slate-950 rounded-[4rem] border-4 border-white/40 animate-fadeIn shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-10 opacity-10 text-9xl font-black rotate-12">HINT</div>
-                    <div className="flex items-start gap-8 relative z-10">
-                       <span className="text-7xl">💡</span>
-                       <div className="space-y-3">
-                          <p className="text-[11px] font-black uppercase tracking-widest opacity-60">Axiomatic Insight Node</p>
-                          <p className="text-3xl font-black italic leading-tight">"{ex.hint || 'Analyze the core logic modeling of the previous node.'}"</p>
-                       </div>
-                    </div>
-                 </div>
-               )}
-
-               <div className="grid gap-8">
-                  {ex.options?.map(opt => (
-                    <button 
-                      key={opt} 
-                      onClick={() => handleCheckAnswer(i, opt)} 
-                      disabled={checkedIndices.has(i)} 
-                      className={`p-14 text-left rounded-[3.5rem] border-4 transition-all font-black text-3xl md:text-4xl flex justify-between items-center group ${checkedIndices.has(i) && userAnswers[i] === opt ? 'bg-dare-teal text-slate-950 border-white shadow-2xl scale-[1.02]' : (checkedIndices.has(i) ? 'opacity-10 border-black/5 dark:border-white/5' : 'border-black/5 dark:border-white/10 text-slate-900 dark:text-white bg-black/5 dark:bg-slate-950 hover:border-dare-teal dark:hover:border-dare-teal hover:bg-white dark:hover:bg-slate-900')}`}
-                    >
-                      <span className="tracking-tight">{opt}</span>
-                      <span className={`transition-all duration-500 ${checkedIndices.has(i) && userAnswers[i] === opt ? 'opacity-100 scale-125 translate-x-0' : 'opacity-0 scale-50 translate-x-4'}`}>✓</span>
-                    </button>
-                  ))}
-               </div>
-             </div>
+             <ExerciseRenderer
+               key={i}
+               exercise={ex}
+               index={i}
+               language={language}
+               isCompleted={checkedIndices.has(i)}
+               onCorrect={() => handleCheckAnswer(i)}
+               showHint={visibleHints.has(i)}
+               onToggleHint={() => handleToggleHint(i)}
+               onHintUsed={() => {}}
+             />
            ))}
         </section>
 

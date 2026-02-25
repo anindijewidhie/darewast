@@ -130,6 +130,15 @@ const AppInternal: React.FC = () => {
     }
   }, [user?.track, selectedLang]);
 
+  const handleDeleteDynamicSubject = useCallback((subjectId: string) => {
+    setDynamicSubjects(prev => prev.filter(s => s.id !== subjectId));
+    setProgress(prev => {
+      const newProgress = { ...prev };
+      delete newProgress[subjectId];
+      return newProgress;
+    });
+  }, []);
+
   const handleStartLesson = (sub: Subject, isTrans: boolean = false) => {
     if (!checkUsageLimit(sub.id)) return;
     const subProg = progress[sub.id];
@@ -231,7 +240,39 @@ const AppInternal: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-white' : 'bg-[#FDFCFB] text-slate-900'} transition-colors duration-700 selection:bg-dare-teal/30`} style={{ fontSize: user?.accessibility?.textScale ? `${user.accessibility.textScale}rem` : '1rem' }}>
+    <div 
+      className={`min-h-screen ${darkMode ? 'dark bg-slate-950 text-white' : 'bg-[#FDFCFB] text-slate-900'} transition-colors duration-700 selection:bg-dare-teal/30`} 
+      style={{ 
+        fontSize: user?.accessibility?.textScale ? `${user.accessibility.textScale}rem` : '1rem',
+        filter: user?.accessibility?.colorBlindMode && user.accessibility.colorBlindMode !== 'none' 
+          ? `url(#${user.accessibility.colorBlindMode}-filter)` 
+          : 'none'
+      }}
+    >
+      {/* SVG Filters for Color Blindness */}
+      <svg className="hidden" aria-hidden="true">
+        <defs>
+          <filter id="protanopia-filter">
+            <feColorMatrix
+              type="matrix"
+              values="0.567, 0.433, 0, 0, 0, 0.558, 0.442, 0, 0, 0, 0, 0.242, 0.758, 0, 0, 0, 0, 0, 1, 0"
+            />
+          </filter>
+          <filter id="deuteranopia-filter">
+            <feColorMatrix
+              type="matrix"
+              values="0.625, 0.375, 0, 0, 0, 0.7, 0.3, 0, 0, 0, 0, 0.3, 0.7, 0, 0, 0, 0, 0, 1, 0"
+            />
+          </filter>
+          <filter id="tritanopia-filter">
+            <feColorMatrix
+              type="matrix"
+              values="0.95, 0.05, 0, 0, 0, 0, 0.433, 0.567, 0, 0, 0, 0.475, 0.525, 0, 0, 0, 0, 0, 1, 0"
+            />
+          </filter>
+        </defs>
+      </svg>
+
       {!user?.accessibility?.focusMode && (
         <nav className="px-4 py-4 md:px-12 md:py-8 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5">
           <div className="flex items-center gap-2 md:gap-4 cursor-pointer group" onClick={() => navigate(user ? '/dashboard' : '/')}>
@@ -274,12 +315,40 @@ const AppInternal: React.FC = () => {
           <Route path="/donate" element={<DonationView language={selectedLang} onBack={() => navigate(user ? '/dashboard' : '/')} />} />
           <Route path="/contribute" element={user ? <ContributorView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onSuccess={() => { handleUpdateUser({ contributions: (user.contributions || 0) + 1 }); navigate('/dashboard'); }} onUpdateUser={handleUpdateUser} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/contribute'); }} onBack={() => navigate('/')} />} />
           <Route path="/dashboard" element={user ? (
-            user.track === 'School' ? <SchoolDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} /> :
-            user.track === 'University' ? <UniversityDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} /> :
-            user.track === 'DistanceSchool' ? <DistanceSchoolDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} /> :
-            user.track === 'DistanceUniversity' ? <DistanceUniversityDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} /> :
-            user.track?.includes('Vocational') ? <VocationalDashboardView track={user.track} user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} /> :
-            <DashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} />
+            user.track === 'School' ? <SchoolDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} /> :
+            user.track === 'University' ? <UniversityDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} /> :
+            user.track === 'DistanceSchool' ? <DistanceSchoolDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} /> :
+            user.track === 'DistanceUniversity' ? <DistanceUniversityDashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} /> :
+            user.track?.includes('Vocational') ? <VocationalDashboardView track={user.track} user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onBackToStandard={() => handleTrackChange('Standard')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenSpecialization={() => {}} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} /> :
+            <DashboardView 
+              user={user} 
+              progress={progress} 
+              language={selectedLang} 
+              onStartLesson={handleStartLesson} 
+              onStartExam={handleExamComplete as any} 
+              onStartPrep={() => {}} 
+              onUpdateUser={handleUpdateUser} 
+              onUpdateProgress={handleUpdateProgress} 
+              onTrackChange={handleTrackChange} 
+              onLogout={() => setUser(null)} 
+              onOpenConverter={() => navigate('/grade-converter')} 
+              onOpenPlacementGlobal={() => navigate('/placement')} 
+              onOpenPlacement={() => {}} 
+              onOpenAssessment={() => {}} 
+              onOpenCombination={() => navigate('/lesson-combination')} 
+              onOpenLeaderboard={() => {}} 
+              onOpenFastTrack={() => navigate('/fast-track-hub')} 
+              onOpenExamHall={() => navigate('/exam-hall')} 
+              onOpenRelearn={() => navigate('/relearn-hub')} 
+              onOpenTransition={() => navigate('/transition-hub')} 
+              onOpenCreditTransfer={() => navigate('/credit-transfer')} 
+              onOpenSpecialization={() => {}} 
+              onOpenHandwriting={() => navigate('/handwriting-hub')} 
+              onOpenGuardianReport={() => navigate('/guardian-report')} 
+              dynamicSubjects={dynamicSubjects} 
+              onCreateSubject={handleCreateDynamicSubject} 
+              onDeleteSubject={handleDeleteDynamicSubject}
+            />
           ) : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/dashboard'); }} onBack={() => navigate('/')} />} />
           <Route path="/guardian-report" element={user ? <GuardianReportView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} onSent={() => navigate('/dashboard')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/guardian-report'); }} onBack={() => navigate('/')} />} />
           <Route path="/lesson" element={user ? <LessonView subject={activeSubject!} language={selectedLang} level={progress[activeSubject!.id].level} lessonNumber={progress[activeSubject!.id].lessonNumber} user={user} progress={progress} initialLesson={activeLesson} onComplete={handleLessonComplete} onBack={() => navigate('/dashboard')} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/lesson'); }} onBack={() => navigate('/')} />} />
@@ -287,7 +356,7 @@ const AppInternal: React.FC = () => {
           <Route path="/accessibility" element={user ? <AccessibilityView user={user} language={selectedLang} onBack={() => navigate('/profile')} onUpdate={handleUpdateUser} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/accessibility'); }} onBack={() => navigate('/')} />} />
           <Route path="/placement" element={<PlacementTestView language={selectedLang} user={user} onComplete={(p) => { Object.keys(p).forEach(id => handleUpdateProgress(id, p[id])); navigate('/dashboard'); }} onCancel={() => navigate('/dashboard')} />} />
           <Route path="/grade-converter" element={<GradeConverterView language={selectedLang} onBack={() => navigate('/dashboard')} onApply={(lvl) => { navigate('/dashboard'); }} />} />
-          <Route path="/exam-hall" element={user ? (checkUsageLimit('general') ? <ExamHallView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} onStartExam={sub => { setActiveSubject(sub); navigate('/mastery-exam'); }} onStartPrep={() => {}} /> : <DashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} />) : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
+          <Route path="/exam-hall" element={user ? (checkUsageLimit('general') ? <ExamHallView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} onStartExam={sub => { setActiveSubject(sub); navigate('/mastery-exam'); }} onStartPrep={() => {}} /> : <DashboardView user={user} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} />) : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
           <Route path="/mastery-exam" element={user && activeSubject ? <MasteryExamView subject={activeSubject} language={selectedLang} level={progress[activeSubject.id].level} user={user} progress={progress} onComplete={handleExamComplete} onBack={() => navigate('/exam-hall')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/exam-hall'); }} onBack={() => navigate('/')} />} />
           <Route path="/handwriting-hub" element={user ? <HandwritingHubView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onUpdateUser={handleUpdateUser} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/handwriting-hub'); }} onBack={() => navigate('/')} />} />
           <Route path="/lesson-combination" element={user ? <LessonCombinationView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onLaunch={(l) => { setActiveLesson(l); navigate('/lesson'); }} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/lesson-combination'); }} onBack={() => navigate('/')} />} />
@@ -297,7 +366,7 @@ const AppInternal: React.FC = () => {
           <Route path="/transition-hub" element={user ? <TransitionHubView user={user} language={selectedLang} onBack={() => navigate('/dashboard')} onEnroll={(p) => handleUpdateUser({ transitionProgram: p })} onStartLesson={handleStartLesson} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/transition-hub'); }} onBack={() => navigate('/')} />} />
           <Route path="/credit-transfer" element={user ? <CreditTransferView user={user} progress={progress} language={selectedLang} onBack={() => navigate('/dashboard')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/credit-transfer'); }} onBack={() => navigate('/')} />} />
           <Route path="/level-completion-hub" element={user && activeSubject ? <LevelCompletionHub subject={activeSubject} language={selectedLang} level={progress[activeSubject.id].level} user={user} onComplete={handleExamComplete} onBack={() => navigate('/dashboard')} /> : <AuthView language={selectedLang} onLogin={u => { setUser(u); navigate('/dashboard'); }} onBack={() => navigate('/')} />} />
-          <Route path="/certificate" element={activeCertificate ? <Certificate certificate={activeCertificate} language={selectedLang} onClose={() => { setActiveCertificate(null); navigate('/dashboard'); }} /> : <DashboardView user={user!} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} />} />
+          <Route path="/certificate" element={activeCertificate ? <Certificate certificate={activeCertificate} language={selectedLang} onClose={() => { setActiveCertificate(null); navigate('/dashboard'); }} /> : <DashboardView user={user!} progress={progress} language={selectedLang} onStartLesson={handleStartLesson} onStartExam={handleExamComplete as any} onStartPrep={() => {}} onUpdateUser={handleUpdateUser} onUpdateProgress={handleUpdateProgress} onTrackChange={handleTrackChange} onLogout={() => setUser(null)} onOpenConverter={() => navigate('/grade-converter')} onOpenPlacementGlobal={() => navigate('/placement')} onOpenPlacement={() => {}} onOpenAssessment={() => {}} onOpenCombination={() => navigate('/lesson-combination')} onOpenLeaderboard={() => {}} onOpenFastTrack={() => navigate('/fast-track-hub')} onOpenExamHall={() => navigate('/exam-hall')} onOpenRelearn={() => navigate('/relearn-hub')} onOpenTransition={() => navigate('/transition-hub')} onOpenCreditTransfer={() => navigate('/credit-transfer')} onOpenSpecialization={() => {}} onOpenHandwriting={() => navigate('/handwriting-hub')} onOpenGuardianReport={() => navigate('/guardian-report')} dynamicSubjects={dynamicSubjects} onCreateSubject={handleCreateDynamicSubject} onDeleteSubject={handleDeleteDynamicSubject} />} />
         </Routes>
       </main>
     </div>

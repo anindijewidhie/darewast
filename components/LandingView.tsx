@@ -124,13 +124,31 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
       <section className="py-32 relative">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-5xl md:text-8xl font-black tracking-tighter mb-24 text-center uppercase font-display text-slate-900 dark:text-white">Subject Registry</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {SUBJECTS.map((sub) => (
-              <div key={sub.id} className="p-12 bg-dare-teal text-slate-950 rounded-[4rem] shadow-2xl border-4 border-white/30 hover:scale-105 transition-all cursor-pointer text-center group relative overflow-hidden">
+              <div key={sub.id} className="p-10 sm:p-12 bg-dare-teal text-slate-950 rounded-[4rem] shadow-2xl border-4 border-white/30 hover:scale-[1.02] transition-all cursor-pointer text-left group relative overflow-hidden flex flex-col h-full">
                 <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
-                <div className="w-24 h-24 bg-slate-950/20 backdrop-blur-md rounded-3xl flex items-center justify-center text-5xl mb-8 shadow-inner mx-auto group-hover:rotate-12 transition-all border border-white/20 relative z-10">{sub.icon}</div>
-                <h4 className="text-3xl font-black mb-2 uppercase tracking-tighter leading-none font-display relative z-10">{sub.name}</h4>
-                <p className="text-[11px] font-black opacity-60 uppercase tracking-[0.4em] relative z-10">{sub.category}</p>
+                <div className="flex justify-between items-start mb-8 relative z-10">
+                  <div className="w-20 h-20 bg-slate-950/20 backdrop-blur-md rounded-3xl flex items-center justify-center text-4xl shadow-inner group-hover:rotate-12 transition-all border border-white/20">
+                    {sub.icon}
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black opacity-60 uppercase tracking-[0.4em] mb-1">{sub.category}</p>
+                    <div className="h-1 w-12 bg-slate-950/20 rounded-full ml-auto"></div>
+                  </div>
+                </div>
+                <h4 className="text-4xl font-black mb-6 uppercase tracking-tighter leading-none font-display relative z-10">{sub.name}</h4>
+                <div className="space-y-4 relative z-10 flex-1">
+                  <p className="text-sm font-bold leading-relaxed italic opacity-90">
+                    "{sub.description}"
+                  </p>
+                  <div className="pt-6 border-t-2 border-slate-950/10">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-3 opacity-60">Academic Logic</p>
+                    <p className="text-xs font-medium leading-relaxed opacity-80">
+                      {sub.explanation}
+                    </p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

@@ -24,8 +24,8 @@ const HandwritingHubView: React.FC<Props> = ({ user, language, onBack, onUpdateU
   const [activeDrill, setActiveDrill] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
-  const [precision, setPrecision] = useState(85);
-  const [speed, setSpeed] = useState(70);
+  const [precision, setPrecision] = useState(user.handwritingMetrics?.precision || 85);
+  const [fluency, setFluency] = useState(user.handwritingMetrics?.fluency || 70);
 
   const t = (key: string) => translations[language]?.[key] || translations['English'][key] || key;
 
@@ -34,10 +34,24 @@ const HandwritingHubView: React.FC<Props> = ({ user, language, onBack, onUpdateU
     setFeedback(null);
     try {
       const text = await recognizeHandwriting(base64, language);
+      
+      // Calculate new metrics
+      const newPrecision = Math.min(100, precision + Math.floor(Math.random() * 5));
+      const newFluency = Math.min(100, fluency + Math.floor(Math.random() * 3));
+      
+      setPrecision(newPrecision);
+      setFluency(newFluency);
+      
       setFeedback(text ? `Analysis complete. Detected: "${text}". Stroke precision within standard deviation.` : "Stroke logic ambiguous. Recalibrate grip.");
-      setPrecision(prev => Math.min(100, prev + Math.floor(Math.random() * 5)));
-      setSpeed(prev => Math.min(100, prev + Math.floor(Math.random() * 3)));
-      onUpdateUser({ xp: (user.xp || 0) + 15 });
+      
+      onUpdateUser({ 
+        xp: (user.xp || 0) + 15,
+        handwritingMetrics: {
+          precision: newPrecision,
+          fluency: newFluency,
+          lastUpdated: new Date().toISOString()
+        }
+      });
     } catch (err) {
       setFeedback("Neural analysis interrupted. Reset canvas.");
     } finally {
@@ -83,9 +97,9 @@ const HandwritingHubView: React.FC<Props> = ({ user, language, onBack, onUpdateU
                      <div className="w-20 h-20 mx-auto relative flex items-center justify-center">
                         <svg className="w-full h-full -rotate-90">
                            <circle cx="40" cy="40" r="35" className="fill-none stroke-gray-100 dark:stroke-slate-800" strokeWidth="6" />
-                           <circle cx="40" cy="40" r="35" className="fill-none stroke-dare-purple transition-all duration-1000" strokeWidth="6" strokeDasharray={2 * Math.PI * 35} strokeDashoffset={2 * Math.PI * 35 * (1 - speed/100)} strokeLinecap="round" />
+                           <circle cx="40" cy="40" r="35" className="fill-none stroke-dare-purple transition-all duration-1000" strokeWidth="6" strokeDasharray={2 * Math.PI * 35} strokeDashoffset={2 * Math.PI * 35 * (1 - fluency/100)} strokeLinecap="round" />
                         </svg>
-                        <span className="absolute font-black text-xs">{speed}%</span>
+                        <span className="absolute font-black text-xs">{fluency}%</span>
                      </div>
                      <p className="text-[8px] font-black text-gray-400 uppercase">Fluency</p>
                   </div>

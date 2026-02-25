@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Subject, SubjectProgress, DifficultyLevel } from '../types';
-import { LEVEL_METADATA } from '../constants';
+import { LEVEL_METADATA, getLearningStage } from '../constants';
 
 interface Props {
   subject: Subject;
@@ -12,11 +12,12 @@ interface Props {
   onLevelAssessment: () => void;
   onExamPrep: () => void;
   onUpdateDifficulty: (difficulty: DifficultyLevel) => void;
+  onDelete?: () => void;
 }
 
 const SubjectCard: React.FC<Props> = ({ 
   subject, progress, onClick, onOpenSpecialization, onPlacementTest, 
-  onLevelAssessment, onExamPrep, onUpdateDifficulty 
+  onLevelAssessment, onExamPrep, onUpdateDifficulty, onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -26,13 +27,36 @@ const SubjectCard: React.FC<Props> = ({
     switch (subject.category) {
       case 'Literacy': return { bg: 'bg-dare-teal', text: 'text-slate-950', glow: 'shadow-dare-teal/40' };
       case 'Numeracy': return { bg: 'bg-dare-gold', text: 'text-slate-950', glow: 'shadow-dare-gold/40' };
-      case 'Natural Science': return { bg: 'bg-emerald-600', text: 'text-white', glow: 'shadow-emerald-600/40' };
-      case 'Social Science': return { bg: 'bg-dare-purple', text: 'text-white', glow: 'shadow-dare-purple/40' };
-      case 'Computer Science': return { bg: 'bg-indigo-700', text: 'text-white', glow: 'shadow-indigo-700/40' };
-      case 'Music': return { bg: 'bg-rose-600', text: 'text-white', glow: 'shadow-rose-600/40' };
+      case 'Physics':
+      case 'Chemistry':
+      case 'Biology':
+      case 'Astronomy':
+      case 'Natural Geography':
+        return { bg: 'bg-emerald-600', text: 'text-white', glow: 'shadow-emerald-600/40' };
+      case 'Social Geography':
+      case 'History':
+      case 'Economics':
+      case 'Sociology':
+      case 'Psychology':
+      case 'Philosophy':
+      case 'Anthropology':
+        return { bg: 'bg-dare-purple', text: 'text-white', glow: 'shadow-dare-purple/40' };
+      case 'Religion':
+      case 'Moral and Ethics':
+        return { bg: 'bg-indigo-700', text: 'text-white', glow: 'shadow-indigo-700/40' };
+      case 'Operating Systems':
+      case 'Basic Software':
+      case 'Specialized Software':
+      case 'Programming':
+      case 'AI':
+        return { bg: 'bg-slate-900', text: 'text-white', glow: 'shadow-slate-900/40' };
+      case 'Music Theory':
+      case 'Musical Instrument Performance':
+      case 'Vocal Music':
+        return { bg: 'bg-rose-600', text: 'text-white', glow: 'shadow-rose-600/40' };
       case 'Dance': return { bg: 'bg-pink-600', text: 'text-white', glow: 'shadow-pink-600/40' };
       case 'Design': return { bg: 'bg-amber-600', text: 'text-white', glow: 'shadow-amber-600/40' };
-      case 'Craft': return { bg: 'bg-orange-700', text: 'text-white', glow: 'shadow-orange-700/40' };
+      case 'Crafting': return { bg: 'bg-orange-700', text: 'text-white', glow: 'shadow-orange-700/40' };
       case 'Mind Sports': return { bg: 'bg-cyan-700', text: 'text-white', glow: 'shadow-cyan-700/40' };
       default: return { bg: 'bg-dare-gold', text: 'text-slate-950', glow: 'shadow-dare-gold/40' };
     }
@@ -54,6 +78,15 @@ const SubjectCard: React.FC<Props> = ({
            </div>
            {isFastTrack && (
               <div className="absolute -top-4 -right-4 w-10 h-10 bg-slate-950 text-white rounded-full flex items-center justify-center text-xl shadow-2xl animate-pulse border-2 border-white">⚡</div>
+           )}
+           {onDelete && (
+             <button 
+               onClick={(e) => { e.stopPropagation(); onDelete(); }}
+               className="absolute -bottom-2 -left-2 w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center shadow-xl hover:scale-110 transition-all border-2 border-white"
+               title="Delete Node"
+             >
+               🗑️
+             </button>
            )}
         </div>
 
@@ -89,7 +122,12 @@ const SubjectCard: React.FC<Props> = ({
       </header>
       
       <div className="flex-1 space-y-4 relative z-10 mb-10">
-        <h3 className={`text-4xl font-black ${themeConfig.text} tracking-tighter leading-none uppercase font-display`}>{subject.name}</h3>
+        <div className="space-y-1">
+          <h3 className={`text-4xl font-black ${themeConfig.text} tracking-tighter leading-none uppercase font-display`}>{subject.name}</h3>
+          <div className={`text-[11px] font-black uppercase tracking-[0.2em] ${themeConfig.text} opacity-60`}>
+            {getLearningStage(level)} Stage
+          </div>
+        </div>
         <div className="space-y-4">
           <p className={`text-base ${themeConfig.text} opacity-90 font-bold leading-relaxed italic`}>
             "{showExplanation ? subject.explanation : subject.description}"

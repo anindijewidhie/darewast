@@ -51,7 +51,7 @@ const ExamHallView: React.FC<Props> = ({ user, progress, language, onBack, onSta
                   </div>
                 </div>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">{sub.name}</h3>
-                <p className="text-slate-800 dark:text-gray-400 text-sm font-medium mb-10 leading-relaxed italic">"Official mastery verification for institutional entry."</p>
+                <p className="text-slate-800 dark:text-gray-400 text-sm font-medium mb-10 leading-relaxed italic">"{sub.description}"</p>
               </div>
 
               <div className="grid gap-3 relative z-10">

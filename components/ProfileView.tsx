@@ -67,27 +67,45 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, darkMode, onTo
       </div>
 
       <div className="grid lg:grid-cols-12 gap-10">
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-dare-gold p-12 rounded-[3.5rem] shadow-2xl border-4 border-white/30 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-10 opacity-10 text-9xl font-black text-white">USER</div>
-            <div className={`w-36 h-36 rounded-[2.5rem] bg-white/40 mx-auto mb-8 overflow-hidden border-4 border-white shadow-2xl relative z-10`}>
-              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-            </div>
-            <h2 className="text-4xl font-black text-slate-900 mb-1 relative z-10">{user.name}</h2>
-            <p className="text-slate-900/60 font-black relative z-10">@{user.username}</p>
-            
-            <div className="mt-10 pt-10 border-t border-black/10">
-                <p className="text-5xl font-black text-slate-950">{user.xp}</p>
-                <p className="text-[10px] font-black text-slate-950/50 uppercase tracking-widest">Lifetime XP Yield</p>
-            </div>
+        {!user.accessibility?.focusMode && (
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-dare-gold p-12 rounded-[3.5rem] shadow-2xl border-4 border-white/30 text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-10 opacity-10 text-9xl font-black text-white">USER</div>
+              <div className={`w-36 h-36 rounded-[2.5rem] bg-white/40 mx-auto mb-8 overflow-hidden border-4 border-white shadow-2xl relative z-10`}>
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              </div>
+              <h2 className="text-4xl font-black text-slate-900 mb-1 relative z-10">{user.name}</h2>
+              <p className="text-slate-900/60 font-black relative z-10">@{user.username}</p>
+              
+              <div className="mt-10 pt-10 border-t border-black/10">
+                  <p className="text-5xl font-black text-slate-950">{user.xp}</p>
+                  <p className="text-[10px] font-black text-slate-950/50 uppercase tracking-widest">Lifetime XP Yield</p>
+              </div>
 
-            <StreakMastery streak={user.streak} />
+              <StreakMastery streak={user.streak} />
 
-            <button onClick={onLogout} className="w-full py-5 bg-slate-950 text-white rounded-2xl font-black mt-12 text-xs uppercase tracking-widest transition-all hover:bg-white hover:text-slate-950 shadow-xl">{t('signOut')}</button>
+              {user.handwritingMetrics && (
+                <div className="mt-8 pt-8 border-t border-black/10 text-left">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-4 opacity-60">Ink Maintenance</p>
+                  <div className="flex gap-4">
+                    <div className="flex-1 bg-white/20 p-4 rounded-2xl border border-white/40">
+                      <p className="text-xl font-black text-slate-950">{user.handwritingMetrics.precision}%</p>
+                      <p className="text-[7px] font-black text-slate-950/60 uppercase tracking-widest">Precision</p>
+                    </div>
+                    <div className="flex-1 bg-white/20 p-4 rounded-2xl border border-white/40">
+                      <p className="text-xl font-black text-slate-950">{user.handwritingMetrics.fluency}%</p>
+                      <p className="text-[7px] font-black text-slate-950/60 uppercase tracking-widest">Fluency</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button onClick={onLogout} className="w-full py-5 bg-slate-950 text-white rounded-2xl font-black mt-12 text-xs uppercase tracking-widest transition-all hover:bg-white hover:text-slate-950 shadow-xl">{t('signOut')}</button>
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="lg:col-span-8 space-y-8">
+        <div className={`${user.accessibility?.focusMode ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-8`}>
           <div className="bg-dare-teal p-12 rounded-[4rem] shadow-2xl border-4 border-white/20 text-left relative overflow-hidden">
              <div className="absolute top-0 right-0 p-10 opacity-10 text-[15rem] font-black text-white">DNA</div>
              <h3 className="text-3xl font-black text-slate-900 mb-2 relative z-10">Universal Academic DNA 🧬</h3>

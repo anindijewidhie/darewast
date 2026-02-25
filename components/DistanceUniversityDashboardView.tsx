@@ -20,20 +20,22 @@ interface Props {
   onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
+  onDeleteSubject: (subjectId: string) => void;
 }
 
 const DistanceUniversityDashboardView: React.FC<Props> = ({ 
   user, progress, language, onStartLesson, onStartPrep, onTrackChange,
   onOpenPlacement, onOpenAssessment,
   onOpenSpecialization,
-  dynamicSubjects, onCreateSubject
+  dynamicSubjects, onCreateSubject, onDeleteSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
   // Fix: Added missing 'const' keyword for translator function
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   // Fix: Updated categories list to include 'Moral and Ethics' instead of 'Ethics' to align with SubjectCategory type
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Natural Science', 'Computer Science', 'Social Science', 'Moral and Ethics'];
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Physics', 'Chemistry', 'Biology', 'Astronomy', 'Natural Geography', 'Social Geography', 'History', 'Economics', 'Sociology', 'Psychology', 'Philosophy', 'Anthropology', 'Religion', 'Moral and Ethics', 'Operating Systems', 'Basic Software', 'Specialized Software', 'Programming', 'AI'];
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
 
   // Academic Universities are strictly 4 years
@@ -108,6 +110,7 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
                   onPlacementTest={() => onOpenPlacement(sub)}
                   onLevelAssessment={() => onOpenAssessment(sub)}
                   onExamPrep={() => onStartPrep(sub)}
+                  onDelete={sub.isUserGenerated ? () => setSubjectToDelete(sub) : undefined}
                 />
               ))}
            </div>
@@ -139,6 +142,35 @@ const DistanceUniversityDashboardView: React.FC<Props> = ({
            </div>
         </div>
       </div>
+
+      {subjectToDelete && (
+        <div className="fixed inset-0 z-[300] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[3.5rem] p-12 text-center shadow-2xl border-4 border-rose-500/20">
+            <div className="w-24 h-24 bg-rose-500/10 text-rose-500 rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-inner animate-bounce">⚠️</div>
+            <h3 className="text-3xl font-black mb-4 dark:text-white tracking-tighter uppercase">Confirm Deletion</h3>
+            <p className="text-gray-500 font-bold mb-10 leading-relaxed italic">
+              Are you sure you want to remove <span className="text-rose-500">"{subjectToDelete.name}"</span> from your Academic Grid? This action will permanently erase all progress associated with this node.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setSubjectToDelete(null)}
+                className="py-5 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  onDeleteSubject(subjectToDelete.id);
+                  setSubjectToDelete(null);
+                }}
+                className="py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all"
+              >
+                Delete Node
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

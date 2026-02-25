@@ -7,15 +7,36 @@ export type Language =
 export type SubjectCategory = 
   | 'Literacy' 
   | 'Numeracy' 
-  | 'Natural Science' 
-  | 'Social Science' 
-  | 'Moral and Ethics'
+  | 'Natural Science'
+  | 'Social Science'
+  | 'Computer Science'
+  | 'Music'
+  | 'Craft'
+  | 'Physics'
+  | 'Chemistry'
+  | 'Biology'
+  | 'Astronomy'
+  | 'Natural Geography'
+  | 'Social Geography'
+  | 'History'
+  | 'Economics'
+  | 'Sociology'
+  | 'Psychology'
+  | 'Philosophy'
+  | 'Anthropology'
   | 'Religion'
-  | 'Computer Science' 
-  | 'Music' 
+  | 'Moral and Ethics'
+  | 'Operating Systems'
+  | 'Basic Software'
+  | 'Specialized Software'
+  | 'Programming'
+  | 'AI'
+  | 'Music Theory'
+  | 'Musical Instrument Performance'
+  | 'Vocal Music'
   | 'Dance'
   | 'Design'
-  | 'Craft'
+  | 'Crafting'
   | 'Mind Sports' 
   | 'Custom';
 
@@ -272,6 +293,11 @@ export interface User {
     hybridMethods?: [LearningMethod, LearningMethod];
   };
   accessibility?: AccessibilitySettings;
+  handwritingMetrics?: {
+    precision: number;
+    fluency: number;
+    lastUpdated: string;
+  };
   culturalBackground?: string;
   track?: EducationTrack;
   distanceSchoolType?: DistanceSchoolType;
@@ -308,6 +334,19 @@ export interface CreativeSession {
   steps: { label: string; details: string; value?: string }[];
 }
 
+export type ExerciseType = 'multiple-choice' | 'fill-in-the-blank' | 'sorting' | 'matching' | 'handwriting';
+
+export interface Exercise {
+  type: ExerciseType;
+  question: string;
+  options?: string[]; // for multiple-choice, sorting
+  correctAnswer: string; // or JSON string for complex types
+  explanation: string;
+  hint?: string;
+  matchingPairs?: { left: string; right: string }[]; // for matching
+  blankText?: string; // for fill-in-the-blank, e.g. "The capital of France is [blank]."
+}
+
 export interface LessonContent {
   title: string;
   explanation: string;
@@ -319,13 +358,7 @@ export interface LessonContent {
     readingDeepDive: string;
   };
   examples: string[];
-  exercises: {
-    question: string;
-    options?: string[];
-    correctAnswer: string;
-    explanation: string;
-    hint?: string;
-  }[];
+  exercises: Exercise[];
   level: MasteryLevel;
   lessonNumber: number;
   eraNote?: string;

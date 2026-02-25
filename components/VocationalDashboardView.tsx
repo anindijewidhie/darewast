@@ -21,17 +21,19 @@ interface Props {
   onOpenSpecialization: (sub: Subject) => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string, curriculum: string) => Promise<Subject | undefined>;
+  onDeleteSubject: (subjectId: string) => void;
 }
 
 const VocationalDashboardView: React.FC<Props> = ({ 
   track, user, progress, language, onStartLesson, onStartPrep, onTrackChange, onUpdateProgress,
   onOpenPlacement, onOpenAssessment,
   onOpenSpecialization,
-  dynamicSubjects, onCreateSubject
+  dynamicSubjects, onCreateSubject, onDeleteSubject
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
   const [query, setQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const isDistance = track.includes('Distance');
@@ -41,7 +43,7 @@ const VocationalDashboardView: React.FC<Props> = ({
   const icon = isUni ? '🛠️' : '🔧';
   const label = `${isDistance ? 'Distance ' : ''}Vocational ${isUni ? 'University' : 'School'}`;
 
-  const categories: (SubjectCategory | 'All')[] = ['All', 'Design', 'Craft', 'Computer Science', 'Natural Science', 'Music', 'Mind Sports'];
+  const categories: (SubjectCategory | 'All')[] = ['All', 'Design', 'Crafting', 'Operating Systems', 'Basic Software', 'Specialized Software', 'Programming', 'AI', 'Physics', 'Chemistry', 'Biology', 'Astronomy', 'Music Theory', 'Musical Instrument Performance', 'Vocal Music', 'Mind Sports'];
 
   const allAvailableSubjects = [...SUBJECTS, ...dynamicSubjects];
   const filteredSubjects = useMemo(() => {
@@ -114,6 +116,7 @@ const VocationalDashboardView: React.FC<Props> = ({
                   onLevelAssessment={() => onOpenAssessment(sub)}
                   onExamPrep={() => onStartPrep(sub)}
                   onUpdateDifficulty={(d) => onUpdateProgress(sub.id, { difficulty: d })}
+                  onDelete={sub.isUserGenerated ? () => setSubjectToDelete(sub) : undefined}
                 />
               ))}
            </div>
@@ -153,6 +156,34 @@ const VocationalDashboardView: React.FC<Props> = ({
            </div>
         </div>
       </div>
+      {subjectToDelete && (
+        <div className="fixed inset-0 z-[300] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[3.5rem] p-12 text-center shadow-2xl border-4 border-rose-500/20">
+            <div className="w-24 h-24 bg-rose-500/10 text-rose-500 rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-inner animate-bounce">⚠️</div>
+            <h3 className="text-3xl font-black mb-4 dark:text-white tracking-tighter uppercase">Confirm Deletion</h3>
+            <p className="text-gray-500 font-bold mb-10 leading-relaxed italic">
+              Are you sure you want to remove <span className="text-rose-500">"{subjectToDelete.name}"</span> from your Academic Grid? This action will permanently erase all progress associated with this node.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setSubjectToDelete(null)}
+                className="py-5 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  onDeleteSubject(subjectToDelete.id);
+                  setSubjectToDelete(null);
+                }}
+                className="py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all"
+              >
+                Delete Node
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

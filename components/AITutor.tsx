@@ -16,6 +16,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState<string[]>([]);
+  const [textInput, setTextInput] = useState('');
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const sessionPromiseRef = useRef<Promise<any> | null>(null);
@@ -83,7 +84,7 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const sessionPromise = ai.live.connect({
-        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        model: 'gemini-2.5-flash-native-audio-preview-09-2025',
         callbacks: {
           onopen: () => {
             setIsActive(true);
@@ -104,7 +105,13 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
             if (message.serverContent?.outputTranscription) {
               setTranscript(prev => [...prev.slice(-4), message.serverContent!.outputTranscription!.text]);
             }
-            const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+            if (message.serverContent?.modelTurn) {
+               const textPart = message.serverContent.modelTurn.parts.find(p => p.text);
+               if (textPart?.text) {
+                 setTranscript(prev => [...prev.slice(-4), textPart.text!]);
+               }
+            }
+            const base64Audio = message.serverContent?.modelTurn?.parts.find(p => p.inlineData)?.inlineData?.data;
             if (base64Audio && audioContextRef.current) {
               setIsSpeaking(true);
               const audioBuffer = await decodeAudioData(decode(base64Audio), audioContextRef.current, 24000, 1);
@@ -144,6 +151,19 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
       console.error(err);
       setIsConnecting(false);
     }
+  };
+
+  const handleSendText = () => {
+    if (!textInput.trim() || !sessionPromiseRef.current) return;
+    const text = textInput;
+    setTextInput('');
+    setTranscript(prev => [...prev.slice(-4), `You: ${text}`]);
+    sessionPromiseRef.current.then(session => {
+      // Sending text as a turn in the live session
+      session.sendClientContent({
+        turns: [{ role: 'user', parts: [{ text }] }],
+      });
+    });
   };
 
   useEffect(() => {
@@ -204,7 +224,23 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
         </div>
 
         {isActive && (
-          <div className="p-10 bg-gray-50 dark:bg-slate-800 border-t border-gray-100 dark:border-slate-800">
+          <div className="p-10 bg-gray-50 dark:bg-slate-800 border-t border-gray-100 dark:border-slate-800 space-y-6">
+            <div className="flex gap-4">
+              <input 
+                type="text" 
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendText()}
+                placeholder="Ask a question..."
+                className="flex-1 bg-white dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 rounded-2xl px-6 py-4 font-bold focus:border-dare-teal outline-none transition-all"
+              />
+              <button 
+                onClick={handleSendText}
+                className="px-8 py-4 bg-dare-teal text-white rounded-2xl font-black shadow-lg hover:scale-105 active:scale-95 transition-all"
+              >
+                Send
+              </button>
+            </div>
             <button onClick={onClose} className="w-full py-6 bg-rose-500 text-white rounded-3xl font-black uppercase tracking-[0.2em] text-xs shadow-2xl">Terminate Mastery Link</button>
           </div>
         )}

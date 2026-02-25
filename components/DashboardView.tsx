@@ -34,6 +34,7 @@ interface Props {
   onOpenGuardianReport: () => void; 
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string) => Promise<Subject | undefined>;
+  onDeleteSubject: (subjectId: string) => void;
 }
 
 const DashboardView: React.FC<Props> = ({ 
@@ -42,15 +43,20 @@ const DashboardView: React.FC<Props> = ({
   onOpenPlacement, onOpenAssessment, onOpenCombination, onOpenLeaderboard, onOpenFastTrack, onOpenExamHall,
   onOpenRelearn, onOpenTransition, onOpenCreditTransfer, 
   onOpenSpecialization, onOpenHandwriting, onOpenGuardianReport,
-  dynamicSubjects, onCreateSubject
+  dynamicSubjects, onCreateSubject, onDeleteSubject
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<SubjectCategory | 'All'>('All');
   const [specializingSubject, setSpecializingSubject] = useState<Subject | null>(null);
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
   const t = (key: string) => translations[language][key] || translations['English'][key] || key;
 
   const categories: (SubjectCategory | 'All')[] = [
-    'All', 'Literacy', 'Numeracy', 'Natural Science', 'Social Science', 'Moral and Ethics', 'Religion', 'Computer Science', 'Music', 'Dance', 'Design', 'Craft', 'Mind Sports'
+    'All', 'Literacy', 'Numeracy', 'Physics', 'Chemistry', 'Biology', 'Astronomy', 
+    'Natural Geography', 'Social Geography', 'History', 'Economics', 'Sociology', 
+    'Psychology', 'Philosophy', 'Anthropology', 'Religion', 'Moral and Ethics', 
+    'Operating Systems', 'Basic Software', 'Specialized Software', 'Programming', 'AI', 'Music Theory', 
+    'Musical Instrument Performance', 'Vocal Music', 'Dance', 'Design', 'Crafting', 'Mind Sports'
   ];
   
   const filteredSubjects = useMemo(() => {
@@ -93,24 +99,26 @@ const DashboardView: React.FC<Props> = ({
           </p>
         </div>
         
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 md:gap-6 w-full lg:w-auto">
-          {[
-            { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'bg-dare-teal', label: 'Fusion' },
-            { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'bg-dare-gold', label: 'Hall' },
-            { id: 'relearn', icon: '🩹', action: onOpenRelearn, color: 'bg-dare-purple', label: 'Restore' },
-            { id: 'transition', icon: '🌉', action: onOpenTransition, color: 'bg-dare-teal', label: 'Bridge' },
-            { id: 'handwriting', icon: '🖋️', action: onOpenHandwriting, color: 'bg-dare-teal', label: 'Ink' },
-          ].map(tool => (
-            <button 
-              key={tool.id} 
-              onClick={tool.action} 
-              className="flex flex-col items-center gap-2 md:gap-3 p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
-            >
-              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-xl sm:text-3xl md:text-4xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
-              <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-dare-teal transition-colors">{tool.label}</span>
-            </button>
-          ))}
-        </div>
+        {!user.accessibility?.focusMode && (
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 md:gap-6 w-full lg:w-auto">
+            {[
+              { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'bg-dare-teal', label: 'Fusion' },
+              { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'bg-dare-gold', label: 'Hall' },
+              { id: 'relearn', icon: '🩹', action: onOpenRelearn, color: 'bg-dare-purple', label: 'Restore' },
+              { id: 'transition', icon: '🌉', action: onOpenTransition, color: 'bg-dare-teal', label: 'Bridge' },
+              { id: 'handwriting', icon: '🖋️', action: onOpenHandwriting, color: 'bg-dare-teal', label: 'Ink' },
+            ].map(tool => (
+              <button 
+                key={tool.id} 
+                onClick={tool.action} 
+                className="flex flex-col items-center gap-2 md:gap-3 p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
+              >
+                <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-xl sm:text-3xl md:text-4xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
+                <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-dare-teal transition-colors">{tool.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       {user.age >= 6 && user.age <= 7 && !user.transitionProgram && (
@@ -133,7 +141,7 @@ const DashboardView: React.FC<Props> = ({
       )}
 
       <div className="grid lg:grid-cols-12 gap-16 items-start relative z-10">
-        <div className="lg:col-span-8 space-y-16">
+        <div className={`${user.accessibility?.focusMode ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-16`}>
           {/* Daily Usage Monitor */}
           <div className="p-8 sm:p-12 bg-dare-teal text-slate-950 rounded-[3rem] sm:rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-8 sm:space-y-10 relative overflow-hidden group">
              <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 text-[8rem] sm:text-[12rem] font-black group-hover:scale-110 transition-transform duration-1000">QUOTA</div>
@@ -201,36 +209,39 @@ const DashboardView: React.FC<Props> = ({
                 onLevelAssessment={() => onOpenAssessment(sub)} 
                 onExamPrep={() => onStartPrep(sub)} 
                 onUpdateDifficulty={(d) => onUpdateProgress(sub.id, { difficulty: d })}
+                onDelete={sub.isUserGenerated ? () => setSubjectToDelete(sub) : undefined}
               />
             ))}
           </div>
         </div>
 
-        <aside className="lg:col-span-4 lg:sticky lg:top-32 space-y-12">
-          <div className="glass-card p-12 rounded-[4.5rem] shadow-2xl text-center relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-dare-teal/5 to-transparent opacity-50"></div>
-            <h3 className="text-[11px] font-black text-dare-teal uppercase tracking-[0.6em] mb-12 relative z-10">Academic DNA Grid</h3>
-            <div className="relative z-10">
-              <RadarChart progress={progress} subjects={SUBJECTS.slice(0, 10)} />
-            </div>
-            <div className="mt-12 space-y-5 relative z-10">
-              <button onClick={onOpenPlacementGlobal} className="w-full py-7 bg-dare-teal text-slate-950 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl hover:scale-[1.02] active:scale-95 transition-all border-4 border-white/30">
-                Diagnostic Placement
-              </button>
-              <button onClick={onOpenConverter} className="w-full py-6 bg-white/10 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-[2.5rem] font-black uppercase tracking-widest text-[10px] hover:text-dare-teal transition-all border-2 border-black/5 dark:border-white/10 backdrop-blur-sm">
-                Grade Alignment Matrix
-              </button>
-            </div>
-          </div>
+          {!user.accessibility?.focusMode && (
+            <aside className="lg:col-span-4 lg:sticky lg:top-32 space-y-12">
+              <div className="glass-card p-12 rounded-[4.5rem] shadow-2xl text-center relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-dare-teal/5 to-transparent opacity-50"></div>
+                <h3 className="text-[11px] font-black text-dare-teal uppercase tracking-[0.6em] mb-12 relative z-10">Academic DNA Grid</h3>
+                <div className="relative z-10">
+                  <RadarChart progress={progress} subjects={SUBJECTS.slice(0, 10)} />
+                </div>
+                <div className="mt-12 space-y-5 relative z-10">
+                  <button onClick={onOpenPlacementGlobal} className="w-full py-7 bg-dare-teal text-slate-950 rounded-[2.5rem] font-black uppercase tracking-widest text-sm shadow-2xl hover:scale-[1.02] active:scale-95 transition-all border-4 border-white/30">
+                    Diagnostic Placement
+                  </button>
+                  <button onClick={onOpenConverter} className="w-full py-6 bg-white/10 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-[2.5rem] font-black uppercase tracking-widest text-[10px] hover:text-dare-teal transition-all border-2 border-black/5 dark:border-white/10 backdrop-blur-sm">
+                    Grade Alignment Matrix
+                  </button>
+                </div>
+              </div>
 
-          <div className="p-12 bg-dare-purple/20 backdrop-blur-md text-slate-900 dark:text-white rounded-[4.5rem] shadow-2xl border-4 border-white/20 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-12 opacity-10 text-[12rem] font-black group-hover:rotate-12 transition-transform duration-1000">TRINITY</div>
-             <p className="text-[10px] font-black text-dare-purple uppercase tracking-[0.5em] mb-10">Pedagogical Framework</p>
-             <p className="text-3xl font-black leading-tight italic relative z-10 font-display">
-               "Mastery is synthesized by fusing calculation speed, systematic modeling, and critical reasoning into a singular cognitive architecture."
-             </p>
-          </div>
-        </aside>
+              <div className="p-12 bg-dare-purple/20 backdrop-blur-md text-slate-900 dark:text-white rounded-[4.5rem] shadow-2xl border-4 border-white/20 relative overflow-hidden group">
+                 <div className="absolute top-0 right-0 p-12 opacity-10 text-[12rem] font-black group-hover:rotate-12 transition-transform duration-1000">TRINITY</div>
+                 <p className="text-[10px] font-black text-dare-purple uppercase tracking-[0.5em] mb-10">Pedagogical Framework</p>
+                 <p className="text-3xl font-black leading-tight italic relative z-10 font-display">
+                   "Mastery is synthesized by fusing calculation speed, systematic modeling, and critical reasoning into a singular cognitive architecture."
+                 </p>
+              </div>
+            </aside>
+          )}
       </div>
       {specializingSubject && (
         <SpecializationModal 
@@ -244,6 +255,35 @@ const DashboardView: React.FC<Props> = ({
             setSpecializingSubject(null);
           }}
         />
+      )}
+
+      {subjectToDelete && (
+        <div className="fixed inset-0 z-[300] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[3.5rem] p-12 text-center shadow-2xl border-4 border-rose-500/20">
+            <div className="w-24 h-24 bg-rose-500/10 text-rose-500 rounded-[2.5rem] flex items-center justify-center text-5xl mx-auto mb-8 shadow-inner animate-bounce">⚠️</div>
+            <h3 className="text-3xl font-black mb-4 dark:text-white tracking-tighter uppercase">Confirm Deletion</h3>
+            <p className="text-gray-500 font-bold mb-10 leading-relaxed italic">
+              Are you sure you want to remove <span className="text-rose-500">"{subjectToDelete.name}"</span> from your Academic Grid? This action will permanently erase all progress associated with this node.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <button 
+                onClick={() => setSubjectToDelete(null)}
+                className="py-5 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-gray-400 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-gray-200 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  onDeleteSubject(subjectToDelete.id);
+                  setSubjectToDelete(null);
+                }}
+                className="py-5 bg-rose-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-rose-500/20 hover:scale-105 active:scale-95 transition-all"
+              >
+                Delete Node
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

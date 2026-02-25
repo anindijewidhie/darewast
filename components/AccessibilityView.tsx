@@ -41,8 +41,8 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
     { id: 'tritanopia', label: 'Tritanopia (Blue-Blind)' }
   ];
 
-  const Toggle = ({ active, onClick, label, desc }: { active: boolean; onClick: () => void; label: string; desc: string }) => (
-    <section className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4 border-2 border-transparent hover:border-dare-teal/20 transition-all">
+  const Toggle = ({ active, onClick, label, desc, className }: { active: boolean; onClick: () => void; label: string; desc: string; className?: string }) => (
+    <section className={`flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl gap-4 border-2 border-transparent hover:border-dare-teal/20 transition-all ${className || ''}`}>
       <div>
         <h3 className="text-xl font-black text-gray-900 dark:text-white mb-1">{label}</h3>
         <p className="text-sm text-gray-500 font-medium italic">{desc}</p>
@@ -84,6 +84,7 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
             onClick={() => updateSetting('focusMode', !currentSettings.focusMode)} 
             label="Focus Mode (ADHD Support)" 
             desc="Hides sidebars and non-essential UI to minimize distractions." 
+            className="focus-mode-trigger"
           />
 
           <Toggle 
@@ -109,17 +110,29 @@ const AccessibilityView: React.FC<Props> = ({ user, language, onBack, onUpdate }
 
           <section className="p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl space-y-4">
              <h3 className="text-xl font-black text-gray-900 dark:text-white">Color Blindness Filters</h3>
-             <div className="grid grid-cols-2 gap-2">
+             <p className="text-sm text-gray-500 font-medium italic mb-4">Simulates and adjusts the interface for various types of color vision deficiency.</p>
+             
+             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
                 {colorModes.map(mode => (
                   <button 
                     key={mode.id}
                     onClick={() => updateSetting('colorBlindMode', mode.id)}
-                    className={`py-3 px-4 rounded-xl text-xs font-black uppercase transition-all ${currentSettings.colorBlindMode === mode.id ? 'bg-dare-teal text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-gray-400 border border-gray-100 dark:border-slate-700'}`}
+                    className={`py-3 px-4 rounded-xl text-[10px] font-black uppercase transition-all ${currentSettings.colorBlindMode === mode.id ? 'bg-dare-teal text-white shadow-lg' : 'bg-white dark:bg-slate-900 text-gray-400 border border-gray-100 dark:border-slate-700'}`}
                   >
-                    {mode.label}
+                    {mode.id === 'none' ? 'Off' : mode.id}
                   </button>
                 ))}
              </div>
+
+             <div className="flex gap-2 h-8 rounded-xl overflow-hidden shadow-inner">
+                <div className="flex-1 bg-red-500"></div>
+                <div className="flex-1 bg-green-500"></div>
+                <div className="flex-1 bg-blue-500"></div>
+                <div className="flex-1 bg-yellow-500"></div>
+                <div className="flex-1 bg-purple-500"></div>
+                <div className="flex-1 bg-orange-500"></div>
+             </div>
+             <p className="text-[10px] text-center text-gray-400 font-bold uppercase tracking-widest">Reference Spectrum</p>
           </section>
 
           <section className="p-6 bg-gray-50 dark:bg-slate-800 rounded-3xl">

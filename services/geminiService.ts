@@ -42,6 +42,10 @@ export const digitizeMaterial = async (
          - KUMON: Small-step incremental drills.
          - SAKAMOTO: Logic modeling and systematic understanding.
          - EYE LEVEL: Critical inquiry and reasoning.
+         - INTERACTIVE EXERCISES: Use a mix of 'multiple-choice', 'fill-in-the-blank', 'sorting', 'matching', and 'handwriting' exercises.
+           - For 'sorting', provide 'options' as items and 'correctAnswer' as comma-separated string.
+           - For 'matching', provide 'matchingPairs'.
+           - For 'fill-in-the-blank', use '[blank]' in 'blankText'.
       3. COMBINATION POTENTIAL: Explain how this content can be fused with other subjects (e.g., Biology + Ethics).
       
       User Context: ${user.name}, ${user.age} years old.
@@ -89,13 +93,25 @@ export const digitizeMaterial = async (
                   items: {
                     type: Type.OBJECT,
                     properties: {
+                      type: { type: Type.STRING, description: "One of: multiple-choice, fill-in-the-blank, sorting, matching, handwriting" },
                       question: { type: Type.STRING },
                       options: { type: Type.ARRAY, items: { type: Type.STRING } },
                       correctAnswer: { type: Type.STRING },
                       explanation: { type: Type.STRING },
-                      hint: { type: Type.STRING }
+                      hint: { type: Type.STRING },
+                      matchingPairs: {
+                        type: Type.ARRAY,
+                        items: {
+                          type: Type.OBJECT,
+                          properties: {
+                            left: { type: Type.STRING },
+                            right: { type: Type.STRING }
+                          }
+                        }
+                      },
+                      blankText: { type: Type.STRING }
                     },
-                    required: ["question", "correctAnswer", "explanation"]
+                    required: ["type", "question", "correctAnswer", "explanation"]
                   }
                 },
                 adaptations: {
@@ -138,6 +154,7 @@ export const generateLesson = async (
     const age = user?.age || 10;
     const activeEra: CurriculumEra = user?.academicDNA?.era || 'Modern';
     const culturalBg = user?.culturalBackground || 'Global';
+    const preferredStyle = user?.preferredLearningStyle || 'Unified';
     const iddSupport = user?.accessibility?.iddSupport || false;
     const additionalLangs = progress?.[subject.id]?.additionalLanguages || [];
     
@@ -177,6 +194,11 @@ export const generateLesson = async (
       3. EYE LEVEL PILLAR: Critical inquiry and self-directed application.
       
       DYNAMIC ADAPTATION (CORE INSTRUCTION):
+      - PREFERRED LEARNING STYLE: ${preferredStyle}. Tailor the primary explanation and exercises to resonate with this style while maintaining the Trinity Method's core logic.
+      - INTERACTIVE EXERCISES: Use a mix of 'multiple-choice', 'fill-in-the-blank', 'sorting', 'matching', and 'handwriting' exercises to maximize engagement.
+        - For 'sorting', provide 'options' as the items to sort, and 'correctAnswer' as the items joined by a comma and space (e.g., "Item 1, Item 2, Item 3").
+        - For 'matching', provide 'matchingPairs' as an array of {left, right} objects. 'correctAnswer' can be any descriptive string.
+        - For 'fill-in-the-blank', use '[blank]' in 'blankText' and provide the missing word in 'correctAnswer'.
       - CULTURAL ALIGNMENT: Integrate "${culturalBg}" cultural context. Use regional historical figures, local geography, or indigenous logical frameworks as exercise predicates.
       - PERFORMANCE VECTOR: Skill Point Index is ${skillPoints} SP. ${challengeDirective}
       - AGE ALIGNMENT: ${ageStrategy}
@@ -243,12 +265,25 @@ export const generateLesson = async (
               items: {
                 type: Type.OBJECT,
                 properties: {
+                  type: { type: Type.STRING, description: "One of: multiple-choice, fill-in-the-blank, sorting, matching, handwriting" },
                   question: { type: Type.STRING },
                   options: { type: Type.ARRAY, items: { type: Type.STRING } },
                   correctAnswer: { type: Type.STRING },
                   explanation: { type: Type.STRING },
-                  hint: { type: Type.STRING }
-                }
+                  hint: { type: Type.STRING },
+                  matchingPairs: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        left: { type: Type.STRING },
+                        right: { type: Type.STRING }
+                      }
+                    }
+                  },
+                  blankText: { type: Type.STRING }
+                },
+                required: ["type", "question", "correctAnswer", "explanation"]
               }
             },
             mediaResources: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { id: { type: Type.STRING }, type: { type: Type.STRING }, title: { type: Type.STRING } } } },
@@ -585,6 +620,33 @@ export const generateGuardianReport = async (u: User, p: UserProgress, l: Langua
       contents: `Draft darewast Trinity guardian transcript for ${u.name}. Explain Kumon/Sakamoto/EyeLevel progress. Progress: ${JSON.stringify(p)}. Lang: ${l}. Mention Interactive Textbook milestones.` 
     });
     return response.text || "Trinity report generated.";
+  });
+};
+
+export const generateVisualAid = async (description: string): Promise<string> => {
+  return withRetry(async () => {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-image',
+      contents: {
+        parts: [
+          {
+            text: `Educational diagram or infographic for: ${description}. Clear, professional, academic style, suitable for a digital textbook.`,
+          },
+        ],
+      },
+      config: {
+        imageConfig: {
+          aspectRatio: "16:9",
+        },
+      },
+    });
+    
+    for (const part of response.candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
+    }
+    throw new Error("Neural visual synthesis failed.");
   });
 };
 
