@@ -82,8 +82,6 @@ const DashboardView: React.FC<Props> = ({
 
   return (
     <div className="animate-fadeIn max-w-7xl mx-auto px-4 pb-32 relative">
-      <div className="absolute inset-0 pattern-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none"></div>
-      
       <header className="py-8 md:py-24 flex flex-col lg:flex-row justify-between items-center gap-8 md:gap-12 border-b border-black/5 dark:border-white/10 mb-12 md:mb-20 relative z-10">
         <div className="space-y-4 text-center lg:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
@@ -123,7 +121,6 @@ const DashboardView: React.FC<Props> = ({
 
       {user.age >= 6 && user.age <= 7 && !user.transitionProgram && (
         <div className="mb-16 p-10 bg-gradient-to-r from-pink-600 to-rose-600 rounded-[4rem] border-4 border-white/20 shadow-2xl animate-float flex flex-col md:flex-row items-center justify-between gap-10 relative overflow-hidden">
-           <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
            <div className="flex items-center gap-8 relative z-10">
               <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-[2.5rem] flex items-center justify-center text-6xl shadow-inner border border-white/20">✨</div>
               <div>

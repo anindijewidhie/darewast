@@ -134,7 +134,6 @@ const AuthView: React.FC<Props> = ({ onLogin, onBack, language, initialMode = 's
           <button onClick={onBack} className="absolute top-10 right-10 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all font-black text-3xl">✕</button>
 
           <div className="w-full max-w-lg bg-dare-gold p-14 rounded-[4.5rem] shadow-2xl border-[6px] border-white/40 animate-fadeIn text-slate-950 relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
             <div className="relative z-10">
               {view === 'forgot-password' ? (
                 <div className="space-y-10">

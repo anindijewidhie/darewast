@@ -204,8 +204,6 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
 
   return (
     <div className="max-w-7xl mx-auto py-8 sm:py-12 px-4 sm:px-6 animate-fadeIn grid lg:grid-cols-12 gap-8 md:gap-12 relative">
-      <div className="absolute inset-0 pattern-grid opacity-[0.02] dark:opacity-[0.04] pointer-events-none"></div>
-      
       {isCelebrating && (
         <div className="fixed inset-0 z-[400] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-6 animate-fadeIn">
           <div className="max-w-4xl w-full bg-dare-gold rounded-[5rem] p-24 text-center shadow-2xl border-[10px] border-white/40 animate-scale-in relative overflow-hidden">

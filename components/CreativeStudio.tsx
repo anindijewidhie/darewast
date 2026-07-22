@@ -80,7 +80,6 @@ const CreativeStudio: React.FC<Props> = ({ session, language }) => {
               {session.type === 'blueprint' && (
                 <div className="space-y-8 animate-fadeIn">
                    <div className="aspect-video bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-700 relative overflow-hidden flex items-center justify-center">
-                      <div className="absolute inset-0 pattern-grid-lg opacity-20"></div>
                       <div className="text-center relative z-10 space-y-4">
                          <p className="text-5xl">📐</p>
                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Axiomatic Draft Layer Active</p>

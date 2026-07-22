@@ -174,7 +174,6 @@ const AITutor: React.FC<Props> = ({ user, language, context, onClose }) => {
     <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-2xl animate-fadeIn">
       <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-[3.5rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col h-[80vh]">
         <div className="p-10 bg-gradient-to-br from-dare-teal via-dare-purple to-dare-gold text-white flex justify-between items-center relative">
-          <div className="absolute inset-0 bg-white/5 opacity-10 pattern-grid-lg"></div>
           <div className="relative z-10 flex items-center gap-6">
             <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-3xl shadow-2xl transition-all duration-500 ${isSpeaking ? 'bg-white text-dare-teal scale-110 shadow-dare-teal/50' : 'bg-white/20'}`}>
               {isSpeaking ? '🎙️' : '🧠'}

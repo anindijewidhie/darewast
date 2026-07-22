@@ -35,8 +35,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
 
   return (
     <div className="animate-fadeIn pb-32 relative">
-      <div className="absolute inset-0 pattern-grid opacity-[0.03] dark:opacity-[0.05] pointer-events-none"></div>
-      
       <section className="relative pt-20 pb-32 lg:pt-40 lg:pb-48 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10 px-4 sm:px-6">
           <div className="flex flex-col items-center mb-8 sm:mb-10">
@@ -82,7 +80,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-10">
             {features.map(feat => (
               <button key={feat.id} onClick={feat.action} className={`p-8 sm:p-12 ${feat.color} rounded-[3rem] sm:rounded-[4rem] border-4 border-white/30 transition-all text-left flex flex-col justify-between group shadow-2xl hover:-translate-y-3 relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
                 <div className="relative z-10">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-950/20 backdrop-blur-md text-slate-950 dark:text-white rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center text-3xl sm:text-4xl mb-8 sm:mb-12 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all border border-white/20">{feat.icon}</div>
                   <h4 className={`text-3xl sm:text-4xl font-black ${feat.text} mb-4 uppercase tracking-tighter font-display`}>{feat.title}</h4>
@@ -127,7 +124,6 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {SUBJECTS.map((sub) => (
               <div key={sub.id} className="p-10 sm:p-12 bg-dare-teal text-slate-950 rounded-[4rem] shadow-2xl border-4 border-white/30 hover:scale-[1.02] transition-all cursor-pointer text-left group relative overflow-hidden flex flex-col h-full">
-                <div className="absolute inset-0 bg-white/10 pattern-grid opacity-20"></div>
                 <div className="flex justify-between items-start mb-8 relative z-10">
                   <div className="w-20 h-20 bg-slate-950/20 backdrop-blur-md rounded-3xl flex items-center justify-center text-4xl shadow-inner group-hover:rotate-12 transition-all border border-white/20">
                     {sub.icon}

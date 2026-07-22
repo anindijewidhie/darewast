@@ -66,7 +66,6 @@ const DonationView: React.FC<Props> = ({ onBack, language }) => {
         {/* Left Content Area */}
         <div className="lg:col-span-8 space-y-10">
           <section className="bg-slate-950 rounded-[4rem] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl border-4 border-white/5">
-            <div className="absolute inset-0 pattern-grid-lg opacity-10"></div>
             <div className="absolute top-0 right-0 p-12 opacity-5 text-9xl font-black rotate-12">FUND</div>
             <div className="relative z-10 space-y-8">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-dare-teal text-slate-950 rounded-full text-[10px] font-black uppercase tracking-[0.4em] border border-white/30">

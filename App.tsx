@@ -274,7 +274,7 @@ const AppInternal: React.FC = () => {
       </svg>
 
       {!user?.accessibility?.focusMode && (
-        <nav className="px-4 py-4 md:px-12 md:py-8 flex justify-between items-center sticky top-0 z-[100] backdrop-blur-2xl border-b border-black/5 dark:border-white/10 bg-white/50 dark:bg-white/5">
+        <nav className="px-4 py-4 md:px-12 md:py-8 flex justify-between items-center sticky top-0 z-[100] border-b border-black/5 dark:border-white/10 bg-white dark:bg-slate-950">
           <div className="flex items-center gap-2 md:gap-4 cursor-pointer group" onClick={() => navigate(user ? '/dashboard' : '/')}>
             <div className="w-10 h-10 md:w-14 md:h-14 bg-dare-teal rounded-2xl flex items-center justify-center text-slate-950 font-black text-xl md:text-3xl group-hover:rotate-12 transition-all shadow-xl shadow-dare-teal/20 border-2 border-white/30">d</div>
             <span className="text-xl md:text-4xl font-black tracking-tighter font-display text-slate-900 dark:text-white">darewast</span>
