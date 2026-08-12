@@ -2,10 +2,13 @@
 import React, { useState, useMemo } from 'react';
 import { User, UserProgress, SubjectProgress, Language, Subject, SubjectCategory, EducationTrack } from '../types';
 import { SUBJECTS, USAGE_LIMITS } from '../constants';
+import { getPalette } from '../constants/palettes';
 import { translations } from '../translations';
 import SubjectCard from './SubjectCard';
 import SpecializationModal from './SpecializationModal';
 import { RadarChart } from './RadarChart';
+import DailyGoalChart from './DailyGoalChart';
+import LearningVelocityChart from './LearningVelocityChart';
 
 interface Props {
   user: User;
@@ -27,11 +30,13 @@ interface Props {
   onOpenFastTrack: () => void;
   onOpenExamHall: () => void;
   onOpenRelearn: () => void;
+  onOpenStruggleAnalytics?: () => void;
   onOpenTransition: () => void;
   onOpenCreditTransfer: () => void;
   onOpenSpecialization: (sub: Subject) => void;
   onOpenHandwriting: () => void;
   onOpenGuardianReport: () => void; 
+  onOpenFlashcards?: () => void;
   dynamicSubjects: Subject[];
   onCreateSubject: (query: string) => Promise<Subject | undefined>;
   onDeleteSubject: (subjectId: string) => void;
@@ -41,8 +46,8 @@ const DashboardView: React.FC<Props> = ({
   user, progress, language, onStartLesson, onStartExam, onStartPrep, 
   onUpdateUser, onUpdateProgress, onTrackChange, onLogout, onOpenConverter, onOpenPlacementGlobal,
   onOpenPlacement, onOpenAssessment, onOpenCombination, onOpenLeaderboard, onOpenFastTrack, onOpenExamHall,
-  onOpenRelearn, onOpenTransition, onOpenCreditTransfer, 
-  onOpenSpecialization, onOpenHandwriting, onOpenGuardianReport,
+  onOpenRelearn, onOpenStruggleAnalytics, onOpenTransition, onOpenCreditTransfer, 
+  onOpenSpecialization, onOpenHandwriting, onOpenGuardianReport, onOpenFlashcards,
   dynamicSubjects, onCreateSubject, onDeleteSubject
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,38 +85,50 @@ const DashboardView: React.FC<Props> = ({
   const usagePercent = Math.min(100, (highestUsage / quotaLimit) * 100);
   const subjectName = maxUsageSubject ? (SUBJECTS.find(s => s.id === maxUsageSubject[0])?.name || 'Active Subject') : 'Subjects';
 
+  const palette = getPalette(user.dashboardPalette);
+
   return (
     <div className="animate-fadeIn max-w-7xl mx-auto px-4 pb-32 relative">
       <header className="py-8 md:py-24 flex flex-col lg:flex-row justify-between items-center gap-8 md:gap-12 border-b border-black/5 dark:border-white/10 mb-12 md:mb-20 relative z-10">
         <div className="space-y-4 text-center lg:text-left">
-          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
+          <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5 flex-wrap">
              <h1 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter leading-none uppercase font-display">Dasbor</h1>
-             {user.isMinor && (
-               <div className="px-4 py-1.5 bg-rose-600 text-white rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-lg shadow-rose-600/20">
-                 Minor Mode Active
+             <div className="flex items-center gap-2 flex-wrap">
+               {user.isMinor && (
+                 <div className="px-4 py-1.5 bg-rose-600 text-white rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-lg shadow-rose-600/20">
+                   Minor Mode Active
+                 </div>
+               )}
+               <div 
+                 className="px-3.5 py-1.5 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-widest border border-white/20 shadow-lg flex items-center gap-1.5"
+                 style={{ backgroundColor: `${palette.primaryHex}25`, color: palette.primaryHex }}
+               >
+                 <span>{palette.icon}</span>
+                 <span>{palette.name} Palette</span>
                </div>
-             )}
+             </div>
           </div>
-          <p className="text-dare-teal font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-[9px] sm:text-[10px] md:text-xs">
-            Academic DNA Registry • {user.name} • <span className="text-dare-gold">{user.rank} LVL {user.level}</span>
+          <p className="font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] text-[9px] sm:text-[10px] md:text-xs" style={{ color: palette.primaryHex }}>
+            Academic DNA Registry • {user.name} • <span style={{ color: palette.secondaryHex }}>{user.rank} LVL {user.level}</span>
           </p>
         </div>
         
         {!user.accessibility?.focusMode && (
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 md:gap-6 w-full lg:w-auto">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 md:gap-4 w-full lg:w-auto">
             {[
+              { id: 'assessment', icon: '🎯', action: onOpenPlacementGlobal, color: 'bg-dare-teal', label: 'Assess' },
               { id: 'fusion', icon: '⚛️', action: onOpenCombination, color: 'bg-dare-teal', label: 'Fusion' },
+              { id: 'struggle', icon: '🔍', action: onOpenStruggleAnalytics, color: 'bg-rose-500', label: 'Gaps' },
               { id: 'exam', icon: '🏛️', action: onOpenExamHall, color: 'bg-dare-gold', label: 'Hall' },
               { id: 'relearn', icon: '🩹', action: onOpenRelearn, color: 'bg-dare-purple', label: 'Restore' },
               { id: 'transition', icon: '🌉', action: onOpenTransition, color: 'bg-dare-teal', label: 'Bridge' },
-              { id: 'handwriting', icon: '🖋️', action: onOpenHandwriting, color: 'bg-dare-teal', label: 'Ink' },
             ].map(tool => (
               <button 
                 key={tool.id} 
                 onClick={tool.action} 
-                className="flex flex-col items-center gap-2 md:gap-3 p-4 sm:p-6 md:p-8 rounded-[2rem] sm:rounded-[3rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
+                className="flex flex-col items-center gap-2 md:gap-3 p-3 sm:p-5 md:p-6 rounded-[2rem] sm:rounded-[2.5rem] bg-white/10 dark:bg-white/5 border-2 border-black/5 dark:border-white/10 hover:border-dare-teal dark:hover:border-dare-teal transition-all group shadow-xl backdrop-blur-md"
               >
-                <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl sm:rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-xl sm:text-3xl md:text-4xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-xl sm:text-2xl md:text-3xl shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all">{tool.icon}</div>
                 <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 group-hover:text-dare-teal transition-colors">{tool.label}</span>
               </button>
             ))}
@@ -139,30 +156,77 @@ const DashboardView: React.FC<Props> = ({
 
       <div className="grid lg:grid-cols-12 gap-16 items-start relative z-10">
         <div className={`${user.accessibility?.focusMode ? 'lg:col-span-12' : 'lg:col-span-8'} space-y-16`}>
-          {/* Daily Usage Monitor */}
-          <div className="p-8 sm:p-12 bg-dare-teal text-slate-950 rounded-[3rem] sm:rounded-[4.5rem] border-4 border-white/30 shadow-2xl space-y-8 sm:space-y-10 relative overflow-hidden group">
-             <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 text-[8rem] sm:text-[12rem] font-black group-hover:scale-110 transition-transform duration-1000">QUOTA</div>
-             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 sm:gap-0 relative z-10">
-                <div className="space-y-2">
-                  <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] opacity-60">Mastery Health Node</h3>
-                  <p className="text-[11px] sm:text-sm font-black uppercase tracking-widest">{user.stage} Protocol: {quotaLimit} Min / Subject</p>
+          {/* Daily Study Goal Progress Bar (Recharts) */}
+          <DailyGoalChart 
+            user={user}
+            progress={progress}
+            quotaLimit={quotaLimit}
+            dynamicSubjects={dynamicSubjects}
+            onUpdateUser={onUpdateUser}
+          />
+
+          {/* Learning Velocity Trend Chart (Recharts) */}
+          <LearningVelocityChart
+            user={user}
+            progress={progress}
+          />
+
+          {/* Spaced Repetition Flashcards Widget */}
+          <div className="p-8 sm:p-12 bg-slate-950 text-white rounded-[3rem] sm:rounded-[4rem] shadow-2xl border-4 border-white/10 relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500/20 text-emerald-400 rounded-3xl flex items-center justify-center text-3xl sm:text-4xl shadow-inner border border-emerald-500/30">
+                  ⚡
                 </div>
-                <div className="text-left sm:text-right">
-                  <p className={`text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter ${usagePercent > 90 ? 'text-rose-700 animate-pulse' : ''}`}>
-                    {Math.floor(highestUsage)} <span className="text-xl sm:text-2xl opacity-50">/ {quotaLimit}</span>
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/30 mb-2">
+                    Spaced Repetition Flashcards
+                  </div>
+                  <h3 className="text-xl sm:text-3xl font-black uppercase font-display tracking-tight text-white">
+                    Interactive Memory Flashcards
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-1 max-w-xl">
+                    Automated concept extraction from completed lessons with SuperMemo SM-2 memory scheduling for permanent mastery.
                   </p>
-                  <p className="text-[9px] sm:text-[10px] font-black uppercase opacity-60 tracking-widest">FOCUSED: {subjectName}</p>
                 </div>
-             </div>
-             <div className="h-6 sm:h-8 w-full bg-slate-950/10 rounded-full overflow-hidden shadow-inner relative z-10 p-1 sm:p-1.5 border border-white/20">
-                <div className={`h-full rounded-full transition-all duration-1000 shadow-lg ${usagePercent > 90 ? 'bg-rose-600' : 'bg-slate-950'}`} style={{ width: `${usagePercent}%` }}></div>
-             </div>
-             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 relative z-10">
-                <p className="text-[10px] sm:text-xs font-black uppercase opacity-60 italic tracking-wide">"Cognitive balance verified via Trinity metrics."</p>
-                {user.isMinor && (
-                  <button onClick={onOpenGuardianReport} className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-slate-950/20 backdrop-blur-md text-slate-950 hover:bg-slate-950 hover:text-white rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all shadow-xl border border-white/20">Parent Portal</button>
-                )}
-             </div>
+              </div>
+
+              <button
+                onClick={onOpenFlashcards}
+                className="w-full md:w-auto px-8 py-4 bg-emerald-500 text-slate-950 font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <span>🧠 Practice Flashcards ({user.flashcards?.length || 3} Cards)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Curriculum Struggle & Re-Learning Quick Tracker Widget */}
+          <div className="p-8 sm:p-12 bg-slate-950 text-white rounded-[3rem] sm:rounded-[4rem] shadow-2xl border-4 border-white/10 relative overflow-hidden group hover:border-rose-500/50 transition-all">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-rose-500/20 text-rose-500 rounded-3xl flex items-center justify-center text-3xl sm:text-4xl shadow-inner border border-rose-500/30">
+                  🔍
+                </div>
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-rose-500/20 text-rose-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-rose-500/30 mb-2">
+                    Curriculum Struggle Analytics
+                  </div>
+                  <h3 className="text-xl sm:text-3xl font-black uppercase font-display tracking-tight text-white">
+                    Identify & Restore Learning Gaps
+                  </h3>
+                  <p className="text-xs text-slate-400 font-medium mt-1 max-w-xl">
+                    Heatmap visualization of concepts where friction occurred, with quick links to adaptive re-learning modules.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={onOpenStruggleAnalytics}
+                className="w-full md:w-auto px-8 py-4 bg-rose-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all whitespace-nowrap flex items-center justify-center gap-2"
+              >
+                <span>📊 View Gap Heatmap</span>
+              </button>
+            </div>
           </div>
 
           {/* Main Grid Header */}
@@ -231,11 +295,16 @@ const DashboardView: React.FC<Props> = ({
               </div>
 
               <div className="p-12 bg-dare-purple/20 backdrop-blur-md text-slate-900 dark:text-white rounded-[4.5rem] shadow-2xl border-4 border-white/20 relative overflow-hidden group">
-                 <div className="absolute top-0 right-0 p-12 opacity-10 text-[12rem] font-black group-hover:rotate-12 transition-transform duration-1000">TRINITY</div>
-                 <p className="text-[10px] font-black text-dare-purple uppercase tracking-[0.5em] mb-10">Pedagogical Framework</p>
-                 <p className="text-3xl font-black leading-tight italic relative z-10 font-display">
-                   "Mastery is synthesized by fusing calculation speed, systematic modeling, and critical reasoning into a singular cognitive architecture."
+                 <div className="absolute top-0 right-0 p-12 opacity-10 text-[12rem] font-black group-hover:rotate-12 transition-transform duration-1000">DAREWAST</div>
+                 <p className="text-[10px] font-black text-dare-purple uppercase tracking-[0.5em] mb-4">darewast Proprietary Method</p>
+                 <p className="text-2xl font-black leading-tight italic relative z-10 font-display">
+                   "An inclusive, culturally sensitive pedagogical system delivering personalized curricula and methods tailored for all learning styles."
                  </p>
+                 <div className="mt-6 flex flex-wrap gap-2 relative z-10">
+                   <span className="px-3 py-1 bg-white/20 rounded-lg text-[9px] font-black uppercase tracking-wider">🌏 Inclusive</span>
+                   <span className="px-3 py-1 bg-white/20 rounded-lg text-[9px] font-black uppercase tracking-wider">🎯 Personalized</span>
+                   <span className="px-3 py-1 bg-white/20 rounded-lg text-[9px] font-black uppercase tracking-wider">🧠 All Styles</span>
+                 </div>
               </div>
             </aside>
           )}

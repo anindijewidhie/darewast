@@ -1,7 +1,8 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { User, UserProgress, Language, MasteryLevel, SubjectProgress, CurriculumEra, LearningMethod, CurriculumStyle, PaymentPreferences, MasterySchedule, LearningStyle } from '../types';
+import { User, UserProgress, Language, MasteryLevel, SubjectProgress, CurriculumEra, LearningMethod, CurriculumStyle, PaymentPreferences, MasterySchedule, LearningStyle, DashboardPalette } from '../types';
 import { SUBJECTS, MASTERY_LEVEL_ORDER, LEARNING_DURATIONS } from '../constants';
+import { DASHBOARD_PALETTES, getPalette } from '../constants/palettes';
 import { translations } from '../translations';
 import { RadarChart } from './RadarChart';
 
@@ -137,13 +138,68 @@ const ProfileView: React.FC<Props> = ({ user, progress, language, darkMode, onTo
                 </section>
 
                 <section>
-                   <label className="text-[11px] font-black text-slate-950/60 uppercase tracking-widest block mb-6">Appearance</label>
+                   <label className="text-[11px] font-black text-slate-950/60 uppercase tracking-widest block mb-6">Appearance & Mode</label>
                    <button 
                      onClick={onToggleDarkMode}
                      className={`w-full py-4 rounded-2xl text-xs font-black uppercase transition-all border-4 flex items-center justify-center gap-3 ${darkMode ? 'border-white bg-slate-950 text-white shadow-2xl' : 'border-white/20 bg-white/10 text-slate-900 hover:bg-white/30'}`}
                    >
                      <span>{darkMode ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}</span>
                    </button>
+                </section>
+
+                <section>
+                   <div className="flex justify-between items-center mb-4">
+                     <label className="text-[11px] font-black text-slate-950/60 uppercase tracking-widest block">Dashboard Color Palette</label>
+                     <span className="text-[10px] font-black text-slate-950/80 uppercase tracking-widest bg-white/30 px-3 py-1 rounded-full border border-white/40">
+                       Current: {getPalette(user.dashboardPalette).name}
+                     </span>
+                   </div>
+                   <p className="text-xs text-slate-900/70 font-medium mb-6">Personalize the visual look, banners, badges, and card glows across your dashboard.</p>
+                   
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                     {Object.values(DASHBOARD_PALETTES).map(palette => {
+                       const isSelected = (user.dashboardPalette || 'default') === palette.id;
+                       return (
+                         <button
+                           key={palette.id}
+                           onClick={() => onUpdateUser({ dashboardPalette: palette.id })}
+                           className={`p-5 rounded-3xl text-left transition-all border-4 relative overflow-hidden flex flex-col justify-between space-y-4 group ${
+                             isSelected 
+                               ? 'border-slate-950 bg-slate-950 text-white shadow-2xl scale-[1.02]' 
+                               : 'border-white/30 bg-white/10 text-slate-900 hover:bg-white/20 hover:scale-[1.01]'
+                           }`}
+                         >
+                           {/* Color Swatch Dots */}
+                           <div className="flex justify-between items-center w-full">
+                             <div className="flex items-center gap-1.5 p-1.5 bg-black/20 rounded-full border border-white/10">
+                               {palette.previewColors.map((color, idx) => (
+                                 <span 
+                                   key={idx} 
+                                   className="w-4 h-4 rounded-full border border-white/40 shadow-sm"
+                                   style={{ backgroundColor: color }}
+                                 />
+                               ))}
+                             </div>
+                             <span className="text-xl">{palette.icon}</span>
+                           </div>
+
+                           <div>
+                             <div className="flex items-center gap-2">
+                               <h4 className="font-black text-sm uppercase tracking-tight">{palette.name}</h4>
+                               {isSelected && (
+                                 <span className="text-[8px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950">
+                                   Active
+                                 </span>
+                               )}
+                             </div>
+                             <p className={`text-[10px] font-medium mt-1 leading-tight ${isSelected ? 'text-slate-300' : 'text-slate-900/70'}`}>
+                               {palette.tagline}
+                             </p>
+                           </div>
+                         </button>
+                       );
+                     })}
+                   </div>
                 </section>
 
                 <section>

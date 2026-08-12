@@ -108,6 +108,15 @@ export type InstitutionStatus = 'regular' | 'closed' | 'problematic' | 'independ
 
 export type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
 
+export type DashboardPalette = 
+  | 'default'   // Classic Dare Teal & Gold
+  | 'emerald'   // Cyber Emerald & Mint
+  | 'sunset'    // Crimson Flame & Amber
+  | 'violet'    // Cosmic Violet & Neon Pink
+  | 'ocean'     // Deep Sapphire & Cyan
+  | 'monochrome'// Platinum Slate & Onyx
+  | 'electric'; // Cyberpunk Lime & Yellow
+
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 
 export type AuthorType = 'Professional' | 'Contributor';
@@ -206,6 +215,18 @@ export interface Subject {
   };
 }
 
+export interface StruggledTopic {
+  id: string;
+  topic: string;
+  subTopic?: string;
+  stage?: EducationalStage;
+  failCount: number;
+  lastStruggledDate: string;
+  severity: 'low' | 'moderate' | 'high' | 'critical';
+  accuracyRate: number; // e.g. 28 for 28%
+  aiDiagnosis?: string;
+}
+
 export interface SubjectProgress {
   level: MasteryLevel;
   lessonNumber: number;
@@ -227,6 +248,7 @@ export interface SubjectProgress {
   relearnStage?: EducationalStage;
   completedMedia?: string[];
   difficulty?: DifficultyLevel;
+  struggledTopics?: StruggledTopic[];
 }
 
 export interface UserProgress {
@@ -260,7 +282,29 @@ export type View =
   | 'credit-transfer'
   | 'transfer-portal'
   | 'level-completion-hub'
-  | 'handwriting-hub';
+  | 'handwriting-hub'
+  | 'flashcard-hub';
+
+export interface Flashcard {
+  id: string;
+  subjectId: string;
+  subjectName: string;
+  lessonTitle: string;
+  lessonNumber: number;
+  level: MasteryLevel;
+  concept: string;
+  front: string;
+  back: string;
+  hint?: string;
+  tags?: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  nextReviewDate: string; // YYYY-MM-DD
+  intervalDays: number;
+  easeFactor: number;
+  reviewsCount: number;
+  lastReviewedDate?: string;
+  status: 'learning' | 'reviewing' | 'mastered';
+}
 
 export interface User {
   name: string;
@@ -293,6 +337,8 @@ export interface User {
     hybridMethods?: [LearningMethod, LearningMethod];
   };
   accessibility?: AccessibilitySettings;
+  dashboardPalette?: DashboardPalette;
+  flashcards?: Flashcard[];
   handwritingMetrics?: {
     precision: number;
     fluency: number;

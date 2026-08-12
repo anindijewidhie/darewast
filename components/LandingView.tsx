@@ -71,6 +71,76 @@ const LandingView: React.FC<Props> = ({ language, onJoin, onPlacementTest, onOpe
         </div>
       </section>
 
+      {/* Proprietary Method Showcase */}
+      <section className="py-20 sm:py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-16 sm:mb-24">
+            <div className="inline-flex items-center gap-2 px-5 py-2 bg-dare-gold/20 text-dare-gold rounded-full text-xs font-black uppercase tracking-[0.4em] mb-4 border border-dare-gold/30">
+              ⚡ Known Worldwide
+            </div>
+            <h2 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter uppercase font-display text-slate-900 dark:text-white">
+              The darewast Proprietary Method
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 font-medium text-lg sm:text-2xl max-w-4xl mx-auto mt-6 leading-relaxed italic">
+              "An inclusive, culturally sensitive learning system delivering personalized curricula and adaptive methods engineered for all learning styles."
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+            <div className="p-10 sm:p-12 bg-slate-950 text-white rounded-[3.5rem] border-4 border-white/10 shadow-2xl space-y-6 relative overflow-hidden group hover:border-dare-teal transition-all">
+              <div className="w-20 h-20 bg-dare-teal text-slate-950 rounded-3xl flex items-center justify-center text-4xl font-black shadow-inner">
+                🌏
+              </div>
+              <h3 className="text-3xl font-black uppercase tracking-tight font-display text-dare-teal">
+                Inclusive & Culturally Sensitive
+              </h3>
+              <p className="text-slate-300 font-medium leading-relaxed text-sm sm:text-base">
+                Engineered with multi-regional context, localized historical paradigms, and inclusive linguistic scaffolding so every scholar sees their heritage reflected in their studies.
+              </p>
+              <div className="pt-6 border-t border-white/10 flex items-center gap-2 text-xs font-bold text-slate-400">
+                <span>✓ Regional Context</span>
+                <span>•</span>
+                <span>✓ Inclusive Logic</span>
+              </div>
+            </div>
+
+            <div className="p-10 sm:p-12 bg-slate-950 text-white rounded-[3.5rem] border-4 border-white/10 shadow-2xl space-y-6 relative overflow-hidden group hover:border-dare-gold transition-all">
+              <div className="w-20 h-20 bg-dare-gold text-slate-950 rounded-3xl flex items-center justify-center text-4xl font-black shadow-inner">
+                🎯
+              </div>
+              <h3 className="text-3xl font-black uppercase tracking-tight font-display text-dare-gold">
+                Personalized Curricula & Methods
+              </h3>
+              <p className="text-slate-300 font-medium leading-relaxed text-sm sm:text-base">
+                Dynamic chapter synthesis adjusts pace, depth, difficulty, and structural methodology to match each scholar’s age, baseline proficiency, and personal academic goals.
+              </p>
+              <div className="pt-6 border-t border-white/10 flex items-center gap-2 text-xs font-bold text-slate-400">
+                <span>✓ Adaptive Pacing</span>
+                <span>•</span>
+                <span>✓ Custom Pathways</span>
+              </div>
+            </div>
+
+            <div className="p-10 sm:p-12 bg-slate-950 text-white rounded-[3.5rem] border-4 border-white/10 shadow-2xl space-y-6 relative overflow-hidden group hover:border-dare-purple transition-all">
+              <div className="w-20 h-20 bg-dare-purple text-white rounded-3xl flex items-center justify-center text-4xl font-black shadow-inner">
+                🧠
+              </div>
+              <h3 className="text-3xl font-black uppercase tracking-tight font-display text-dare-purple">
+                Tailored for All Learning Styles
+              </h3>
+              <p className="text-slate-300 font-medium leading-relaxed text-sm sm:text-base">
+                First-class adaptive modes for Visual, Auditory, Reading/Writing, Kinesthetic, and Unified learners—ensuring every brain finds its optimal cognitive channel.
+              </p>
+              <div className="pt-6 border-t border-white/10 flex items-center gap-2 text-xs font-bold text-slate-400">
+                <span>👁️ Visual</span>
+                <span>👂 Auditory</span>
+                <span>✍️ Kinesthetic</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 sm:py-32 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-16 sm:mb-24">

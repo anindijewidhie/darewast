@@ -11,9 +11,10 @@ interface Props {
   onBack: () => void;
   onLaunchRelearn: (lesson: LessonContent) => void;
   onOpenRelearnPlacement: () => void;
+  onOpenStruggleAnalytics?: () => void;
 }
 
-const RelearnHubView: React.FC<Props> = ({ user, language, onBack, onLaunchRelearn, onOpenRelearnPlacement }) => {
+const RelearnHubView: React.FC<Props> = ({ user, language, onBack, onLaunchRelearn, onOpenRelearnPlacement, onOpenStruggleAnalytics }) => {
   const [selectedStage, setSelectedStage] = useState<EducationalStage | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [isFastTrack, setIsFastTrack] = useState(false);
@@ -93,13 +94,22 @@ const RelearnHubView: React.FC<Props> = ({ user, language, onBack, onLaunchRelea
             {t('relearnHubSubtitle')}
           </p>
           
-          <div className="pt-8">
+          <div className="pt-8 flex flex-wrap justify-center gap-4">
              <button 
                 onClick={onOpenRelearnPlacement}
-                className="px-10 py-5 bg-white text-slate-900 rounded-[2rem] font-black text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 mx-auto"
+                className="px-8 py-5 bg-white text-slate-900 rounded-[2rem] font-black text-base sm:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
              >
-                <span className="text-2xl">🔬</span> Run Restoration Diagnostic Test
+                <span className="text-2xl">🔬</span> Diagnostic Test
              </button>
+
+             {onOpenStruggleAnalytics && (
+               <button 
+                  onClick={onOpenStruggleAnalytics}
+                  className="px-8 py-5 bg-rose-600 text-white rounded-[2rem] font-black text-base sm:text-lg shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center gap-3 border border-rose-400/30"
+               >
+                  <span className="text-2xl">📊</span> View Struggle Heatmap
+               </button>
+             )}
           </div>
         </div>
       </header>

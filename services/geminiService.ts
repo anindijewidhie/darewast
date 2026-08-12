@@ -1,7 +1,7 @@
 
 // @google/genai library implementation following coding guidelines
 import { GoogleGenAI, Type } from "@google/genai";
-import { Language, Subject, LessonContent, User, MasteryLevel, UserProgress, AccommodationType, EducationTrack, EducationalStage, EssayGradingResult, LearningMethod, CurriculumStyle, CurriculumEra, AuthorType } from "../types";
+import { Language, Subject, LessonContent, User, MasteryLevel, UserProgress, AccommodationType, EducationTrack, EducationalStage, EssayGradingResult, LearningMethod, CurriculumStyle, CurriculumEra, AuthorType, LearningStyle, Flashcard } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -188,13 +188,13 @@ export const generateLesson = async (
                         "PEDAGOGICAL STRATEGY: Scholarly research. Use abstract theoretical frameworks and professional-grade application.";
 
     const trinityPedagogy = `
-      THE DAREWAST UNIFIED METHOD (TRINITY SYNTHESIS):
-      1. KUMON PILLAR: Computational fluency and incremental mastery.
-      2. SAKAMOTO PILLAR: Systematic logic modeling (The "Why").
-      3. EYE LEVEL PILLAR: Critical inquiry and self-directed application.
+      THE DAREWAST PROPRIETARY METHOD:
+      1. INCLUSIVE & CULTURALLY SENSITIVE PEDAGOGY: Respectful multi-regional context, localized historical paradigms, and inclusive linguistic scaffolding so scholars from any culture connect deeply with concepts.
+      2. PERSONALIZED CURRICULA & PATHWAYS: Adaptive pacing, customized chapter depth, and personalized curriculum design calculated specifically for scholar's age, level, and academic DNA.
+      3. ADAPTATION FOR ALL LEARNING STYLES: Explicitly tailor the primary explanation and exercises for ${preferredStyle} learners (while providing scaffolding compatible with Visual, Auditory, Reading, Kinesthetic, and Unified modes).
       
       DYNAMIC ADAPTATION (CORE INSTRUCTION):
-      - PREFERRED LEARNING STYLE: ${preferredStyle}. Tailor the primary explanation and exercises to resonate with this style while maintaining the Trinity Method's core logic.
+      - PREFERRED LEARNING STYLE: ${preferredStyle}. Tailor the primary explanation and exercises to resonate with this style while maintaining the darewast Proprietary Method's core logic.
       - INTERACTIVE EXERCISES: Use a mix of 'multiple-choice', 'fill-in-the-blank', 'sorting', 'matching', and 'handwriting' exercises to maximize engagement.
         - For 'sorting', provide 'options' as the items to sort, and 'correctAnswer' as the items joined by a comma and space (e.g., "Item 1, Item 2, Item 3").
         - For 'matching', provide 'matchingPairs' as an array of {left, right} objects. 'correctAnswer' can be any descriptive string.
@@ -347,7 +347,7 @@ export const generateLessonQuiz = async (
   return withRetry(async () => {
     const age = user?.age || 10;
     const prompt = `Generate a 5-question logic challenge for ${subject.name}, Level ${level}. 
-    Follow darewast method: Mixture of Kumon (incremental), Sakamoto (logic modeling), and Eye Level (critical thinking).
+    Follow the darewast Proprietary Method: inclusive, culturally sensitive, personalized curriculum tailored for all learning styles.
     Age: ${age}, Language: ${language}. All reference materials used are high-fidelity interactive digital textbooks.`;
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
@@ -539,24 +539,56 @@ export const generateMasteryExam = async (s: Subject, l: Language, lvl: MasteryL
   });
 };
 
-export const generatePlacementTest = async (l: Language, u: User | null, a: AccommodationType, s: Subject | undefined, t: string) => {
+export const generatePlacementTest = async (
+  l: Language, 
+  u: User | null, 
+  a: AccommodationType, 
+  s: Subject | undefined, 
+  t: string
+) => {
   return withRetry(async () => {
+    const isCurriculumMethod = t === 'curriculum-method' || t === 'assessment';
+    const age = u?.age || 12;
+    const currentStage = u?.stage || 'Middle';
+
+    const prompt = isCurriculumMethod
+      ? `Generate a 10-question Curriculum & Pedagogy Diagnostic Assessment for scholar (Age: ${age}, Stage: ${currentStage}). Language: ${l}.
+Include a mix of:
+1. Math & Fluency baseline logic questions (Kumon pillar)
+2. Structural pattern & logic modeling questions (Sakamoto pillar)
+3. Critical inquiry & real-world application questions (Eye Level pillar)
+4. Learning style preference scenarios (Visual diagrams vs Auditory rhythm vs Reading analytical text vs Kinesthetic tactile/hands-on)
+5. Pacing and study habit preference scenarios.
+Make questions clear, engaging, and age-appropriate.`
+      : `Generate a 10-question darewast Proprietary placement test for ${s?.name || 'General Knowledge'}. Language: ${l}. Scholar Age: ${age}, Stage: ${currentStage}.
+Mixture of:
+- 4 Incremental Fluency questions (Level A-F)
+- 3 Logic Modeling questions (Level G-L)
+- 3 Critical Inquiry & Abstract Application questions (Level M-S).
+Ensure calibrated progression in difficulty.`;
+
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Generate 10-question darewast Trinity placement test for ${s?.name || 'General Knowledge'}. Mixture of incremental fluency and logic modeling. Language: ${l}. Calibrate entry into Digital Interactive Textbook system.`,
+      contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
+            title: { type: Type.STRING },
+            subtitle: { type: Type.STRING },
             questions: {
               type: Type.ARRAY,
               items: {
                 type: Type.OBJECT,
                 properties: {
+                  id: { type: Type.STRING },
+                  pillar: { type: Type.STRING },
+                  category: { type: Type.STRING },
                   question: { type: Type.STRING },
                   options: { type: Type.ARRAY, items: { type: Type.STRING } },
                   correctAnswer: { type: Type.STRING },
+                  explanation: { type: Type.STRING },
                   difficulty: { type: Type.STRING }
                 }
               }
@@ -566,6 +598,92 @@ export const generatePlacementTest = async (l: Language, u: User | null, a: Acco
       }
     });
     return JSON.parse(response.text || '{}');
+  });
+};
+
+export const analyzeCurriculumMethodAssessment = async (
+  u: User | null,
+  lan: Language,
+  questions: any[],
+  userAnswers: string[],
+  subject?: Subject
+): Promise<{
+  summaryDiagnosis: string;
+  recommendedStage: EducationalStage;
+  recommendedTrack: EducationTrack;
+  recommendedStyle: LearningStyle;
+  recommendedMethod: LearningMethod;
+  suggestedDailyMinutes: number;
+  subjectLevels: Record<string, MasteryLevel>;
+  strengths: string[];
+  areasForGrowth: string[];
+  pedagogicalInsights: string[];
+}> => {
+  return withRetry(async () => {
+    const age = u?.age || 12;
+    const prompt = `Analyze diagnostic test performance for scholar (Age: ${age}, Current Stage: ${u?.stage || 'Middle'}, Current Track: ${u?.track || 'Standard'}, Language: ${lan}).
+Questions & Answers submitted:
+${questions.map((q, idx) => `Q${idx + 1} (${q.pillar || q.category || 'General'}): ${q.question} | Selected: ${userAnswers[idx] || 'None'} | Correct: ${q.correctAnswer || 'N/A'}`).join('\n')}
+
+Provide an AI Diagnostic Assessment Blueprint:
+1. summaryDiagnosis: 2-3 sentence overarching pedagogical summary.
+2. recommendedStage: Choose best fit from ['Preschool', 'Primary', 'Middle', 'High', 'University', 'Transition'].
+3. recommendedTrack: Choose best fit from ['Standard', 'School', 'University', 'DistanceSchool', 'DistanceUniversity', 'VocationalSchool', 'VocationalUniversity'].
+4. recommendedStyle: Choose primary sensory style from ['Unified', 'Visual', 'Auditory', 'Reading', 'Kinesthetic'].
+5. recommendedMethod: Choose primary pedagogy from ['darewast-Unified', 'Kumon-style', 'Sakamoto-Method', 'Eye-Level-aligned', 'Socratic-Inquiry', 'Project-Based-Learning'].
+6. suggestedDailyMinutes: Recommended daily study goal in minutes (e.g., 20, 30, 45, 60).
+7. subjectLevels: Object mapping core subject IDs ('math', 'literacy', 'science', 'logic', 'technology', 'art', 'social') to recommended starting MasteryLevel ('A' through 'S').
+8. strengths: 3 specific academic strengths demonstrated.
+9. areasForGrowth: 3 specific learning areas to develop.
+10. pedagogicalInsights: 3 tactical tips for optimal daily study.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            summaryDiagnosis: { type: Type.STRING },
+            recommendedStage: { type: Type.STRING },
+            recommendedTrack: { type: Type.STRING },
+            recommendedStyle: { type: Type.STRING },
+            recommendedMethod: { type: Type.STRING },
+            suggestedDailyMinutes: { type: Type.NUMBER },
+            subjectLevels: {
+              type: Type.OBJECT,
+              properties: {
+                math: { type: Type.STRING },
+                literacy: { type: Type.STRING },
+                science: { type: Type.STRING },
+                logic: { type: Type.STRING },
+                technology: { type: Type.STRING },
+                art: { type: Type.STRING },
+                social: { type: Type.STRING }
+              }
+            },
+            strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+            areasForGrowth: { type: Type.ARRAY, items: { type: Type.STRING } },
+            pedagogicalInsights: { type: Type.ARRAY, items: { type: Type.STRING } }
+          }
+        }
+      }
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    return {
+      summaryDiagnosis: parsed.summaryDiagnosis || "Diagnostic calibration completed.",
+      recommendedStage: (parsed.recommendedStage as EducationalStage) || u?.stage || 'Middle',
+      recommendedTrack: (parsed.recommendedTrack as EducationTrack) || u?.track || 'Standard',
+      recommendedStyle: (parsed.recommendedStyle as LearningStyle) || 'Unified',
+      recommendedMethod: (parsed.recommendedMethod as LearningMethod) || 'darewast-Unified',
+      suggestedDailyMinutes: parsed.suggestedDailyMinutes || 30,
+      subjectLevels: parsed.subjectLevels || { math: 'C', literacy: 'C', science: 'C', logic: 'C' },
+      strengths: parsed.strengths || ["Consistent logical reasoning", "High engagement with visual patterns"],
+      areasForGrowth: parsed.areasForGrowth || ["Complex multi-step reduction", "Speed fluency"],
+      pedagogicalInsights: parsed.pedagogicalInsights || ["Incorporate 15 minutes of incremental drill daily", "Utilize visual diagram scaffolding"]
+    };
   });
 };
 
@@ -683,11 +801,12 @@ export const generateHybridLesson = async (s1: Subject, s2: Subject, l: Language
   });
 };
 
-export const generateRelearnLesson = async (s: Subject, l: Language, st: EducationalStage, u: User, f: boolean): Promise<any> => {
+export const generateRelearnLesson = async (s: Subject, l: Language, st: EducationalStage, u: User, f: boolean, topicPrompt?: string): Promise<any> => {
   return withRetry(async () => {
+    const topicFocus = topicPrompt ? `Specific Friction Concept Focus: ${topicPrompt}.` : '';
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `High-fidelity Trinity recovery lesson for ${s.name} Stage: ${st}. Lang: ${l}. Restoration via Interactive Digital Textbook architecture.`,
+      contents: `High-fidelity darewast Proprietary recovery lesson for ${s.name} Stage: ${st}. Lang: ${l}. ${topicFocus} Restoration via Interactive Digital Textbook architecture. ${f ? 'Condensed 5-minute Fast-Track recovery mode.' : ''}`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -713,5 +832,199 @@ export const generateRelearnLesson = async (s: Subject, l: Language, st: Educati
       }
     });
     return JSON.parse(response.text || '{}');
+  });
+};
+
+/**
+ * Offline / Fallback Flashcard Extractor
+ */
+export const generateOfflineFlashcards = (
+  lesson: LessonContent,
+  subject: Subject
+): Flashcard[] => {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const flashcards: Flashcard[] = [];
+
+  // 1. Concept from lesson title & explanation
+  flashcards.push({
+    id: `fc-off-${Date.now()}-1`,
+    subjectId: subject.id,
+    subjectName: subject.name,
+    lessonTitle: lesson.title,
+    lessonNumber: lesson.lessonNumber || 1,
+    level: lesson.level || 'A',
+    concept: lesson.title,
+    front: `What is the core principle behind "${lesson.title}"?`,
+    back: lesson.explanation.slice(0, 300) + (lesson.explanation.length > 300 ? '...' : ''),
+    hint: `Think about ${subject.name} core concepts`,
+    tags: [subject.name, `Level ${lesson.level || 'A'}`],
+    difficulty: 'medium',
+    nextReviewDate: todayStr,
+    intervalDays: 1,
+    easeFactor: 2.5,
+    reviewsCount: 0,
+    status: 'learning'
+  });
+
+  // 2. Concepts from timeline steps or examples if available
+  if (lesson.timelineSteps && lesson.timelineSteps.length > 0) {
+    lesson.timelineSteps.slice(0, 2).forEach((step, idx) => {
+      flashcards.push({
+        id: `fc-off-${Date.now()}-ts-${idx}`,
+        subjectId: subject.id,
+        subjectName: subject.name,
+        lessonTitle: lesson.title,
+        lessonNumber: lesson.lessonNumber || 1,
+        level: lesson.level || 'A',
+        concept: step.title,
+        front: `Explain the concept: "${step.title}"`,
+        back: step.detail,
+        hint: `Key step in ${lesson.title}`,
+        tags: [subject.name, 'Key Step'],
+        difficulty: 'easy',
+        nextReviewDate: todayStr,
+        intervalDays: 1,
+        easeFactor: 2.5,
+        reviewsCount: 0,
+        status: 'learning'
+      });
+    });
+  } else if (lesson.examples && lesson.examples.length > 0) {
+    flashcards.push({
+      id: `fc-off-${Date.now()}-ex`,
+      subjectId: subject.id,
+      subjectName: subject.name,
+      lessonTitle: lesson.title,
+      lessonNumber: lesson.lessonNumber || 1,
+      level: lesson.level || 'A',
+      concept: `Application Example of ${lesson.title}`,
+      front: `How is ${lesson.title} applied in practice?`,
+      back: lesson.examples[0],
+      tags: [subject.name, 'Example'],
+      difficulty: 'easy',
+      nextReviewDate: todayStr,
+      intervalDays: 1,
+      easeFactor: 2.5,
+      reviewsCount: 0,
+      status: 'learning'
+    });
+  }
+
+  // 3. Concept from exercises
+  if (lesson.exercises && lesson.exercises.length > 0) {
+    const ex = lesson.exercises[0];
+    flashcards.push({
+      id: `fc-off-${Date.now()}-ex1`,
+      subjectId: subject.id,
+      subjectName: subject.name,
+      lessonTitle: lesson.title,
+      lessonNumber: lesson.lessonNumber || 1,
+      level: lesson.level || 'A',
+      concept: `Key Exercise Concept`,
+      front: ex.question,
+      back: `Correct Answer: ${ex.correctAnswer}\n\nExplanation: ${ex.explanation}`,
+      hint: ex.hint || `Review ${lesson.title} exercises`,
+      tags: [subject.name, 'Exercise Practice'],
+      difficulty: 'hard',
+      nextReviewDate: todayStr,
+      intervalDays: 1,
+      easeFactor: 2.5,
+      reviewsCount: 0,
+      status: 'learning'
+    });
+  }
+
+  return flashcards;
+};
+
+/**
+ * AI-Powered Concept Flashcard Generator from completed lessons using Gemini
+ */
+export const extractFlashcardsFromLesson = async (
+  lesson: LessonContent,
+  subject: Subject,
+  language: Language,
+  user: User
+): Promise<Flashcard[]> => {
+  return withRetry(async () => {
+    try {
+      const prompt = `
+        ROLE: darewast Academic Memory & Spaced Repetition Architect.
+        TASK: Extract 3 to 5 vital core concepts, principles, formulas, or key definitions from this completed lesson and format them as high-yield spaced repetition flashcards.
+
+        Lesson Title: "${lesson.title}"
+        Subject: "${subject.name}" (${subject.category})
+        Level: ${lesson.level || 'A'}, Lesson #: ${lesson.lessonNumber || 1}
+        Explanation: ${lesson.explanation.slice(0, 1000)}
+        Examples: ${lesson.examples?.join('; ') || 'N/A'}
+        Target Language: ${language}
+        Student: ${user.name}, Age: ${user.age}
+
+        REQUIREMENTS:
+        1. Front of card: A clear, engaging question or prompt testing understanding of a key concept.
+        2. Back of card: A concise, authoritative answer and key takeaway explanation.
+        3. Concept: 2-4 word term naming the concept.
+        4. Difficulty: 'easy', 'medium', or 'hard'.
+      `;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              flashcards: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    concept: { type: Type.STRING },
+                    front: { type: Type.STRING },
+                    back: { type: Type.STRING },
+                    hint: { type: Type.STRING },
+                    tags: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    difficulty: { type: Type.STRING, description: "One of: easy, medium, hard" }
+                  },
+                  required: ["concept", "front", "back", "difficulty"]
+                }
+              }
+            },
+            required: ["flashcards"]
+          }
+        }
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      if (parsed.flashcards && Array.isArray(parsed.flashcards) && parsed.flashcards.length > 0) {
+        return parsed.flashcards.map((item: any, idx: number) => ({
+          id: `fc-${Date.now()}-${idx}`,
+          subjectId: subject.id,
+          subjectName: subject.name,
+          lessonTitle: lesson.title,
+          lessonNumber: lesson.lessonNumber || 1,
+          level: lesson.level || 'A',
+          concept: item.concept || `Concept ${idx + 1}`,
+          front: item.front,
+          back: item.back,
+          hint: item.hint || undefined,
+          tags: item.tags || [subject.name],
+          difficulty: (['easy', 'medium', 'hard'].includes(item.difficulty) ? item.difficulty : 'medium') as any,
+          nextReviewDate: todayStr,
+          intervalDays: 1,
+          easeFactor: 2.5,
+          reviewsCount: 0,
+          status: 'learning'
+        }));
+      }
+
+      return generateOfflineFlashcards(lesson, subject);
+    } catch (e) {
+      console.warn("AI Flashcard generation failed, utilizing offline fallback engine:", e);
+      return generateOfflineFlashcards(lesson, subject);
+    }
   });
 };

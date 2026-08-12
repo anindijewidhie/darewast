@@ -18,6 +18,20 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
   const isElite = certificate.score >= 60;
   const isSuperior = certificate.score >= 95;
 
+  const handleExportPDF = () => {
+    const originalTitle = document.title;
+    const sanitizedUser = certificate.userName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const sanitizedSubject = certificate.subjectName.replace(/[^a-zA-Z0-9_-]/g, '_');
+    document.title = `Mastery_Certificate_${sanitizedUser}_${sanitizedSubject}`;
+    
+    // Trigger native print dialog which allows "Save as PDF"
+    window.print();
+
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -135,16 +149,30 @@ const Certificate: React.FC<Props> = ({ certificate, language, onClose }) => {
             </div>
           </div>
 
-          <div className="mt-12 flex justify-center print:hidden">
+          <div className="mt-12 flex flex-wrap justify-center gap-4 print:hidden">
+            <button 
+              onClick={handleExportPDF} 
+              className="px-8 py-4 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-amber-400/20"
+            >
+              📄 Export to PDF
+            </button>
             <button 
               onClick={handlePrint} 
-              className={`px-10 py-4 text-white rounded-2xl font-black text-sm shadow-xl hover:scale-105 transition-all flex items-center gap-2 bg-slate-900 shadow-slate-900/20`}
+              className="px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-black text-sm rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-slate-900/20 border border-white/10"
             >
-              📥 Download admissions-grade certificate
+              🖨️ Print Credential
             </button>
           </div>
         </div>
       </div>
+      <style>{`
+        @media print {
+          body {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

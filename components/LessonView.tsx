@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Subject, Language, LessonContent, User, MasteryLevel, UserProgress, SubjectProgress, LearningStyle, MediaItem } from '../types';
-import { generateLesson, recognizeHandwriting, generateVisualAid } from '../services/geminiService';
+import { generateLesson, recognizeHandwriting, generateVisualAid, generateOfflineFlashcards } from '../services/geminiService';
 import { translations } from '../translations';
 import AITutor from './AITutor';
 import ExerciseRenderer from './ExerciseRenderer';
@@ -150,6 +150,17 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
       totalMinutesSpent: currentTotalMins + minutesSpent,
       dailyMinutesSpent: currentDailyMins + minutesSpent
     });
+
+    try {
+      const extractedCards = generateOfflineFlashcards(lesson, subject);
+      const existingCards = user.flashcards || [];
+      onUpdateUser({
+        flashcards: [...extractedCards, ...existingCards]
+      });
+    } catch (err) {
+      console.warn("Failed to extract flashcards on lesson complete:", err);
+    }
+
     onComplete(score, activeLesson, xpEarned);
   };
 
@@ -260,7 +271,14 @@ const LessonView: React.FC<Props> = ({ subject, language, level, lessonNumber, u
       <main className="lg:col-span-9 space-y-20 relative z-10">
         <header className="bg-slate-900 p-8 sm:p-12 md:p-24 rounded-[3rem] sm:rounded-[5rem] text-white shadow-2xl relative overflow-hidden border-4 border-white/10 group">
            <div className="absolute top-0 right-0 p-8 sm:p-12 opacity-10 text-[10rem] sm:text-[20rem] rotate-12 group-hover:scale-110 transition-transform duration-1000">{subject.icon}</div>
-           <div className="relative z-10 space-y-10 sm:space-y-16">
+           <div className="relative z-10 space-y-8 sm:space-y-12">
+              <div className="inline-flex flex-wrap items-center gap-2 px-4 py-2 bg-dare-purple/30 text-dare-teal rounded-full text-[9px] sm:text-[11px] font-black uppercase tracking-[0.3em] border border-dare-teal/30">
+                <span>⚡ darewast Proprietary Method</span>
+                <span>•</span>
+                <span>🌏 Inclusive & Culturally Sensitive</span>
+                <span>•</span>
+                <span>🎯 Personalized Curriculum</span>
+              </div>
               <div className="flex flex-wrap gap-3 sm:gap-4">
                  {['Unified', 'Visual', 'Auditory', 'Reading', 'Kinesthetic'].map(s => (
                    <button key={s} onClick={() => handleStyleChange(s as any)} className={`px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${learningStyle === s ? 'bg-dare-teal text-slate-950 shadow-2xl scale-110' : 'bg-slate-950/50 backdrop-blur-md text-slate-500 border-2 border-white/10 hover:border-white/30'}`}>{s}</button>
